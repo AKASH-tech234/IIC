@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import useLenis from "./hooks/useLenis"
 import Car from "./journey/components/Car"
 import BackgroundEnvironment from "./journey/components/BackgroundEnvironment"
+import CustomCursor from "./components/cursor/CustomCursor"
 import JourneyHero from "./journey/sections/JourneyHero"
 import JourneyAbout from "./journey/sections/JourneyAbout"
 import JourneyEvents from "./journey/sections/JourneyEvents"
@@ -121,7 +122,7 @@ export default function AppJourney() {
           }
         })
 
-        // Glow color changes with environment
+        // Underglow color changes with environment + sync accent color
         if (carGlow) {
           ScrollTrigger.create({
             trigger: mainRef.current,
@@ -131,21 +132,28 @@ export default function AppJourney() {
             onUpdate: (self) => {
               const progress = self.progress
               
-              let glowColor = "rgba(56, 189, 248, 0.4)"
+              let accentColor = "#22D3EE" // Cyan
               
               if (progress > 0.2 && progress < 0.4) {
-                glowColor = "rgba(59, 130, 246, 0.4)"
+                accentColor = "#3B82F6" // Blue
               } else if (progress >= 0.4 && progress < 0.6) {
-                glowColor = "rgba(168, 85, 247, 0.4)"
+                accentColor = "#8B5CF6" // Purple
               } else if (progress >= 0.6 && progress < 0.8) {
-                glowColor = "rgba(34, 197, 94, 0.4)"
+                accentColor = "#EC4899" // Magenta
               } else if (progress >= 0.8) {
-                glowColor = "rgba(139, 92, 246, 0.5)"
+                accentColor = "#22C55E" // Lime
               }
               
+              // Update CSS variable for global accent
+              gsap.to(":root", {
+                "--accent-color": accentColor,
+                duration: 0.8
+              })
+              
+              // Update underglow
               gsap.to(carGlow, {
-                background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`,
-                duration: 0.5
+                background: `radial-gradient(ellipse, ${accentColor} 0%, transparent 70%)`,
+                duration: 0.8
               })
             }
           })
@@ -161,8 +169,12 @@ export default function AppJourney() {
   return (
     <main 
       ref={mainRef}
-      className="relative w-full bg-[#050510] text-white overflow-x-hidden"
+      className="relative w-full text-white overflow-x-hidden"
+      style={{ backgroundColor: "var(--bg-base)" }}
     >
+      {/* Custom Cursor */}
+      <CustomCursor />
+
       {/* Fixed Background with Parallax */}
       <BackgroundEnvironment />
 

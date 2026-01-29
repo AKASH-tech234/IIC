@@ -19,7 +19,7 @@ export default function JourneyFinalCTA() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Slow down car on arrival
+      // Slow down car on arrival + update accent
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: "top center",
@@ -32,6 +32,12 @@ export default function JourneyFinalCTA() {
               ease: "power2.out"
             })
           }
+          
+          // Update to lime accent
+          gsap.to(":root", {
+            "--accent-color": "#22C55E", // Lime
+            duration: 0.8
+          })
         }
       })
 
@@ -153,14 +159,37 @@ export default function JourneyFinalCTA() {
         </div>
       </div>
 
-      {/* Radial gradient background */}
+      {/* Horizon glow - Open highway feel */}
       <div className="absolute inset-0 z-0">
+        {/* Horizon glow */}
         <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] rounded-full opacity-20"
+          className="absolute bottom-0 left-0 right-0 h-1/2"
           style={{
-            background: "radial-gradient(circle, rgba(56,189,248,0.3) 0%, rgba(59,130,246,0.2) 50%, rgba(168,85,247,0.1) 100%)"
+            background: "linear-gradient(to top, rgba(34, 197, 94, 0.2), transparent)"
           }}
         />
+        
+        {/* Radial center glow */}
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] rounded-full opacity-30"
+          style={{
+            background: "radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, rgba(59, 130, 246, 0.2) 50%, transparent 100%)"
+          }}
+        />
+
+        {/* Fewer building silhouettes (open highway) */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 flex justify-around items-end opacity-10">
+          {[20, 30, 25].map((height, i) => (
+            <div
+              key={i}
+              className="w-16"
+              style={{
+                height: `${height}%`,
+                background: "var(--bg-city-shadow)"
+              }}
+            />
+          ))}
+        </div>
       </div>
     </section>
   )

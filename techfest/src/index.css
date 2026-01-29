@@ -9,18 +9,75 @@
 }
 
 /* ============================================
+   MIDNIGHT NEON CITY RUN THEME
+   ============================================ */
+
+:root {
+  /* Background Colors - Midnight Purple-Blue */
+  --bg-base: #070617;
+  --bg-deep-navy: #120A2A;
+  --bg-city-shadow: #05010F;
+  
+  /* Accent Colors - Purple Neon Primary */
+  --accent-cyan: #22D3EE;      /* Hero, About */
+  --accent-blue: #3B82F6;      /* Events */
+  --accent-purple: #7C3AED;    /* Schedule - Primary Purple Neon */
+  --accent-magenta: #EC4899;   /* Workshops */
+  --accent-lime: #22C55E;      /* Final CTA */
+  
+  /* Active Accent - Changes per section */
+  --accent-color: #7C3AED;
+  
+  /* City Theme Colors */
+  --window-light: rgba(255, 255, 255, 0.1);
+  --neon-glow: rgba(124, 58, 237, 0.4);
+  
+  /* Typography - Better Contrast */
+  --text-primary: #EDE9FE;
+  --text-secondary: #C4B5FD;
+  --text-tertiary: #A78BFA;
+}
+
+/* ============================================
    BASE STYLES
    ============================================ */
 
 body {
-    background-color: #050505;
-    color: #ffffff;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
     font-family: var(--font-body);
     overflow-x: hidden;
+    cursor: none; /* Hide default cursor for custom cursor */
+}
+
+/* Show default cursor on touch devices */
+@media (pointer: coarse) {
+  body {
+    cursor: default;
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+}
+
+/* Typography Safety Rules */
+h1, h2, h3 {
+  line-height: 1.1;
+}
+
+p {
+  line-height: 1.6;
+  max-width: 64ch;
+}
+
+/* Section Spacing - Prevent Overlap */
+section {
+  min-height: 100vh;
+  padding: clamp(4rem, 10vh, 8rem) 2rem;
+  display: flex;
+  align-items: center;
+  position: relative;
 }
 
 /* ============================================
@@ -221,6 +278,73 @@ html.lenis, html.lenis body {
 @keyframes twinkle {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
+}
+
+@keyframes window-flicker {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes float-particle {
+  0% { 
+    transform: translateX(0) translateY(0);
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% { 
+    transform: translateX(-100px) translateY(20px);
+    opacity: 0;
+  }
+}
+
+@keyframes border-trace {
+  0% {
+    clip-path: polygon(0 0, 0% 0, 0% 100%, 0 100%);
+  }
+  25% {
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+  }
+  50% {
+    clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+  }
+  75% {
+    clip-path: polygon(100% 100%, 0 100%, 0 100%, 100% 100%);
+  }
+  100% {
+    clip-path: polygon(0 100%, 0 0, 0 0, 0 100%);
+  }
+}
+
+@keyframes speed-line {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(200%);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-right {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Car SVG Styling */
+.car-svg {
+  filter:
+    drop-shadow(0 0 12px var(--accent-color))
+    drop-shadow(0 0 32px var(--accent-color));
 }
 
 /* Smooth environment transitions */

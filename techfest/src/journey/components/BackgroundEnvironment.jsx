@@ -21,9 +21,23 @@ export default function BackgroundEnvironment() {
       style={{ willChange: "transform" }}
     >
       
-      {/* Layer 1: Sky (Slowest) */}
+      {/* Layer 1: Sky (Slowest) - Midnight Purple-Blue */}
       <BackgroundLayer speed={0.3} zIndex={1}>
-        <div className="w-full h-full bg-gradient-to-b from-[#0a0e27] via-[#1a1f3a] to-[#2a2f4a]" />
+        <div 
+          className="w-full h-full" 
+          style={{
+            background: "linear-gradient(to bottom, var(--bg-deep-navy) 0%, var(--bg-city-shadow) 100%)"
+          }}
+        />
+        
+        {/* Neon glow horizon */}
+        <div 
+          className="absolute bottom-[40vh] left-0 right-0 h-24 opacity-20"
+          style={{
+            background: "var(--accent-purple)",
+            filter: "blur(60px)"
+          }}
+        />
         
         {/* Stars/atmospheric elements */}
         <div className="absolute inset-0">
@@ -67,22 +81,27 @@ export default function BackgroundEnvironment() {
             ))}
           </div>
 
-          {/* Environment 3: City skyline */}
+          {/* Environment 3: City skyline - Strong silhouettes */}
           <div className="absolute left-[66%] w-1/3 h-full flex items-end justify-around px-8">
             {[60, 85, 70, 90, 75, 95, 80].map((height, i) => (
               <div
                 key={i}
-                className="w-16 bg-gradient-to-t from-[#1a2530] to-[#2a3540] opacity-60"
-                style={{ height: `${height}%` }}
+                className="w-16 opacity-90"
+                style={{ 
+                  height: `${height}%`,
+                  background: "#000000"
+                }}
               >
-                {/* Building windows (small lights) */}
+                {/* Animated building windows */}
                 <div className="grid grid-cols-2 gap-1 p-1">
                   {[...Array(Math.floor(height / 15))].map((_, j) => (
                     <div
                       key={j}
-                      className="w-1 h-1 bg-cyan-400/40"
+                      className="w-1 h-1 window-light"
                       style={{
-                        opacity: Math.random() > 0.3 ? 0.6 : 0.1
+                        backgroundColor: "var(--window-light)",
+                        opacity: Math.random() > 0.3 ? 0.8 : 0.1,
+                        animation: Math.random() > 0.7 ? `window-flicker ${2 + Math.random() * 3}s infinite` : "none"
                       }}
                     />
                   ))}
@@ -106,23 +125,60 @@ export default function BackgroundEnvironment() {
       {/* Layer 4: Road (Fastest) */}
       <BackgroundLayer speed={1.2} zIndex={4}>
         <div className="absolute bottom-0 left-0 w-[300%] h-[15vh]">
-          {/* Road surface */}
-          <div className="w-full h-full bg-gradient-to-b from-[#2a2a35] to-[#1a1a25]">
+          {/* Road surface - Dark asphalt */}
+          <div 
+            className="w-full h-full"
+            style={{
+              background: "linear-gradient(to bottom, var(--bg-deep-navy), var(--bg-base))"
+            }}
+          >
             {/* Road lines */}
             <div className="absolute top-1/2 left-0 w-full h-[2px] flex gap-12">
               {[...Array(50)].map((_, i) => (
-                <div key={i} className="w-16 h-full bg-white/20" />
+                <div 
+                  key={i} 
+                  className="w-16 h-full"
+                  style={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
+                />
               ))}
             </div>
           </div>
           
-          {/* Road edge glow */}
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-500/0 via-cyan-500/30 to-cyan-500/0" />
+          {/* Road edge neon glow - uses active accent color */}
+          <div 
+            className="absolute top-0 left-0 w-full h-[2px]"
+            style={{
+              background: "linear-gradient(to right, transparent 0%, var(--accent-color) 50%, transparent 100%)",
+              opacity: 0.3
+            }}
+          />
         </div>
       </BackgroundLayer>
 
       {/* Gradient overlay for depth */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050510]/60 z-5 pointer-events-none" />
+      <div 
+        className="absolute inset-0 z-5 pointer-events-none"
+        style={{
+          background: "linear-gradient(to bottom, transparent 0%, transparent 70%, var(--bg-base) 100%)",
+          opacity: 0.6
+        }}
+      />
+      
+      {/* Ambient Particles */}
+      <div className="absolute inset-0 z-6 pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-white rounded-full opacity-20 particle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 60}%`,
+              animation: `float-particle ${10 + Math.random() * 20}s linear infinite`,
+              animationDelay: `${Math.random() * 10}s`
+            }}
+          />
+        ))}
+      </div>
     </div>
   )
 }
