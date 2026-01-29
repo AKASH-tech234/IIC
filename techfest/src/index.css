@@ -1,0 +1,287 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Inter", "sans-serif";
+  --font-body: "Inter", "sans-serif";
+  --color-primary: #38bdf8;   /* Sky 400 */
+  --color-secondary: #a855f7; /* Purple 500 */
+  --color-accent: #4ade80;    /* Green 400 */
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+body {
+    background-color: #050505;
+    color: #ffffff;
+    font-family: var(--font-body);
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+}
+
+/* ============================================
+   LENIS SMOOTH SCROLL
+   ============================================ */
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* ============================================
+   ANIMATION UTILITIES
+   ============================================ */
+
+/* GPU-accelerated animations - only animate transform and opacity */
+.will-animate {
+  will-change: transform, opacity;
+}
+
+/* Remove will-change after animation completes to free up resources */
+.animate-complete {
+  will-change: auto;
+}
+
+/* Smooth transitions for interactive elements */
+.smooth-transition {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Focus visible styles for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Ensure sufficient color contrast */
+.text-accessible {
+  color: #e5e5e5;
+}
+
+/* Skip to main content link */
+.skip-to-main {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--color-primary);
+  color: #000;
+  padding: 0.75rem 1.5rem;
+  z-index: 10000;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.skip-to-main:focus {
+  top: 0;
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable GSAP animations */
+  [data-gsap] {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Keep essential transforms but remove animation */
+  .core-nucleus,
+  .ring-outer,
+  .ring-inner,
+  .hexagon-core {
+    animation: none !important;
+  }
+
+  /* Disable journey parallax on reduced motion */
+  .bg-layer {
+    transform: none !important;
+  }
+
+  #car {
+    animation: none !important;
+  }
+
+  #env-overlay {
+    transition: none !important;
+  }
+}
+
+/* ============================================
+   MOBILE OPTIMIZATIONS (Journey)
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Reduce parallax intensity on mobile */
+  .bg-layer[data-speed="0.3"] {
+    transform: translateX(0) !important;
+  }
+
+  .bg-layer[data-speed="0.6"] {
+    /* Reduced from 60% to 30% */
+  }
+
+  .bg-layer[data-speed="1.0"] {
+    /* Reduced from 100% to 50% */
+  }
+
+  /* Simplify car on mobile */
+  #car svg {
+    width: 90px;
+    height: 45px;
+  }
+
+  /* Hide complex background elements on mobile */
+  .bg-layer > div > svg {
+    opacity: 0.5;
+  }
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* Use GPU acceleration for animated elements */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Contain layout shifts */
+.layout-contained {
+  contain: layout style paint;
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR (Optional)
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.5);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.3) rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================
+   JOURNEY ANIMATIONS
+   ============================================ */
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Smooth environment transitions */
+#env-overlay {
+  transition: background-color 1s ease;
+}
+
+/* Enhanced glow effects */
+@keyframes glow-pulse {
+  0%, 100% { 
+    filter: brightness(1) blur(20px); 
+  }
+  50% { 
+    filter: brightness(1.3) blur(25px); 
+  }
+}
+
+/* ============================================
+   SEMANTIC HTML IMPROVEMENTS
+   ============================================ */
+
+/* Ensure headings have proper hierarchy */
+h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.3;
+}
+
+/* Improve readability */
+p {
+  max-width: 75ch;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+  }
+}
