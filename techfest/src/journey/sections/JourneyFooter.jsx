@@ -1,7 +1,11 @@
+import { motion } from "framer-motion"
+import WorldMap from "../../components/ui/world-map"
+
 /**
  * Journey Footer
  * 
  * Content:
+ * - World Map showing MNNIT location and connections
  * - Copyright © 2026 MNNIT TechSummit • MNNIT Allahabad
  * - Contact: techsummit@mnnit.ac.in
  * - Social: Instagram • LinkedIn • Facebook
@@ -9,8 +13,59 @@
 export default function JourneyFooter() {
   return (
     <footer className="relative z-20 w-full bg-[#0a0e1a] border-t border-white/10 py-16 px-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         
+        {/* World Map Section */}
+        <div className="mb-16">
+          <div className="text-center mb-8">
+            <p className="text-sm font-mono tracking-wider uppercase text-cyan-400 mb-2">
+              Global Reach
+            </p>
+            <h3 className="text-3xl md:text-4xl font-bold text-white">
+              Join Participants from{" "}
+              {"Across India".split("").map((char, idx) => (
+                <motion.span
+                  key={idx}
+                  className="inline-block"
+                  initial={{ x: -10, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: idx * 0.04 }}
+                >
+                  {char === " " ? "\u00A0" : char}
+                </motion.span>
+              ))}
+            </h3>
+            <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
+              MNNIT Allahabad welcomes innovators and tech enthusiasts from every corner of India
+            </p>
+          </div>
+          <WorldMap
+            dots={[
+              {
+                start: { lat: 25.4919, lng: 81.8639 }, // MNNIT Allahabad
+                end: { lat: 28.6139, lng: 77.209 }, // New Delhi
+              },
+              {
+                start: { lat: 25.4919, lng: 81.8639 }, // MNNIT Allahabad
+                end: { lat: 19.076, lng: 72.8777 }, // Mumbai
+              },
+              {
+                start: { lat: 25.4919, lng: 81.8639 }, // MNNIT Allahabad
+                end: { lat: 12.9716, lng: 77.5946 }, // Bangalore
+              },
+              {
+                start: { lat: 25.4919, lng: 81.8639 }, // MNNIT Allahabad
+                end: { lat: 22.5726, lng: 88.3639 }, // Kolkata
+              },
+              {
+                start: { lat: 25.4919, lng: 81.8639 }, // MNNIT Allahabad
+                end: { lat: 13.0827, lng: 80.2707 }, // Chennai
+              },
+            ]}
+            lineColor="#22D3EE"
+          />
+        </div>
+
         {/* Main content */}
         <div className="text-center mb-8">
           <h3 className="text-3xl font-bold text-white mb-4">

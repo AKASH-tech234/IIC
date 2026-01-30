@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { Carousel, Card } from "../../components/ui/apple-cards-carousel"
 
 /**
  * Journey Schedule Section
@@ -99,6 +100,46 @@ export default function JourneySchedule() {
     }
   ]
 
+  // Apple Cards Carousel data
+  const scheduleCards = schedule.map((item, index) => ({
+    category: item.day,
+    title: item.title,
+    src: index === 0 
+      ? "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800" 
+      : index === 1 
+      ? "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800"
+      : "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800",
+    content: (
+      <div className="bg-[#F5F5F7] dark:bg-neutral-800 p-8 md:p-14 rounded-3xl mb-4">
+        <p className="text-neutral-600 dark:text-neutral-400 text-base md:text-2xl font-sans max-w-3xl mx-auto">
+          <span className="font-bold text-neutral-700 dark:text-neutral-200">
+            {item.title}
+          </span>{" "}
+          - Experience the best of MNNIT TechSummit 2026
+        </p>
+        <div className="mt-8 space-y-4">
+          {item.events.map((event, idx) => (
+            <div key={idx} className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full" style={{ 
+                background: index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899' 
+              }} />
+              <p className="text-neutral-700 dark:text-neutral-300 text-lg">{event}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8">
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+            Join hundreds of students, developers, and innovators in this immersive experience.
+          </p>
+        </div>
+      </div>
+    ),
+  }))
+
+  const cards = scheduleCards.map((card, index) => (
+    <Card key={card.src} card={card} index={index} />
+  ))
+
   return (
     <section
       ref={sectionRef}
@@ -131,7 +172,7 @@ export default function JourneySchedule() {
 
         {/* Heading */}
         <h2 
-          className="schedule-heading text-5xl sm:text-6xl md:text-7xl font-bold mb-20 leading-tight text-center"
+          className="schedule-heading text-5xl sm:text-6xl md:text-7xl font-bold mb-12 leading-tight text-center"
           style={{ color: "var(--text-primary)" }}
         >
           Milestones
@@ -147,6 +188,25 @@ export default function JourneySchedule() {
             Ahead
           </span>
         </h2>
+
+        {/* Apple Cards Carousel - Interactive Schedule */}
+        <div className="mb-20">
+          <div className="text-center mb-8">
+            <p 
+              className="text-sm font-mono tracking-wider uppercase mb-2"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              Interactive Timeline
+            </p>
+            <p 
+              className="text-lg"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Swipe through the 3-day journey
+            </p>
+          </div>
+          <Carousel items={cards} />
+        </div>
 
         {/* Timeline - Large Road Markers */}
         <div className="timeline-container relative space-y-24">

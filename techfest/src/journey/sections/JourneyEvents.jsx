@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { ThreeDMarquee } from "../../components/ui/3d-marquee"
 
 /**
  * Journey Events Section
@@ -152,6 +153,23 @@ export default function JourneyEvents() {
     }
   ]
 
+  // 3D Marquee images - past event photos
+  const eventImages = [
+    "/images/events/hackathon.jpg",
+    "/images/events/robotics.jpg",
+    "/images/hero/hackathon.jpg",
+    "/images/hero/robotics.jpg",
+    "/images/hero/mnnit.jpg",
+    "/images/about/mnnit.jpg",
+    // Placeholder images for demonstration
+    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800",
+    "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800",
+    "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800",
+    "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800",
+    "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800",
+    "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800",
+  ]
+
   return (
     <section
       ref={sectionRef}
@@ -200,6 +218,25 @@ export default function JourneyEvents() {
             Innovation
           </span>
         </h2>
+
+        {/* 3D Marquee - Past Events Gallery */}
+        <div className="marquee-container mb-20">
+          <div className="text-center mb-8">
+            <p 
+              className="text-sm font-mono tracking-wider uppercase mb-2"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              Past Events Gallery
+            </p>
+            <p 
+              className="text-lg"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Relive the moments from previous TechSummits
+            </p>
+          </div>
+          <ThreeDMarquee images={eventImages} />
+        </div>
 
         {/* Road Lanes Layout */}
         <div className="road-lanes-container relative">

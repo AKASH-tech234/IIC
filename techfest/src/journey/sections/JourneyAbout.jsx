@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { ExpandableCards } from "../../components/ui/expandable-cards"
 
 /**
  * Journey About Section
@@ -68,12 +69,97 @@ export default function JourneyAbout() {
     return () => ctx.revert()
   }, [])
 
+  // Expandable cards data
+  const whyAttendCards = [
+    {
+      title: "Why Attend?",
+      description: "Discover the benefits",
+      src: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400",
+      ctaText: "Learn More",
+      ctaLink: "#",
+      content: () => (
+        <p>
+          TechSummit 2026 brings together the brightest minds in technology. Whether you're a student, 
+          developer, or entrepreneur, you'll find opportunities to learn, network, and showcase your skills.
+          <br /><br />
+          Experience keynote sessions from industry leaders, participate in competitive hackathons, 
+          and gain hands-on experience through interactive workshops.
+        </p>
+      ),
+    },
+    {
+      title: "Who Should Come?",
+      description: "Open to all tech enthusiasts",
+      src: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=400",
+      ctaText: "Join Us",
+      ctaLink: "#",
+      content: () => (
+        <p>
+          This event is designed for students, developers, designers, and innovators of all skill levels.
+          <br /><br />
+          Whether you're just starting your tech journey or you're an experienced professional, 
+          there's something for everyone - from beginner-friendly workshops to advanced technical challenges.
+        </p>
+      ),
+    },
+    {
+      title: "What to Expect?",
+      description: "3 days of innovation",
+      src: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400",
+      ctaText: "View Schedule",
+      ctaLink: "#",
+      content: () => (
+        <p>
+          Expect three action-packed days filled with learning, building, and networking opportunities.
+          <br /><br />
+          Day 1: Opening ceremonies, keynotes, and workshops<br />
+          Day 2: 24-hour hackathon and technical challenges<br />
+          Day 3: Project presentations, demos, and awards ceremony
+        </p>
+      ),
+    },
+    {
+      title: "Prizes & Perks",
+      description: "Win exciting rewards",
+      src: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=400",
+      ctaText: "See Prizes",
+      ctaLink: "#",
+      content: () => (
+        <p>
+          Compete for cash prizes, internship opportunities, and exclusive swag from our sponsors.
+          <br /><br />
+          Winners of the main hackathon will receive up to ₹1,00,000 in prizes, along with 
+          mentorship opportunities and fast-track interviews with leading tech companies.
+        </p>
+      ),
+    },
+  ]
+
   return (
     <section
       ref={sectionRef}
       id="journey-about"
       className="relative min-h-screen w-full flex items-center px-6 py-32"
     >
+      {/* Expandable Cards Section */}
+      <div className="relative z-10 max-w-4xl mx-auto w-full mb-20">
+        <div className="text-center mb-12">
+          <p 
+            className="text-sm font-mono tracking-wider uppercase mb-2"
+            style={{ color: "var(--accent-color)" }}
+          >
+            Quick Info
+          </p>
+          <h3 
+            className="text-3xl md:text-4xl font-bold"
+            style={{ color: "var(--text-primary)" }}
+          >
+            Everything You Need to Know
+          </h3>
+        </div>
+        <ExpandableCards cards={whyAttendCards} />
+      </div>
+
       {/* Glass Panel Card */}
       <div className="relative z-10 max-w-4xl mx-auto w-full">
         

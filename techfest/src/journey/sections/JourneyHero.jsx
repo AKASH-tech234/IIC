@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import AnimatedShaderBackground from "../../components/ui/AnimatedShaderBackground"
+import { Highlight } from "../../components/ui/hero-highlight"
+import { NoiseBackground } from "../../components/ui/noise-background"
 
 /**
  * Journey Hero Section
@@ -143,7 +145,7 @@ export default function JourneyHero() {
             letterSpacing: "0.05em"
           }}
         >
-          Innovate. Collaborate. Accelerate.
+          Innovate. Collaborate. <Highlight className="text-white dark:text-white bg-gradient-to-r from-cyan-400 to-blue-500">Accelerate</Highlight>.
         </h2>
 
         {/* Description */}
@@ -161,28 +163,29 @@ export default function JourneyHero() {
 
         {/* CTA Buttons - Horizontal on desktop, stacked on mobile */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          {/* Primary CTA */}
-          <button 
-            className="hero-cta-button group relative px-10 py-4 rounded font-semibold text-lg tracking-wide transition-all duration-300 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]"
-            style={{
-              backgroundColor: "var(--accent-color)",
-              color: "white",
-              boxShadow: `0 0 30px var(--accent-color)40`
-            }}
+          {/* Primary CTA - with Noise Background */}
+          <NoiseBackground
+            containerClassName="w-fit p-2 rounded-full hero-cta-button"
+            gradientColors={[
+              "rgb(34, 211, 238)",  // cyan
+              "rgb(59, 130, 246)",  // blue
+              "rgb(139, 92, 246)",  // purple
+            ]}
+            noiseIntensity={0.15}
+            speed={0.15}
           >
-            <span className="relative z-10">Register Now</span>
-            <div 
-              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded"
+            <button className="h-full w-full cursor-pointer rounded-full px-10 py-4 text-white shadow-[0px_2px_0px_0px_rgba(34,211,238,0.3)_inset,0px_0.5px_1px_0px_rgba(34,211,238,0.5)] transition-all duration-100 active:scale-98 font-semibold text-lg tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-cyan-400"
               style={{
-                backgroundColor: "var(--accent-cyan)",
-                filter: "brightness(1.2)"
+                background: "linear-gradient(to bottom, rgba(10, 14, 42, 0.9), rgba(7, 6, 23, 0.95))",
               }}
-            />
-          </button>
+            >
+              Register Now →
+            </button>
+          </NoiseBackground>
 
           {/* Secondary CTA */}
           <button 
-            className="hero-cta-button px-10 py-4 rounded font-medium text-lg tracking-wide transition-all duration-300 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]"
+            className="hero-cta-button px-10 py-4 rounded-full font-medium text-lg tracking-wide transition-all duration-300 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]"
             style={{
               border: "2px solid rgba(255, 255, 255, 0.2)",
               color: "var(--text-primary)",

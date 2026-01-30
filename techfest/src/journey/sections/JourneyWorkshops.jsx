@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { PinContainer } from "../../components/ui/3d-pin"
 
 /**
  * Journey Workshops Section
@@ -207,32 +208,58 @@ export default function JourneyWorkshops() {
             and accelerate learning through practical application.
           </p>
 
-          {/* Feature list with enhanced styling */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 pl-6">
-            {["Hands-on Workshops", "24-Hour Hackathon", "Mentor Support", "Real-World Projects"].map((feature, i) => (
-              <div 
-                key={i} 
-                className="flex items-center gap-3 p-4 rounded-lg group hover:scale-105 transition-transform duration-300"
-                style={{
-                  background: "rgba(236, 72, 153, 0.05)",
-                  border: "1px solid rgba(236, 72, 153, 0.2)",
-                  boxShadow: "0 0 20px rgba(236, 72, 153, 0.1)"
-                }}
+          {/* 3D Pin Workshop Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+            {[
+              {
+                title: "AI & Machine Learning",
+                description: "Build intelligent systems with hands-on ML projects",
+                icon: "🧠",
+                color: "#8B5CF6"
+              },
+              {
+                title: "Web3 & Blockchain",
+                description: "Dive into decentralized applications and smart contracts",
+                icon: "⛓️",
+                color: "#EC4899"
+              },
+              {
+                title: "IoT & Robotics",
+                description: "Create connected devices and autonomous systems",
+                icon: "🤖",
+                color: "#22D3EE"
+              },
+              {
+                title: "Full-Stack Development",
+                description: "Master modern web development from frontend to backend",
+                icon: "💻",
+                color: "#A855F7"
+              }
+            ].map((workshop, i) => (
+              <PinContainer
+                key={i}
+                title={workshop.title}
+                href="#"
+                containerClassName="workshops-pin-card"
               >
-                <div 
-                  className="w-2 h-2 rounded-full"
-                  style={{ 
-                    backgroundColor: "var(--accent-color)",
-                    boxShadow: `0 0 10px var(--accent-color)`
-                  }}
-                />
-                <span 
-                  className="text-sm font-medium"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {feature}
-                </span>
-              </div>
+                <div className="flex basis-full flex-col p-4 tracking-tight text-slate-100/50 w-[20rem] h-[20rem]">
+                  <div className="text-5xl mb-4">{workshop.icon}</div>
+                  <h3 className="max-w-xs !pb-2 !m-0 font-bold text-base text-slate-100">
+                    {workshop.title}
+                  </h3>
+                  <div className="text-base !m-0 !p-0 font-normal">
+                    <span className="text-slate-500">
+                      {workshop.description}
+                    </span>
+                  </div>
+                  <div 
+                    className="flex flex-1 w-full rounded-lg mt-4"
+                    style={{
+                      background: `linear-gradient(to bottom right, ${workshop.color}, transparent)`
+                    }}
+                  />
+                </div>
+              </PinContainer>
             ))}
           </div>
         </div>
