@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import useLenis from "./hooks/useLenis"
+import Scene from "./three/Scene"
 import Car from "./journey/components/Car"
 import BackgroundEnvironment from "./journey/components/BackgroundEnvironment"
 import CustomCursor from "./components/cursor/CustomCursor"
@@ -33,9 +34,21 @@ gsap.registerPlugin(ScrollTrigger)
 export default function AppJourney() {
   useLenis()
   const mainRef = useRef(null)
+  const progressRef = useRef(0)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // ===== SCROLL PROGRESS TRACKING =====
+      ScrollTrigger.create({
+        trigger: document.body,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+        onUpdate: (self) => {
+          progressRef.current = self.progress
+        }
+      })
+
       // ===== PARALLAX SYSTEM =====
       // Get all background layers
       const layers = gsap.utils.toArray(".bg-layer")
@@ -172,14 +185,21 @@ export default function AppJourney() {
       className="relative w-full text-white overflow-x-hidden"
       style={{ backgroundColor: "var(--bg-base)" }}
     >
+      {/* Three.js Scene - Behind everything */}
+      <Scene scrollProgress={progressRef} />
+
       {/* Custom Cursor */}
       <CustomCursor />
 
-      {/* Fixed Background with Parallax */}
-      <BackgroundEnvironment />
+      {/* Fixed Background with Parallax - Reduced opacity */}
+      <div style={{ opacity: 0.3 }}>
+        <BackgroundEnvironment />
+      </div>
 
-      {/* Fixed Car */}
-      <Car />
+      {/* Fixed Car - Hidden (replaced by 3D) */}
+      <div style={{ display: "none" }}>
+        <Car />
+      </div>
 
       {/* Scrollable Content */}
       <div className="relative z-10">
