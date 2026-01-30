@@ -44,12 +44,7 @@ export default function AppJourney() {
   const accentRef = useRef("#00E5FF")
   const lastScrollRef = useRef(0)
   const lastTimeRef = useRef(0)
-  const targetProgressRef = useRef(0)
-  const worldProgressRef = useRef(0)
-  const pauseTimerRef = useRef(0)
-  const isPausedRef = useRef(false)
   const lastPhaseIdRef = useRef("HERO")
-  const textStateRef = useRef("IDLE")
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -72,7 +67,6 @@ export default function AppJourney() {
         onUpdate: (self) => {
           const progress = self.progress
           const now = performance.now()
-          targetProgressRef.current = progress
           const scrollY = self.scroll()
           const lastScroll = lastScrollRef.current
           const lastTime = lastTimeRef.current || now
@@ -97,8 +91,6 @@ export default function AppJourney() {
 
           if (lastPhaseIdRef.current !== activePhase.id) {
             lastPhaseIdRef.current = activePhase.id
-            isPausedRef.current = true
-            pauseTimerRef.current = 0
           }
 
           phaseProgressRef.current = Math.min(1, Math.max(0, phaseProgress))
@@ -121,24 +113,6 @@ export default function AppJourney() {
             })
           }
         }
-      })
-
-      // ===== WORLD PROGRESS SMOOTHING =====
-      const pauseDuration = 0.45
-      const smoothFactor = 0.08
-
-      gsap.ticker.add(() => {
-        const delta = gsap.ticker.deltaRatio() / 60
-        if (isPausedRef.current) {
-          pauseTimerRef.current += delta
-          if (pauseTimerRef.current < pauseDuration) {
-            return
-          }
-          isPausedRef.current = false
-          pauseTimerRef.current = 0
-        }
-
-        worldProgressRef.current += (targetProgressRef.current - worldProgressRef.current) * smoothFactor
       })
 
       // ===== PARALLAX SYSTEM =====
@@ -305,9 +279,6 @@ export default function AppJourney() {
         phaseProgress={phaseProgressRef}
         activeCardIndex={activeCardIndexRef}
         activeAccent={accentRef}
-        worldProgress={worldProgressRef}
-        isPaused={isPausedRef}
-        textState={textStateRef}
       />
 
       {/* Fixed Background with Parallax - Hidden (using unified background instead) */}
@@ -327,13 +298,13 @@ export default function AppJourney() {
         <JourneyHero />
 
         {/* About Section */}
-        <JourneyAbout textStateRef={textStateRef} />
+        <JourneyAbout />
 
         {/* Events Section */}
         <JourneyEvents activeCardIndexRef={activeCardIndexRef} />
 
         {/* Schedule Section */}
-        <JourneySchedule textStateRef={textStateRef} />
+        <JourneySchedule />
 
         {/* Workshops Section */}
         <JourneyWorkshops />

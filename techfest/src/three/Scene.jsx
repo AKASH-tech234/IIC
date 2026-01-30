@@ -11,7 +11,7 @@ import City from "./City"
  * Scene Content - All 3D objects
  * Uses frameloop="demand" for performance
  */
-function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, worldProgress, isPaused, textState }) {
+function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent }) {
   const { invalidate } = useThree()
 
   useEffect(() => {
@@ -48,9 +48,6 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         phaseProgress={phaseProgress}
         activeCardIndex={activeCardIndex}
         activeAccent={activeAccent}
-        worldProgress={worldProgress}
-        isPaused={isPaused}
-        textState={textState}
       />
       <Road 
         motionDensity={motionDensity}
@@ -64,7 +61,6 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         scrollVelocity={scrollVelocity}
         motionDensity={motionDensity}
         activePhase={activePhase}
-        worldProgress={worldProgress}
       />
     </>
   )
@@ -87,7 +83,7 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
  * - z-10: Content
  * - z-20: Header
  */
-export default function Scene({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, worldProgress, isPaused, textState }) {
+export default function Scene({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent }) {
   return (
     <div 
       className="fixed inset-0 pointer-events-none"
@@ -117,9 +113,6 @@ export default function Scene({ scrollProgress, scrollVelocity, motionDensity, a
           phaseProgress={phaseProgress}
           activeCardIndex={activeCardIndex}
           activeAccent={activeAccent}
-          worldProgress={worldProgress}
-          isPaused={isPaused}
-          textState={textState}
         />
       </Canvas>
     </div>

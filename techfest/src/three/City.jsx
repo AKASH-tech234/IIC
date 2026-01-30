@@ -7,13 +7,13 @@ import { useFrame } from "@react-three/fiber"
  * Simple box buildings along road sides
  * Moves slower than road: z = scrollProgress * 40
  */
-export default function City({ scrollProgress, motionDensity, activePhase, worldProgress }) {
+export default function City({ scrollProgress, motionDensity, activePhase }) {
   const nearRef = useRef()
   const midRef = useRef()
   const farRef = useRef()
 
   useFrame(() => {
-    const progress = worldProgress?.current ?? scrollProgress.current 
+    const progress = scrollProgress.current || 0
     const density = motionDensity.current || 0
     const phase = activePhase?.current || "HERO"
     const eventMultiplier = phase === "EVENTS_SIDE_PROFILE" ? 0.2 : 1

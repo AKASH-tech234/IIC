@@ -14,7 +14,7 @@ import { Carousel, Card } from "../../components/ui/apple-cards-carousel"
  * - Road markers appear
  * - Background transitions smoothly
  */
-export default function JourneySchedule({ textStateRef }) {
+export default function JourneySchedule() {
   const sectionRef = useRef(null)
 
   useEffect(() => {
@@ -78,23 +78,6 @@ export default function JourneySchedule({ textStateRef }) {
         }
       })
 
-      ScrollTrigger.create({
-        trigger: sectionRef.current,
-        start: "top 75%",
-        end: "top 30%",
-        onEnter: () => {
-          if (textStateRef) textStateRef.current = "TEXT_ACTIVE"
-        },
-        onLeave: () => {
-          if (textStateRef) textStateRef.current = "MOTION_ALLOWED"
-        },
-        onEnterBack: () => {
-          if (textStateRef) textStateRef.current = "TEXT_ACTIVE"
-        },
-        onLeaveBack: () => {
-          if (textStateRef) textStateRef.current = "EXIT"
-        }
-      })
     }, sectionRef)
 
     return () => ctx.revert()

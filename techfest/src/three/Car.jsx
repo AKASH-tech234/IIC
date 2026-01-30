@@ -12,7 +12,7 @@ import * as THREE from "three"
  * - Subtle vibration effect
  * - Neon accents and emissive headlights
  */
-export default function Car({ scrollProgress, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, worldProgress, isPaused, textState }) {
+export default function Car({ scrollProgress, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent }) {
   const carRef = useRef()
   const frontLeftWheelRef = useRef()
   const frontRightWheelRef = useRef()
@@ -56,9 +56,6 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
     const density = motionDensity.current || 0
     const phase = activePhase.current || "HERO"
     const phaseProgressValue = phaseProgress.current || 0
-    const worldProgressValue = worldProgress?.current ?? progress
-    const isPausedPhase = isPaused?.current ?? false
-    const isTextActive = textState?.current === "TEXT_ACTIVE"
 
     if (phase !== lastPhaseRef.current) {
       lastPhaseRef.current = phase
@@ -70,17 +67,7 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
     const isTurningPhase = phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD"
 
     const curve = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? turnCurve : straightCurve
-    const sectionConfig = {
-      HERO: { span: 0.02, base: 0.0, start: 0.0, length: 0.12 },
-      ROTATE_TO_SIDE: { span: 0.18, base: 0.02, start: 0.12, length: 0.16 },
-      EVENTS_SIDE_PROFILE: { span: 0.04, base: 0.2, start: 0.28, length: 0.34 },
-      ROTATE_FORWARD: { span: 0.12, base: 0.24, start: 0.62, length: 0.16 },
-      FORWARD_CONTENT: { span: 0.08, base: 0.36, start: 0.78, length: 0.22 }
-    }
-    const { span, base, start, length } = sectionConfig[phase] || sectionConfig.HERO
-    const sectionT = Math.min(1, Math.max(0, (worldProgressValue - start) / length))
-    const speedFactor = isTextActive ? 0.2 : 1
-    const curveProgress = Math.min(1, Math.max(0, base + sectionT * span * speedFactor))
+    const curveProgress = phaseProgressValue
     const curvePoint = curve.getPoint(curveProgress)
     const curveTangent = curve.getTangent(curveProgress).normalize()
 
@@ -146,10 +133,6 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
       carRef.current.position.y -= 0.04
     }
 
-    if (isPausedPhase || isTextActive) {
-      carRef.current.position.lerp(carRef.current.position, 0.4)
-      return
-    }
   })
 
   return (
