@@ -38,13 +38,13 @@ export default function GlassNavbar() {
       }`}
       style={{
         background: isScrolled 
-          ? "rgba(7, 6, 23, 0.7)" 
-          : "rgba(7, 6, 23, 0.3)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+          ? "linear-gradient(to bottom, rgba(0, 20, 30, 0.75), rgba(0, 20, 30, 0.25))" 
+          : "linear-gradient(to bottom, rgba(0, 20, 30, 0.6), rgba(0, 20, 30, 0.15))",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(0, 255, 255, 0.08)",
         boxShadow: isScrolled 
-          ? "0 8px 32px rgba(0, 0, 0, 0.3)" 
+          ? "0 8px 32px rgba(0, 0, 0, 0.25)" 
           : "none"
       }}
     >

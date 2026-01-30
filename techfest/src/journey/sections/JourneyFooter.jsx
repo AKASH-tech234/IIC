@@ -13,15 +13,15 @@ import WorldMap from "../../components/ui/world-map"
 export default function JourneyFooter() {
   return (
     <footer className="relative z-20 w-full bg-[#0a0e1a] border-t border-white/10 py-16">
-      <div className="w-full px-6 md:px-8 max-w-[1400px] mx-auto">
+      <div className="w-full px-6 md:px-8 max-w-[1400px] mx-auto section-stack">
         
         {/* World Map Section */}
         <div className="mb-16">
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 section-stack">
             <p className="text-sm font-mono tracking-wider uppercase text-cyan-400 mb-2">
               Global Reach
             </p>
-            <h3 className="text-3xl md:text-4xl font-bold text-white">
+            <h3 className="text-3xl md:text-4xl font-bold text-white section-title">
               Join Participants from{" "}
               {"Across India".split("").map((char, idx) => (
                 <motion.span
@@ -35,7 +35,7 @@ export default function JourneyFooter() {
                 </motion.span>
               ))}
             </h3>
-            <p className="text-gray-400 mt-4">
+            <p className="text-gray-400 mt-2 section-body">
               MNNIT Allahabad welcomes innovators and tech enthusiasts from every corner of India
             </p>
           </div>
@@ -67,12 +67,12 @@ export default function JourneyFooter() {
         </div>
 
         {/* Main content */}
-        <div className="text-center mb-8">
-          <h3 className="text-3xl font-bold text-white mb-4">
+        <div className="text-center mb-8 section-stack">
+          <h3 className="text-3xl font-bold text-white mb-2 section-title">
             MNNIT <span className="text-cyan-400">TECHSUMMIT</span> 2026
           </h3>
           
-          <p className="text-gray-400 mb-6">
+          <p className="text-gray-400 section-body">
             A journey through innovation, collaboration, and technology
           </p>
 

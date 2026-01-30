@@ -74,6 +74,8 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
     const basePosition = curvePoint.clone().add(new THREE.Vector3(0, 0.3, 0))
     const targetYaw = Math.atan2(curveTangent.x, curveTangent.z)
 
+    const lerpSpeed = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.05 : 0.12
+
     if (isEventsPhase) {
       if (!lockedPoseRef.current) {
         lockedPoseRef.current = {
@@ -81,11 +83,11 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
           yaw: targetYaw
         }
       }
-      carRef.current.position.lerp(lockedPoseRef.current.position, 0.1)
-      carRef.current.rotation.y += (lockedPoseRef.current.yaw - carRef.current.rotation.y) * 0.1
+      carRef.current.position.lerp(lockedPoseRef.current.position, lerpSpeed)
+      carRef.current.rotation.y += (lockedPoseRef.current.yaw - carRef.current.rotation.y) * lerpSpeed
     } else {
-      carRef.current.position.lerp(basePosition, 0.12)
-      carRef.current.rotation.y += (targetYaw - carRef.current.rotation.y) * 0.12
+      carRef.current.position.lerp(basePosition, lerpSpeed)
+      carRef.current.rotation.y += (targetYaw - carRef.current.rotation.y) * lerpSpeed
     }
 
     const vibrationIntensity = isEventsPhase ? 0.003 : isHeroPhase ? 0.01 : 0.02
@@ -95,7 +97,8 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
     const tilt = isHeroPhase ? 0 : Math.sin(progress * 5) * (isEventsPhase ? 0.01 : 0.03)
     carRef.current.rotation.x = tilt
 
-    const wheelRotation = isHeroPhase || isEventsPhase ? 0 : (progress - 0.05) * Math.PI * 14
+    const curveSlowdown = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.4 : 1
+    const wheelRotation = isHeroPhase || isEventsPhase ? 0 : (progress - 0.05) * Math.PI * 14 * curveSlowdown
     if (frontLeftWheelRef.current) frontLeftWheelRef.current.rotation.x = wheelRotation
     if (frontRightWheelRef.current) frontRightWheelRef.current.rotation.x = wheelRotation
     if (rearLeftWheelRef.current) rearLeftWheelRef.current.rotation.x = wheelRotation

@@ -117,11 +117,11 @@ export default function JourneyHero() {
       }}
     >
       {/* Content Container */}
-      <div className="relative z-10 w-full px-6 md:px-8 text-center">
+      <div className="relative z-10 w-full px-6 md:px-8 text-center section-stack">
         
         {/* H1: Event Title - Letter-by-letter reveal (Tron Display) */}
-        <h1 className="mb-6" aria-label="MNNIT TechSummit 2026">
-          {"MNNIT TECHSUMMIT 2026".split("").map((char, i) => (
+        <h1 className="mb-4 section-title" aria-label="MNNIT TechSummit 2026">
+          {"MNNIT TECHSUMMIT   2026".split("").map((char, i) => (
             <span 
               key={i}
               className="hero-title-letter inline-block"
@@ -143,7 +143,7 @@ export default function JourneyHero() {
 
         {/* H2: Tagline - Tron Display Style */}
         <h2 
-          className="hero-tagline mb-8"
+          className="hero-tagline mb-6 section-title"
           style={{
             fontFamily: "var(--font-display)",
             fontSize: "clamp(1.2rem, 2vw, 1.6rem)",
@@ -158,7 +158,7 @@ export default function JourneyHero() {
 
         {/* Description - Space Grotesk Body */}
         <p 
-          className="hero-description mb-12"
+          className="hero-description mb-10 section-body"
           style={{
             fontFamily: "var(--font-body)",
             fontSize: "clamp(1rem, 2vw, 1.125rem)",
