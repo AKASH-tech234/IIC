@@ -13,29 +13,31 @@
    ============================================ */
 
 :root {
-  /* Background Colors - Midnight Purple-Blue */
+  /* Background Colors - Aurora Midnight */
   --bg-base: #070617;
-  --bg-deep-navy: #120A2A;
+  --bg-deep-navy: #0A0E2A;
   --bg-city-shadow: #05010F;
   
-  /* Accent Colors - Purple Neon Primary */
-  --accent-cyan: #22D3EE;      /* Hero, About */
-  --accent-blue: #3B82F6;      /* Events */
-  --accent-purple: #7C3AED;    /* Schedule - Primary Purple Neon */
-  --accent-magenta: #EC4899;   /* Workshops */
-  --accent-lime: #22C55E;      /* Final CTA */
+  /* Accent Colors - Aurora Inspired */
+  --accent-cyan: #22D3EE;      /* Aurora cyan */
+  --accent-blue: #3B82F6;      /* Aurora blue */
+  --accent-purple: #8B5CF6;    /* Aurora purple */
+  --accent-magenta: #EC4899;   /* Aurora magenta */
+  --accent-lime: #22C55E;      /* Aurora green */
   
   /* Active Accent - Changes per section */
-  --accent-color: #7C3AED;
+  --accent-color: #22D3EE;
   
-  /* City Theme Colors */
-  --window-light: rgba(255, 255, 255, 0.1);
-  --neon-glow: rgba(124, 58, 237, 0.4);
+  /* Glass Theme Colors */
+  --glass-light: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(20px);
   
-  /* Typography - Better Contrast */
-  --text-primary: #EDE9FE;
-  --text-secondary: #C4B5FD;
-  --text-tertiary: #A78BFA;
+  /* Typography - Aurora Palette */
+  --text-primary: #F0F4FF;     /* Bright white-blue */
+  --text-secondary: #C9D6FF;   /* Light blue-white */
+  --text-tertiary: #8B9FD9;    /* Muted blue */
+  --text-accent: #22D3EE;      /* Cyan accent */
 }
 
 /* ============================================
@@ -48,6 +50,7 @@ body {
     font-family: var(--font-body);
     overflow-x: hidden;
     cursor: none; /* Hide default cursor for custom cursor */
+    letter-spacing: -0.01em; /* Tighter modern spacing */
 }
 
 /* Show default cursor on touch devices */
@@ -57,18 +60,54 @@ body {
   }
 }
 
+/* Glass morphism utility classes */
+.glass-panel {
+  background: rgba(10, 14, 42, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glass-card {
+  background: rgba(10, 14, 42, 0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    font-weight: 700;
 }
 
 /* Typography Safety Rules */
 h1, h2, h3 {
   line-height: 1.1;
+  color: var(--text-primary);
+}
+
+h1 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 900;
+}
+
+h2 {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 800;
+}
+
+h3 {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 700;
 }
 
 p {
-  line-height: 1.6;
+  line-height: 1.7;
   max-width: 64ch;
+  color: var(--text-secondary);
+  font-size: clamp(1rem, 2vw, 1.125rem);
 }
 
 /* Section Spacing - Prevent Overlap */
@@ -337,6 +376,15 @@ html.lenis, html.lenis body {
   }
   100% {
     transform: translateX(100%);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 

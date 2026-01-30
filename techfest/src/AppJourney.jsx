@@ -3,6 +3,7 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import useLenis from "./hooks/useLenis"
 import Scene from "./three/Scene"
+import Navbar from "./layout/Navbar"
 import Car from "./journey/components/Car"
 import BackgroundEnvironment from "./journey/components/BackgroundEnvironment"
 import CustomCursor from "./components/cursor/CustomCursor"
@@ -185,14 +186,17 @@ export default function AppJourney() {
       className="relative w-full text-white overflow-x-hidden"
       style={{ backgroundColor: "var(--bg-base)" }}
     >
+      {/* Glass Navbar */}
+      <Navbar />
+
       {/* Three.js Scene - Behind everything */}
       <Scene scrollProgress={progressRef} />
 
       {/* Custom Cursor */}
       <CustomCursor />
 
-      {/* Fixed Background with Parallax - Reduced opacity */}
-      <div style={{ opacity: 0.3 }}>
+      {/* Fixed Background with Parallax - Hidden (using shader + 3D instead) */}
+      <div style={{ display: "none" }}>
         <BackgroundEnvironment />
       </div>
 

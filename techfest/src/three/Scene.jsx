@@ -40,14 +40,15 @@ function SceneContent({ scrollProgress }) {
 export default function Scene({ scrollProgress }) {
   return (
     <div 
-      className="fixed inset-0 z-0 pointer-events-none"
+      className="fixed inset-0 pointer-events-none"
       style={{ 
+        zIndex: 5, // Above shader, below content
         opacity: 1,
         transition: "opacity 0.5s ease"
       }}
     >
       <Canvas
-        frameloop="demand"
+        frameloop="always"
         camera={{ position: [0, 2.2, 6], fov: 75 }}
         gl={{ 
           antialias: true,

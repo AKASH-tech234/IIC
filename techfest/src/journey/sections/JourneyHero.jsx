@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
+import AnimatedShaderBackground from "../../components/ui/AnimatedShaderBackground"
 
 /**
  * Journey Hero Section
@@ -8,11 +9,11 @@ import gsap from "gsap"
  * - MNNIT TECHSUMMIT 2026
  * - Innovate. Collaborate. Accelerate.
  * - Description
- * - CTAs: Register Now, Explore the Journey
+ * - CTAs: Register Now, Explore Events
  * 
  * Visual State:
- * - Car is idle
- * - Background slowly moving
+ * - Animated aurora shader background
+ * - Letter-by-letter title reveal
  * - Minimal UI, strong typography
  */
 export default function JourneyHero() {
@@ -99,6 +100,17 @@ export default function JourneyHero() {
       id="journey-hero"
       className="relative min-h-screen w-full flex flex-col items-center justify-center px-6 py-20"
     >
+      {/* Animated Shader Background */}
+      <AnimatedShaderBackground />
+      
+      {/* Dark overlay for text readability */}
+      <div 
+        className="absolute inset-0 z-[1]"
+        style={{
+          background: "linear-gradient(to bottom, rgba(7, 6, 23, 0.4) 0%, rgba(7, 6, 23, 0.8) 100%)"
+        }}
+      />
+
       {/* Content Container - Centered, Max Width */}
       <div className="relative z-10 text-center w-full max-w-5xl mx-auto">
         

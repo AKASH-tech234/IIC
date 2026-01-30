@@ -1,28 +1,34 @@
 import { useEffect } from "react"
 import { useThree } from "@react-three/fiber"
+import { useFrame } from "@react-three/fiber"
 
 /**
- * Fixed Third-Person Cinematic Camera
+ * Dynamic Chase Camera
  * 
- * Position: [0, 2.2, 6]
- * LookAt: [0, 1.2, 0]
- * Minor adjustments on scroll only
+ * Follows the car as it moves forward
+ * Zooms in closer at footer (end of scroll)
+ * Creates cinematic forward motion effect
  */
 export default function Camera({ scrollProgress }) {
   const { camera } = useThree()
-  const baseZ = 6
-  const baseY = 2.2
 
-  useEffect(() => {
-    // Minor camera movement based on scroll
+  useFrame(() => {
     const progress = scrollProgress.current || 0
     
-    camera.position.z = baseZ - progress * 0.6
-    camera.position.y = baseY + progress * 0.2
+    // Camera follows car's Z position but stays behind it
+    // At 0%: camera at z = 6, car at z = -20 (far away)
+    // At 100%: camera at z = 4, car at z = 2 (close up)
+    const cameraZ = 6 - (progress * 2) // Moves from 6 to 4
+    const cameraY = 2.2 - (progress * 0.5) // Lowers slightly from 2.2 to 1.7
+    
+    // Smooth camera movement
+    camera.position.z += (cameraZ - camera.position.z) * 0.1
+    camera.position.y += (cameraY - camera.position.y) * 0.1
     camera.position.x = 0
     
-    // Always look at car area
-    camera.lookAt(0, 1.2, 0)
+    // Look at car position (which changes with scroll)
+    const carZ = -20 + (progress * 22)
+    camera.lookAt(0, 0.5, carZ)
   })
 
   return null
