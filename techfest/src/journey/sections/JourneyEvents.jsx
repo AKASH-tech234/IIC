@@ -174,9 +174,10 @@ export default function JourneyEvents() {
     <section
       ref={sectionRef}
       id="journey-events"
-      className="relative min-h-screen w-full flex flex-col justify-center px-6 py-32"
+      className="relative min-h-screen w-full flex flex-col justify-center py-32"
     >
-      <div className="relative z-10 max-w-6xl mx-auto w-full">
+      {/* Content Container */}
+      <div className="relative z-10 w-full px-6 md:px-8">
         
         {/* Section marker */}
         <div className="mb-6 flex items-center gap-4 justify-center">

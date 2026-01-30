@@ -139,29 +139,17 @@ export default function JourneyAbout() {
     <section
       ref={sectionRef}
       id="journey-about"
-      className="relative min-h-screen w-full flex items-center px-6 py-32"
+      className="relative min-h-screen w-full flex items-center py-32"
     >
-      {/* Expandable Cards Section */}
-      <div className="relative z-10 max-w-4xl mx-auto w-full mb-20">
-        <div className="text-center mb-12">
-          <p 
-            className="text-sm font-mono tracking-wider uppercase mb-2"
-            style={{ color: "var(--accent-color)" }}
-          >
-            Quick Info
-          </p>
-          <h3 
-            className="text-3xl md:text-4xl font-bold"
-            style={{ color: "var(--text-primary)" }}
-          >
-            Everything You Need to Know
-          </h3>
-        </div>
+      {/* Content Container */}
+      <div className="relative z-10 w-full px-6 md:px-8">
+        {/* Expandable Cards */}
         <ExpandableCards cards={whyAttendCards} />
-      </div>
-
-      {/* Glass Panel Card */}
-      <div className="relative z-10 max-w-4xl mx-auto w-full">
+        
+        {/* Divider */}
+        <div className="my-12 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        
+        {/* About Content */}
         
         {/* Section marker */}
         <div className="mb-8 flex items-center gap-4">

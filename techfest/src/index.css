@@ -1,43 +1,56 @@
+/* ============================================
+   IMPORTS - MUST BE FIRST
+   ============================================ */
+
 @import "tailwindcss";
 
+/* ============================================
+   TRON DESIGN SYSTEM - FONTS
+   Loaded via HTML <link> to avoid PostCSS @import ordering issues
+   ============================================ */
+
+/* ============================================
+   TRON DESIGN SYSTEM - THEME CONFIG
+   ============================================ */
+
 @theme {
-  --font-display: "Inter", "sans-serif";
-  --font-body: "Inter", "sans-serif";
-  --color-primary: #38bdf8;   /* Sky 400 */
+  --font-display: "Orbitron", system-ui, sans-serif;
+  --font-body: "Space Grotesk", system-ui, sans-serif;
+  --color-primary: #00E5FF;   /* Tron Cyan */
   --color-secondary: #a855f7; /* Purple 500 */
-  --color-accent: #4ade80;    /* Green 400 */
+  --color-accent: #00E5FF;    /* Tron Cyan */
 }
 
 /* ============================================
-   MIDNIGHT NEON CITY RUN THEME
+   TRON DESIGN SYSTEM - THEME
    ============================================ */
 
 :root {
-  /* Background Colors - Aurora Midnight */
-  --bg-base: #070617;
-  --bg-deep-navy: #0A0E2A;
-  --bg-city-shadow: #05010F;
+  /* Layout Constraints */
+  --header-height: 72px;       /* Fixed header height for layout calculations */
   
-  /* Accent Colors - Aurora Inspired */
-  --accent-cyan: #22D3EE;      /* Aurora cyan */
-  --accent-blue: #3B82F6;      /* Aurora blue */
-  --accent-purple: #8B5CF6;    /* Aurora purple */
-  --accent-magenta: #EC4899;   /* Aurora magenta */
-  --accent-lime: #22C55E;      /* Aurora green */
+  /* Background Colors - Tron Void (Near-Black Base) */
+  --bg-base: #020205;          /* True near-black void */
+  --bg-deep-navy: #04030a;     /* Secondary void */
+  --bg-city-shadow: #020205;   /* Darkness anchor */
   
-  /* Active Accent - Changes per section */
-  --accent-color: #22D3EE;
+  /* Tron Accent Color (Single Source of Truth) */
+  --accent-color: #00E5FF;     /* Tron cyan-blue - precision + energy */
+  
+  /* Secondary Accents (Minimal Use) */
+  --accent-purple: #8B5CF6;    /* Secondary accent */
+  --accent-green: #10B981;     /* Tertiary accent */
   
   /* Glass Theme Colors */
   --glass-light: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-blur: blur(20px);
   
-  /* Typography - Aurora Palette */
-  --text-primary: #F0F4FF;     /* Bright white-blue */
-  --text-secondary: #C9D6FF;   /* Light blue-white */
-  --text-tertiary: #8B9FD9;    /* Muted blue */
-  --text-accent: #22D3EE;      /* Cyan accent */
+  /* Typography - Tron Palette (Pure, High Contrast) */
+  --text-primary: #FFFFFF;     /* Pure white for headings */
+  --text-secondary: rgba(255, 255, 255, 0.85);  /* High contrast body */
+  --text-tertiary: rgba(255, 255, 255, 0.75);   /* Muted text */
+  --text-accent: #00E5FF;      /* Tron accent text */
 }
 
 /* ============================================
@@ -48,7 +61,6 @@ body {
     background-color: var(--bg-base);
     color: var(--text-primary);
     font-family: var(--font-body);
-    overflow-x: hidden;
     cursor: none; /* Hide default cursor for custom cursor */
     letter-spacing: -0.01em; /* Tighter modern spacing */
 }
@@ -76,26 +88,45 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* ============================================
+   TRON TYPOGRAPHY HIERARCHY
+   ============================================ */
+
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
-    font-weight: 700;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.1;
 }
 
-/* Typography Safety Rules */
-h1, h2, h3 {
-  line-height: 1.1;
-  color: var(--text-primary);
-}
-
+/* H1 - Event Titles (Tron Display) */
 h1 {
-  font-size: clamp(2.5rem, 8vw, 5rem);
-  font-weight: 900;
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
+/* H2 - Section Taglines (Tron Display) */
 h2 {
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  font-weight: 800;
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* H3 - Section Titles */
+h3 {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Body Text (Space Grotesk) */
+p, body {
+  font-family: var(--font-body);
+  line-height: 1.6;
 }
 
 h3 {

@@ -112,7 +112,7 @@ export default function Software() {
     <section
       ref={sectionRef}
       id="software"
-      className="story-section relative min-h-screen w-full py-32 px-6"
+      className="story-section relative min-h-screen w-full py-32"
       data-color="green"
     >
       {/* Background Elements */}
@@ -126,7 +126,7 @@ export default function Software() {
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 max-w-6xl mx-auto">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-8">
         <div className="w-full md:w-1/2 md:pr-16">
           
           {/* Section Label */}

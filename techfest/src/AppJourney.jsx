@@ -158,11 +158,8 @@ export default function AppJourney() {
                 accentColor = "#22C55E" // Lime
               }
               
-              // Update CSS variable for global accent
-              gsap.to(":root", {
-                "--accent-color": accentColor,
-                duration: 0.8
-              })
+              // Update CSS variable for global accent (FIX: Use document.documentElement)
+              document.documentElement.style.setProperty('--accent-color', accentColor)
               
               // Update underglow
               gsap.to(carGlow, {
@@ -183,19 +180,64 @@ export default function AppJourney() {
   return (
     <main 
       ref={mainRef}
-      className="relative w-full text-white overflow-x-hidden"
+      className="relative text-white"
       style={{ backgroundColor: "var(--bg-base)" }}
     >
       {/* Glass Navbar */}
       <Navbar />
 
-      {/* Three.js Scene - Behind everything */}
-      <Scene scrollProgress={progressRef} />
-
       {/* Custom Cursor */}
       <CustomCursor />
 
-      {/* Fixed Background with Parallax - Hidden (using shader + 3D instead) */}
+      {/* ===== UNIFIED BACKGROUND SYSTEM ===== */}
+      {/* Z-INDEX LAYERING (Bottom to Top):
+           z-0: Tron void background
+           z-[1]: Vignette overlay  
+           z-[2]: Three.js Scene (rendered in Scene.jsx with z-0 internally)
+           z-10: Scrollable content
+           z-20: Header/Navbar
+      */}
+      
+      {/* Tron Void Background - Consistent across entire page */}
+      <div 
+        className="fixed inset-0 z-0"
+        style={{
+          background: `
+            radial-gradient(
+              1200px 600px at 25% 35%,
+              rgba(0, 229, 255, 0.06),
+              transparent 60%
+            ),
+            linear-gradient(
+              180deg,
+              #020205 0%,
+              #04030a 40%,
+              #020205 100%
+            )
+          `
+        }}
+      />
+
+      {/* Vignette - Cinematic darkness framing for content/car contrast */}
+      <div 
+        className="fixed inset-0 z-[5] pointer-events-none"
+        style={{
+          background: `
+            radial-gradient(
+              ellipse at center,
+              rgba(0, 0, 0, 0) 35%,
+              rgba(0, 0, 0, 0.4) 70%,
+              rgba(0, 0, 0, 0.7) 100%
+            )
+          `
+        }}
+      />
+
+      {/* Three.js Scene - Above unified background, behind content */}
+      {/* Scene.jsx internally uses z-0, positioned here at z-[2] layer */}
+      <Scene scrollProgress={progressRef} />
+
+      {/* Fixed Background with Parallax - Hidden (using unified background instead) */}
       <div style={{ display: "none" }}>
         <BackgroundEnvironment />
       </div>
@@ -205,7 +247,7 @@ export default function AppJourney() {
         <Car />
       </div>
 
-      {/* Scrollable Content */}
+      {/* Scrollable Content - Above all backgrounds */}
       <div className="relative z-10">
         
         {/* Hero Section */}

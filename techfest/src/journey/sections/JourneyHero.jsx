@@ -1,22 +1,30 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
-import AnimatedShaderBackground from "../../components/ui/AnimatedShaderBackground"
-import { Highlight } from "../../components/ui/hero-highlight"
-import { NoiseBackground } from "../../components/ui/noise-background"
 
 /**
  * Journey Hero Section
  * 
- * Content:
- * - MNNIT TECHSUMMIT 2026
- * - Innovate. Collaborate. Accelerate.
- * - Description
- * - CTAs: Register Now, Explore Events
+ * INTRO PHASE OF THE JOURNEY
  * 
- * Visual State:
- * - Animated aurora shader background
- * - Letter-by-letter title reveal
- * - Minimal UI, strong typography
+ * Content (Spec-locked):
+ * - H1: "MNNIT TechSummit 2026"
+ * - H2: "Innovate. Collaborate. Accelerate."
+ * - Description: Summit overview
+ * - CTAs: "Register Now", "Explore Events"
+ * 
+ * Visual Design:
+ * - Clean dark gradient background
+ * - Pure white typography
+ * - Minimal, professional aesthetic
+ * - Letter-by-letter title reveal (GSAP)
+ * 
+ * Three.js Context (Future Integration):
+ * - 3D scene renders behind this section (z-index: 0)
+ * - Car positioned at bottom-center during Hero
+ * - Camera in rear-view position (forward journey)
+ * - No 3D motion during initial Hero animations
+ * - 3D elements become active during scroll transitions
+ * - Scene remains calm here; motion begins on scroll
  */
 export default function JourneyHero() {
   const containerRef = useRef(null)
@@ -100,34 +108,32 @@ export default function JourneyHero() {
     <section
       ref={containerRef}
       id="journey-hero"
-      className="relative min-h-screen w-full flex flex-col items-center justify-center px-6 py-20"
+      className="relative w-full flex items-center justify-center"
+      style={{
+        // Professional header-aware layout
+        minHeight: "calc(100vh - var(--header-height))",
+        paddingTop: "calc(var(--header-height) + 2rem)",
+        paddingBottom: "2rem"
+      }}
     >
-      {/* Animated Shader Background */}
-      <AnimatedShaderBackground />
-      
-      {/* Dark overlay for text readability */}
-      <div 
-        className="absolute inset-0 z-[1]"
-        style={{
-          background: "linear-gradient(to bottom, rgba(7, 6, 23, 0.4) 0%, rgba(7, 6, 23, 0.8) 100%)"
-        }}
-      />
-
-      {/* Content Container - Centered, Max Width */}
-      <div className="relative z-10 text-center w-full max-w-5xl mx-auto">
+      {/* Content Container */}
+      <div className="relative z-10 w-full px-6 md:px-8 text-center">
         
-        {/* H1: Event Title - Letter-by-letter reveal */}
-        <h1 className="mb-6">
-          {"MNNIT TechSummit 2026".split("").map((char, i) => (
+        {/* H1: Event Title - Letter-by-letter reveal (Tron Display) */}
+        <h1 className="mb-6" aria-label="MNNIT TechSummit 2026">
+          {"MNNIT TECHSUMMIT 2026".split("").map((char, i) => (
             <span 
               key={i}
               className="hero-title-letter inline-block"
+              aria-hidden="true"
               style={{
-                fontSize: "clamp(2.5rem, 8vw, 5rem)",
-                fontWeight: 900,
-                color: "var(--text-primary)",
-                letterSpacing: "-0.02em",
-                lineHeight: 1.1
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(3rem, 6vw, 5.5rem)",
+                fontWeight: 600,
+                color: "#FFFFFF",
+                letterSpacing: "0.06em",
+                lineHeight: 1.1,
+                textTransform: "uppercase"
               }}
             >
               {char === " " ? "\u00A0" : char}
@@ -135,78 +141,91 @@ export default function JourneyHero() {
           ))}
         </h1>
 
-        {/* H2: Tagline */}
+        {/* H2: Tagline - Tron Display Style */}
         <h2 
           className="hero-tagline mb-8"
           style={{
-            fontSize: "clamp(1.25rem, 3vw, 2rem)",
-            fontWeight: 300,
-            color: "var(--text-secondary)",
-            letterSpacing: "0.05em"
+            fontFamily: "var(--font-display)",
+            fontSize: "clamp(1.2rem, 2vw, 1.6rem)",
+            fontWeight: 400,
+            color: "rgba(255, 255, 255, 0.85)",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase"
           }}
         >
-          Innovate. Collaborate. <Highlight className="text-white dark:text-white bg-gradient-to-r from-cyan-400 to-blue-500">Accelerate</Highlight>.
+          Innovate. Collaborate. Accelerate.
         </h2>
 
-        {/* Description */}
+        {/* Description - Space Grotesk Body */}
         <p 
-          className="hero-description mx-auto mb-12"
+          className="hero-description mb-12"
           style={{
+            fontFamily: "var(--font-body)",
             fontSize: "clamp(1rem, 2vw, 1.125rem)",
-            color: "var(--text-tertiary)",
-            maxWidth: "42rem",
-            lineHeight: 1.7
+            color: "rgba(255, 255, 255, 0.75)",
+            maxWidth: "52ch",
+            lineHeight: 1.6
           }}
         >
           A three-day technology summit by MNNIT Allahabad bringing together developers, engineers, and innovators through hackathons, workshops, and competitions.
         </p>
 
-        {/* CTA Buttons - Horizontal on desktop, stacked on mobile */}
+        {/* CTA Buttons - Tron Hard-Edge Style */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          {/* Primary CTA - with Noise Background */}
-          <NoiseBackground
-            containerClassName="w-fit p-2 rounded-full hero-cta-button"
-            gradientColors={[
-              "rgb(34, 211, 238)",  // cyan
-              "rgb(59, 130, 246)",  // blue
-              "rgb(139, 92, 246)",  // purple
-            ]}
-            noiseIntensity={0.15}
-            speed={0.15}
-          >
-            <button className="h-full w-full cursor-pointer rounded-full px-10 py-4 text-white shadow-[0px_2px_0px_0px_rgba(34,211,238,0.3)_inset,0px_0.5px_1px_0px_rgba(34,211,238,0.5)] transition-all duration-100 active:scale-98 font-semibold text-lg tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-cyan-400"
-              style={{
-                background: "linear-gradient(to bottom, rgba(10, 14, 42, 0.9), rgba(7, 6, 23, 0.95))",
-              }}
-            >
-              Register Now →
-            </button>
-          </NoiseBackground>
-
-          {/* Secondary CTA */}
+          
+          {/* Primary CTA - Tron Button (Hard Edges) */}
           <button 
-            className="hero-cta-button px-10 py-4 rounded-full font-medium text-lg tracking-wide transition-all duration-300 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]"
+            className="hero-cta-button px-10 py-4 font-semibold text-lg tracking-wide transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070617]"
             style={{
-              border: "2px solid rgba(255, 255, 255, 0.2)",
-              color: "var(--text-primary)",
-              backgroundColor: "transparent"
+              fontFamily: "var(--font-display)",
+              borderRadius: "6px",
+              border: "1px solid rgba(0, 229, 255, 0.4)",
+              background: "rgba(0, 229, 255, 0.08)",
+              color: "#FFFFFF",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 12px rgba(0, 229, 255, 0.6)"
+              e.currentTarget.style.borderColor = "rgba(0, 229, 255, 0.8)"
+              e.currentTarget.style.background = "rgba(0, 229, 255, 0.12)"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none"
+              e.currentTarget.style.borderColor = "rgba(0, 229, 255, 0.4)"
+              e.currentTarget.style.background = "rgba(0, 229, 255, 0.08)"
+            }}
+            aria-label="Register for MNNIT TechSummit 2026"
+          >
+            Register Now
+          </button>
+
+          {/* Secondary CTA - Tron Outline Button */}
+          <button 
+            className="hero-cta-button px-10 py-4 font-medium text-lg tracking-wide transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070617]"
+            style={{
+              fontFamily: "var(--font-display)",
+              borderRadius: "6px",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              color: "#FFFFFF",
+              backgroundColor: "transparent",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase"
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "var(--accent-color)"
-              e.currentTarget.style.backgroundColor = `${getComputedStyle(document.documentElement).getPropertyValue('--accent-color')}10`
+              e.currentTarget.style.boxShadow = "0 0 12px rgba(0, 229, 255, 0.4)"
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)"
-              e.currentTarget.style.backgroundColor = "transparent"
+              e.currentTarget.style.boxShadow = "none"
             }}
+            aria-label="Explore events at TechSummit"
           >
             Explore Events
           </button>
         </div>
       </div>
-
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent via-transparent to-[#050510]/40 pointer-events-none" />
     </section>
   )
 }

@@ -142,7 +142,7 @@ export default function Engineering() {
     <section
       ref={sectionRef}
       id="engineering"
-      className="story-section relative min-h-screen w-full py-32 px-6"
+      className="story-section relative min-h-screen w-full py-32"
       data-color="purple"
     >
       {/* Background Elements */}
@@ -156,7 +156,7 @@ export default function Engineering() {
       </div>
 
       {/* Content Container - Right aligned */}
-      <div className="relative z-10 max-w-6xl mx-auto">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-8">
         <div className="w-full md:w-1/2 md:ml-auto md:pl-16">
           
           {/* Section Label */}

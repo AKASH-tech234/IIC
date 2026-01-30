@@ -12,8 +12,8 @@ import WorldMap from "../../components/ui/world-map"
  */
 export default function JourneyFooter() {
   return (
-    <footer className="relative z-20 w-full bg-[#0a0e1a] border-t border-white/10 py-16 px-6">
-      <div className="max-w-7xl mx-auto">
+    <footer className="relative z-20 w-full bg-[#0a0e1a] border-t border-white/10 py-16">
+      <div className="w-full px-6 md:px-8 max-w-[1400px] mx-auto">
         
         {/* World Map Section */}
         <div className="mb-16">
@@ -35,7 +35,7 @@ export default function JourneyFooter() {
                 </motion.span>
               ))}
             </h3>
-            <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
+            <p className="text-gray-400 mt-4">
               MNNIT Allahabad welcomes innovators and tech enthusiasts from every corner of India
             </p>
           </div>
