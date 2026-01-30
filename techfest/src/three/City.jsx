@@ -1,147 +1,132 @@
-import { useRef } from "react"
+import * as THREE from "three"
+import { useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 
-/**
- * City Component
- * 
- * Simple box buildings along road sides
- * Moves slower than road: z = scrollProgress * 40
- */
-export default function City({ scrollProgress, motionDensity, activePhase }) {
-  const nearRef = useRef()
-  const midRef = useRef()
-  const farRef = useRef()
-
-  useFrame(() => {
-    const progress = scrollProgress.current || 0
-    const density = motionDensity.current || 0
-    const phase = activePhase?.current || "HERO"
-    const eventMultiplier = phase === "EVENTS_SIDE_PROFILE" ? 0.2 : 1
-    const turnMultiplier = phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD" ? 0.4 : 1
-
-    if (nearRef.current) {
-      nearRef.current.position.z = progress * (50 + density * 15) * eventMultiplier * turnMultiplier
-      nearRef.current.scale.set(
-        phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD" ? 1.15 : 1,
-        phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD" ? 0.9 : 1,
-        1
-      )
-    }
-    if (midRef.current) {
-      midRef.current.position.z = progress * (35 + density * 10) * eventMultiplier * turnMultiplier
-    }
-    if (farRef.current) {
-      farRef.current.position.z = progress * (20 + density * 6) * eventMultiplier * turnMultiplier
-    }
+const createMaterial = (color, emissiveScale, emissiveIntensity) =>
+  new THREE.MeshStandardMaterial({
+    color,
+    roughness: 0.9,
+    metalness: 0.1,
+    emissive: new THREE.Color(color).multiplyScalar(emissiveScale),
+    emissiveIntensity
   })
 
-  const nearBuildings = [
-    { x: -4.2, y: 1.2, z: -10, height: 3, width: 1.1, depth: 1.8 },
-    { x: -4.5, y: 2.2, z: -25, height: 4.8, width: 1.2, depth: 1.6 },
-    { x: -3.6, y: 1.6, z: -40, height: 3.4, width: 1, depth: 1.7 },
-    { x: -4.1, y: 2.8, z: -60, height: 5.6, width: 1.2, depth: 1.9 },
-    { x: -3.7, y: 2, z: -80, height: 4, width: 1.1, depth: 1.6 },
-    { x: -4.4, y: 1.8, z: -100, height: 3.6, width: 1, depth: 1.5 },
-    { x: 4.1, y: 1.8, z: -15, height: 4, width: 1.1, depth: 1.7 },
-    { x: 4.6, y: 1.1, z: -30, height: 2.6, width: 1.1, depth: 1.6 },
-    { x: 3.6, y: 2.6, z: -50, height: 5.2, width: 1.2, depth: 1.8 },
-    { x: 4.3, y: 1.4, z: -70, height: 3.1, width: 1, depth: 1.5 },
-    { x: 4.2, y: 2.3, z: -90, height: 4.6, width: 1.1, depth: 1.7 },
-    { x: 3.8, y: 2.1, z: -110, height: 4.2, width: 1, depth: 1.6 }
-  ]
+const createBuildings = ({ count, xRange, zRange, heightRange, scaleRange }) => {
+  const buildings = []
 
-  const midBuildings = [
-    { x: -6.2, y: 2.8, z: -20, height: 6, width: 1.8, depth: 2.2 },
-    { x: -6.8, y: 3.4, z: -55, height: 7.2, width: 2, depth: 2.5 },
-    { x: -5.8, y: 2.4, z: -80, height: 5.4, width: 1.6, depth: 2.1 },
-    { x: -6.4, y: 3.8, z: -115, height: 7.8, width: 2.2, depth: 2.6 },
-    { x: 6.1, y: 2.6, z: -35, height: 5.8, width: 1.8, depth: 2.2 },
-    { x: 6.7, y: 3.2, z: -70, height: 6.8, width: 2.1, depth: 2.4 },
-    { x: 5.9, y: 2.6, z: -100, height: 6.2, width: 1.7, depth: 2.1 },
-    { x: 6.3, y: 3.9, z: -130, height: 8.2, width: 2.2, depth: 2.6 }
-  ]
+  for (let i = 0; i < count; i += 1) {
+    buildings.push({
+      position: new THREE.Vector3(
+        THREE.MathUtils.randFloatSpread(xRange),
+        0,
+        THREE.MathUtils.randFloat(zRange[0], zRange[1])
+      ),
+      height: THREE.MathUtils.randFloat(...heightRange),
+      scale: THREE.MathUtils.randFloat(...scaleRange),
+      seed: Math.random() * 100
+    })
+  }
 
-  const farBuildings = [
-    { x: -9, y: 3.5, z: -40, height: 8, width: 2.5, depth: 3.2 },
-    { x: -9.5, y: 4.2, z: -90, height: 9.2, width: 2.8, depth: 3.4 },
-    { x: -8.6, y: 3.2, z: -130, height: 7.4, width: 2.4, depth: 3 },
-    { x: 8.8, y: 3.6, z: -60, height: 8.4, width: 2.6, depth: 3.3 },
-    { x: 9.4, y: 4.1, z: -110, height: 9, width: 2.7, depth: 3.5 },
-    { x: 8.5, y: 3.3, z: -150, height: 7.8, width: 2.5, depth: 3.1 }
-  ]
+  return buildings
+}
 
-  const renderBuildings = (buildings, palette, flickerOffset = 0) => (
-    buildings.map((building, i) => (
-      <group key={`${palette.base}-${i}`} position={[building.x, building.y, building.z]}>
-        <mesh>
-          <boxGeometry args={[building.width, building.height, building.depth]} />
-          <meshStandardMaterial 
-            color={palette.base}
-            emissive={palette.emissive}
-            emissiveIntensity={palette.intensity}
-          />
-        </mesh>
-        {/* Neon vertical strip */}
-        <mesh position={[0, building.height * 0.2, building.depth * 0.51]}>
-          <boxGeometry args={[building.width * 0.1, building.height * 0.6, 0.02]} />
-          <meshStandardMaterial 
-            color={palette.neon}
-            emissive={palette.neon}
-            emissiveIntensity={palette.neonIntensity}
-            transparent
-            opacity={0.7}
-          />
-        </mesh>
-        {/* Window glow */}
-        <mesh position={[building.width * 0.2, building.height * 0.05, building.depth * 0.51]}>
-          <boxGeometry args={[building.width * 0.4, building.height * 0.3, 0.02]} />
-          <meshStandardMaterial 
-            color={palette.window}
-            emissive={palette.window}
-            emissiveIntensity={palette.windowIntensity + Math.sin((i + flickerOffset) * 1.5) * 0.1}
-            transparent
-            opacity={0.5}
-          />
-        </mesh>
-      </group>
-    ))
+export default function City({ motionDensity, activeAccent }) {
+  const farRef = useRef()
+  const midRef = useRef()
+  const nearRef = useRef()
+
+  const geometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), [])
+
+  const farBuildings = useMemo(
+    () =>
+      createBuildings({
+        count: 32,
+        xRange: 160,
+        zRange: [-340, -640],
+        heightRange: [14, 26],
+        scaleRange: [1.6, 3]
+      }),
+    []
+  )
+
+  const midBuildings = useMemo(
+    () =>
+      createBuildings({
+        count: 24,
+        xRange: 100,
+        zRange: [-160, -320],
+        heightRange: [14, 28],
+        scaleRange: [1.6, 3.2]
+      }),
+    []
+  )
+
+  const nearBuildings = useMemo(
+    () =>
+      createBuildings({
+        count: 16,
+        xRange: 60,
+        zRange: [-50, -140],
+        heightRange: [12, 20],
+        scaleRange: [1.2, 2.2]
+      }),
+    []
+  )
+
+  const farMat = useMemo(() => createMaterial("#020407", 0.04, 0.18), [])
+  const midMat = useMemo(() => createMaterial("#0B0F1A", 0.12, 0.42), [])
+  const nearMat = useMemo(() => createMaterial("#11131B", 0.08, 0.32), [])
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime()
+    const density = motionDensity?.current ?? 0
+
+    ;[farRef, midRef, nearRef].forEach((layer, idx) => {
+      if (!layer.current) return
+
+      const speed = [0.06, 0.12, 0.18][idx]
+      layer.current.position.z = density * speed
+
+      layer.current.children.forEach((child, i) => {
+        if (!child.isMesh || !child.material || child.material.emissiveIntensity === undefined) return
+
+        const flicker = Math.sin(t * 0.35 + i * 0.7) * 0.18 + 0.78
+        const layerBoost = idx === 0 ? 0.3 : idx === 1 ? 0.55 : 0.75
+        child.material.emissiveIntensity = flicker * layerBoost
+      })
+    })
+  })
+
+  const renderLayer = (ref, buildings, material, neonRatio, neonScale) => (
+    <group ref={ref}>
+      {buildings.map((building, i) => {
+        const hasNeon = Math.random() < neonRatio
+        return (
+          <group key={i} position={[building.position.x, building.height / 2, building.position.z]}>
+            <mesh geometry={geometry} material={material} scale={[building.scale, building.height, building.scale]} />
+            {hasNeon && (
+              <mesh position={[building.scale * 0.35, building.height * 0.1, building.scale * 0.55]}>
+                <boxGeometry args={[0.14, building.height * neonScale, 0.03]} />
+                <meshStandardMaterial
+                  color={activeAccent?.current || "#00E5FF"}
+                  emissive={activeAccent?.current || "#00E5FF"}
+                  emissiveIntensity={0.45}
+                  transparent
+                  opacity={0.75}
+                />
+              </mesh>
+            )}
+          </group>
+        )
+      })}
+    </group>
   )
 
   return (
-    <group>
-      <group ref={farRef}>
-        {renderBuildings(farBuildings, {
-          base: "#03050C",
-          emissive: "#1A2338",
-          intensity: 0.15,
-          neon: "#3B82F6",
-          neonIntensity: 0.5,
-          window: "#9CA3AF",
-          windowIntensity: 0.2
-        }, 1)}
-      </group>
-      <group ref={midRef}>
-        {renderBuildings(midBuildings, {
-          base: "#050914",
-          emissive: "#1F2A44",
-          intensity: 0.2,
-          neon: "#8B5CF6",
-          neonIntensity: 0.6,
-          window: "#CBD5F5",
-          windowIntensity: 0.25
-        }, 3)}
-      </group>
-      <group ref={nearRef}>
-        {renderBuildings(nearBuildings, {
-          base: "#070D1A",
-          emissive: "#283552",
-          intensity: 0.25,
-          neon: "#00E5FF",
-          neonIntensity: 0.7,
-          window: "#E2E8F0",
-          windowIntensity: 0.3
-        }, 5)}
-      </group>
-    </group>
+    <>
+      {renderLayer(farRef, farBuildings, farMat, 0, 0.5)}
+      {renderLayer(midRef, midBuildings, midMat, 0.12, 0.55)}
+      {renderLayer(nearRef, nearBuildings, nearMat, 0.16, 0.65)}
+    </>
   )
 }

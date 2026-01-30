@@ -80,7 +80,8 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
     }
 
     if (roadMaterialRef.current) {
-      roadMaterialRef.current.roughness = 0.85 - density * 0.2
+      roadMaterialRef.current.roughness = 0.95 - density * 0.1
+      roadMaterialRef.current.emissiveIntensity = 0.06 + density * 0.08
     }
   })
 
@@ -96,17 +97,19 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
       <mesh geometry={roadGeometry} rotation={[-Math.PI / 2, 0, 0]}>
         <meshStandardMaterial
           ref={roadMaterialRef}
-          color="#0C1222"
-          metalness={0.3}
-          roughness={0.8}
+          color="#06080F"
+          metalness={0.1}
+          roughness={0.95}
+          emissive="#0A0F1A"
+          emissiveIntensity={0.08}
         />
       </mesh>
       <mesh geometry={lineGeometry} rotation={[-Math.PI / 2, 0, 0]}>
         <meshStandardMaterial
           ref={lineMaterialRef}
-          color="#7C3AED"
-          emissive="#7C3AED"
-          emissiveIntensity={0.5}
+          color="#00E5FF"
+          emissive="#00E5FF"
+          emissiveIntensity={0.7}
         />
       </mesh>
     </group>

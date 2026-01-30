@@ -174,7 +174,7 @@ export default function JourneySchedule() {
 
         {/* Heading */}
         <h2 
-          className="schedule-heading text-5xl sm:text-6xl md:text-7xl font-bold mb-12 leading-tight text-center"
+          className="schedule-heading text-5xl sm:text-6xl md:text-7xl font-bold mb-12 leading-tight text-center section-title"
           style={{ color: "var(--text-primary)" }}
         >
           Milestones
@@ -198,7 +198,7 @@ export default function JourneySchedule() {
               Interactive Timeline
             </p>
             <p 
-              className="text-lg"
+              className="text-lg section-body"
               style={{ color: "var(--text-secondary)" }}
             >
               Swipe through the 3-day journey
