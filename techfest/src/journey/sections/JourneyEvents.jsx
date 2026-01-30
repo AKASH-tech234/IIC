@@ -1,124 +1,64 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { ThreeDMarquee } from "../../components/ui/3d-marquee"
 
 /**
  * Journey Events Section
  * 
- * Content:
- * - Heading: Paths of Innovation
- * - Event blocks: Hackathons, Robotics, AI, Design
- * 
- * Visual State:
- * - Road splits briefly into lanes
- * - Icons/minimal UI elements appear beside road
+ * Side-profile card sequence aligned with the 3D rotation phase.
+ * Cards translate on X only, one visible at a time.
  */
-export default function JourneyEvents() {
+export default function JourneyEvents({ activeCardIndexRef }) {
   const sectionRef = useRef(null)
+  const lastIndexRef = useRef(-1)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(".events-heading",
-        { opacity: 0, y: 60 },
-        {
-          opacity: 1,
-          y: 0,
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 70%",
-            end: "top 30%",
-            scrub: 1
-          }
-        }
-      )
+      const cards = gsap.utils.toArray(".events-card")
+      const totalCards = cards.length
 
-      // Lanes light up sequentially
-      gsap.fromTo(".road-lane",
-        { 
-          opacity: 0.2,
-          scaleY: 0,
-          transformOrigin: "bottom"
-        },
-        {
-          opacity: 1,
-          scaleY: 1,
-          stagger: 0.2,
-          scrollTrigger: {
-            trigger: ".road-lanes-container",
-            start: "top 70%",
-            end: "top 30%",
-            scrub: 1
-          }
-        }
-      )
-
-      // Cards rise from road surface
-      gsap.fromTo(".event-card",
-        { opacity: 0, y: 100, scale: 0.8 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          stagger: 0.15,
-          scrollTrigger: {
-            trigger: ".road-lanes-container",
-            start: "top 60%",
-            end: "top 25%",
-            scrub: 1
-          }
-        }
-      )
-
-      // Sparks when lanes activate
       ScrollTrigger.create({
-        trigger: ".road-lanes-container",
-        start: "top 60%",
-        onEnter: () => {
-          const lanes = document.querySelectorAll(".road-lane")
-          lanes.forEach((lane, i) => {
-            setTimeout(() => {
-              // Create spark effect
-              const spark = document.createElement("div")
-              spark.className = "lane-spark"
-              spark.style.cssText = `
-                position: absolute;
-                bottom: 0;
-                left: 50%;
-                width: 4px;
-                height: 4px;
-                background: ${events[i].laneColor};
-                border-radius: 50%;
-                box-shadow: 0 0 20px ${events[i].laneColor};
-              `
-              lane.appendChild(spark)
-              
-              gsap.fromTo(spark,
-                { y: 0, opacity: 1, scale: 1 },
-                { 
-                  y: -50, 
-                  opacity: 0, 
-                  scale: 3,
-                  duration: 0.8,
-                  ease: "power2.out",
-                  onComplete: () => spark.remove()
-                }
-              )
-            }, i * 200)
+        trigger: sectionRef.current,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+        onUpdate: (self) => {
+          const progress = self.progress
+          cards.forEach((card, index) => {
+            const cardProgress = gsap.utils.clamp(0, 1, (progress * totalCards) - index)
+            const enter = gsap.utils.interpolate(220, 0, Math.min(cardProgress / 0.5, 1))
+            const exit = gsap.utils.interpolate(0, -220, Math.max((cardProgress - 0.5) / 0.5, 0))
+            const x = cardProgress <= 0.5 ? enter : exit
+            const opacity = cardProgress <= 0.5
+              ? gsap.utils.interpolate(0, 1, cardProgress / 0.5)
+              : gsap.utils.interpolate(1, 0, (cardProgress - 0.5) / 0.5)
+
+            gsap.set(card, {
+              x,
+              opacity,
+              zIndex: Math.round(opacity * 10)
+            })
           })
         }
       })
 
-      // Update accent color
       ScrollTrigger.create({
         trigger: sectionRef.current,
-        start: "top center",
-        end: "bottom center",
-        onEnter: () => {
-          gsap.to(":root", {
-            "--accent-color": "#3B82F6", // Blue
-            duration: 0.8
-          })
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+        onUpdate: (self) => {
+          const activeIndex = Math.min(totalCards - 1, Math.floor(self.progress * totalCards))
+          const activeCard = cards[activeIndex]
+
+          if (activeCard?.dataset?.accent) {
+            document.documentElement.style.setProperty("--accent-color", activeCard.dataset.accent)
+          }
+
+          if (activeCardIndexRef && lastIndexRef.current !== activeIndex) {
+            lastIndexRef.current = activeIndex
+            activeCardIndexRef.current = activeIndex
+          }
         }
       })
     }, sectionRef)
@@ -128,210 +68,126 @@ export default function JourneyEvents() {
 
   const events = [
     {
-      title: "AI & ML",
-      icon: "🧠",
-      description: "Explore ML, AI, and cutting-edge tech",
-      laneColor: "#3B82F6"
+      title: "AI",
+      description: "Models, intelligence, and applied ML systems.",
+      accent: "#3B82F6"
     },
     {
       title: "Robotics",
-      icon: "🤖",
-      description: "Engineer physical systems",
-      laneColor: "#8B5CF6"
+      description: "Build physical systems with precise control.",
+      accent: "#8B5CF6"
     },
     {
       title: "Hackathon",
-      icon: "💻",
-      description: "24-hour coding sprint",
-      laneColor: "#EC4899"
+      description: "Prototype fast, ship bold solutions in 24 hours.",
+      accent: "#EC4899"
     },
     {
       title: "Design",
-      icon: "🎨",
-      description: "Creative problem solving",
-      laneColor: "#22D3EE"
+      description: "Human-first systems and creative problem solving.",
+      accent: "#22C55E"
     }
-  ]
-
-  // 3D Marquee images - past event photos
-  const eventImages = [
-    "/images/events/hackathon.jpg",
-    "/images/events/robotics.jpg",
-    "/images/hero/hackathon.jpg",
-    "/images/hero/robotics.jpg",
-    "/images/hero/mnnit.jpg",
-    "/images/about/mnnit.jpg",
-    // Placeholder images for demonstration
-    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800",
-    "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800",
-    "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800",
-    "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800",
-    "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800",
-    "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800",
   ]
 
   return (
     <section
       ref={sectionRef}
       id="journey-events"
-      className="relative min-h-screen w-full flex flex-col justify-center py-32"
+      className="relative min-h-[160vh] w-full flex items-center py-32"
     >
-      {/* Content Container */}
       <div className="relative z-10 w-full px-6 md:px-8">
-        
-        {/* Section marker */}
-        <div className="mb-6 flex items-center gap-4 justify-center">
+        <div className="mb-10 flex items-center gap-4 justify-center">
           <div 
             className="w-12 h-[2px]"
-            style={{
-              background: "linear-gradient(to right, var(--accent-color), transparent)"
-            }}
+            style={{ background: "linear-gradient(to right, var(--accent-color), transparent)" }}
           />
           <span 
-            className="text-sm font-mono tracking-wider uppercase"
-            style={{ color: "var(--accent-color)" }}
+            className="text-xs tracking-[0.3em] uppercase"
+            style={{
+              color: "var(--accent-color)",
+              fontFamily: "var(--font-body)"
+            }}
           >
             Milestone 02
           </span>
           <div 
             className="w-12 h-[2px]"
-            style={{
-              background: "linear-gradient(to left, var(--accent-color), transparent)"
-            }}
+            style={{ background: "linear-gradient(to left, var(--accent-color), transparent)" }}
           />
         </div>
 
-        {/* Heading */}
-        <h2 
-          className="events-heading text-5xl sm:text-6xl md:text-7xl font-bold mb-20 leading-tight text-center"
-          style={{ color: "var(--text-primary)" }}
-        >
-          Paths of
-          <span 
-            className="block mt-2"
+        <div className="text-center mb-16">
+          <h2
+            className="text-4xl sm:text-5xl md:text-6xl uppercase tracking-[0.2em]"
             style={{
-              background: "linear-gradient(to right, var(--accent-blue), var(--accent-cyan))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text"
+              fontFamily: "var(--font-display)",
+              color: "#FFFFFF"
             }}
           >
-            Innovation
-          </span>
-        </h2>
-
-        {/* 3D Marquee - Past Events Gallery */}
-        <div className="marquee-container mb-20">
-          <div className="text-center mb-8">
-            <p 
-              className="text-sm font-mono tracking-wider uppercase mb-2"
-              style={{ color: "var(--text-tertiary)" }}
-            >
-              Past Events Gallery
-            </p>
-            <p 
-              className="text-lg"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Relive the moments from previous TechSummits
-            </p>
-          </div>
-          <ThreeDMarquee images={eventImages} />
+            Events In Motion
+          </h2>
+          <p
+            className="mt-6 text-base md:text-lg"
+            style={{
+              fontFamily: "var(--font-body)",
+              color: "rgba(255,255,255,0.7)"
+            }}
+          >
+            Each track appears beside the car as a milestone in the journey.
+          </p>
         </div>
 
-        {/* Road Lanes Layout */}
-        <div className="road-lanes-container relative">
-          {/* Text label */}
-          <div className="text-center mb-8">
-            <p 
-              className="text-sm font-mono tracking-wider uppercase"
-              style={{ color: "var(--text-tertiary)" }}
-            >
-              Choose Your Path
-            </p>
-          </div>
-
-          {/* Lanes */}
-          <div className="relative h-[400px] grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+        <div className="relative flex justify-end">
+          <div className="relative h-[360px] w-full max-w-[520px]">
             {events.map((event, index) => (
               <div
-                key={index}
-                className="road-lane relative"
+                key={event.title}
+                className="events-card absolute inset-0 flex items-center justify-end"
+                data-accent={event.accent}
+                style={{
+                  transform: "translateX(220px)",
+                  opacity: 0
+                }}
               >
-                {/* Glowing lane */}
-                <div 
-                  className="absolute inset-0 rounded-lg"
+                <div
+                  className="w-full rounded-2xl px-8 py-10"
                   style={{
-                    background: `linear-gradient(to top, ${event.laneColor}15, transparent)`,
-                    border: `2px solid ${event.laneColor}40`,
-                    boxShadow: `0 0 30px ${event.laneColor}20`
-                  }}
-                />
-
-                {/* Lane marker */}
-                <div 
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-full"
-                  style={{
-                    background: `linear-gradient(to top, ${event.laneColor}, transparent)`,
-                    opacity: 0.3
-                  }}
-                />
-
-                {/* Event Card - Floats above lane */}
-                <div 
-                  className="event-card absolute top-8 left-1/2 -translate-x-1/2 w-[90%] p-6 rounded-lg"
-                  style={{
-                    background: "rgba(10, 15, 25, 0.9)",
-                    backdropFilter: "blur(10px)",
-                    WebkitBackdropFilter: "blur(10px)",
-                    border: `1px solid ${event.laneColor}60`,
-                    boxShadow: `0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px ${event.laneColor}20`
+                    background: "rgba(8, 12, 20, 0.9)",
+                    border: `1px solid ${event.accent}60`,
+                    boxShadow: `0 20px 60px rgba(0,0,0,0.4)`
                   }}
                 >
-                  {/* Icon */}
-                  <div className="text-4xl mb-3 text-center">
-                    {event.icon}
-                  </div>
-
-                  {/* Title */}
-                  <h3 
-                    className="text-lg font-bold mb-2 text-center"
-                    style={{ color: event.laneColor }}
+                  <p
+                    className="text-xs tracking-[0.35em] uppercase"
+                    style={{
+                      fontFamily: "var(--font-body)",
+                      color: event.accent
+                    }}
+                  >
+                    Track 0{index + 1}
+                  </p>
+                  <h3
+                    className="mt-4 text-3xl uppercase tracking-[0.15em]"
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      color: "#FFFFFF"
+                    }}
                   >
                     {event.title}
                   </h3>
-
-                  {/* Description */}
-                  <p 
-                    className="text-xs leading-relaxed text-center"
-                    style={{ color: "var(--text-tertiary)" }}
+                  <p
+                    className="mt-4 text-base leading-relaxed"
+                    style={{
+                      fontFamily: "var(--font-body)",
+                      color: "rgba(255,255,255,0.7)"
+                    }}
                   >
                     {event.description}
                   </p>
-
-                  {/* Lane indicator at bottom */}
-                  <div className="mt-4 flex justify-center">
-                    <div 
-                      className="w-8 h-1 rounded-full"
-                      style={{ 
-                        background: event.laneColor,
-                        boxShadow: `0 0 10px ${event.laneColor}`
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Lane number badge at bottom */}
-                <div 
-                  className="absolute bottom-4 left-1/2 -translate-x-1/2 w-8 h-8 flex items-center justify-center rounded-full text-xs font-mono font-bold"
-                  style={{
-                    background: `${event.laneColor}20`,
-                    border: `1px solid ${event.laneColor}`,
-                    color: event.laneColor,
-                    boxShadow: `0 0 15px ${event.laneColor}40`
-                  }}
-                >
-                  {String(index + 1).padStart(2, '0')}
+                  <div
+                    className="mt-6 h-[2px] w-20"
+                    style={{ background: event.accent }}
+                  />
                 </div>
               </div>
             ))}

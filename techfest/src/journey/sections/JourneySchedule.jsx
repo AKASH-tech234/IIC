@@ -14,7 +14,7 @@ import { Carousel, Card } from "../../components/ui/apple-cards-carousel"
  * - Road markers appear
  * - Background transitions smoothly
  */
-export default function JourneySchedule() {
+export default function JourneySchedule({ textStateRef }) {
   const sectionRef = useRef(null)
 
   useEffect(() => {
@@ -75,6 +75,24 @@ export default function JourneySchedule() {
             "--accent-color": "#8B5CF6", // Purple
             duration: 0.8
           })
+        }
+      })
+
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top 75%",
+        end: "top 30%",
+        onEnter: () => {
+          if (textStateRef) textStateRef.current = "TEXT_ACTIVE"
+        },
+        onLeave: () => {
+          if (textStateRef) textStateRef.current = "MOTION_ALLOWED"
+        },
+        onEnterBack: () => {
+          if (textStateRef) textStateRef.current = "TEXT_ACTIVE"
+        },
+        onLeaveBack: () => {
+          if (textStateRef) textStateRef.current = "EXIT"
         }
       })
     }, sectionRef)
@@ -180,10 +198,7 @@ export default function JourneySchedule() {
           <span 
             className="block mt-2"
             style={{
-              background: "linear-gradient(to right, var(--accent-purple), var(--accent-magenta))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text"
+              color: "var(--accent-color)"
             }}
           >
             Ahead
@@ -221,21 +236,17 @@ export default function JourneySchedule() {
                 <div 
                   className="relative px-12 py-6 rounded-lg"
                   style={{
-                    background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1))",
-                    border: "2px solid",
-                    borderImage: "linear-gradient(to right, var(--accent-purple), var(--accent-magenta)) 1",
-                    boxShadow: `0 0 40px ${index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'}30`
+                    background: "rgba(8, 12, 20, 0.85)",
+                    border: "1px solid",
+                    borderColor: "var(--accent-color)",
+                    boxShadow: "0 0 32px rgba(0, 0, 0, 0.4)"
                   }}
                 >
                   {/* Day badge */}
                   <div 
                     className="text-6xl md:text-8xl font-black text-center"
                     style={{
-                      background: "linear-gradient(to right, var(--accent-purple), var(--accent-magenta))",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                      filter: `drop-shadow(0 0 20px ${index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'})`
+                      color: "var(--accent-color)"
                     }}
                   >
                     {item.day.toUpperCase()}
@@ -246,7 +257,7 @@ export default function JourneySchedule() {
                     <div 
                       className="w-full h-full"
                       style={{
-                        background: `linear-gradient(to right, transparent, ${index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'}, transparent)`
+                        background: "linear-gradient(to right, transparent, var(--accent-color), transparent)"
                       }}
                     />
                   </div>
@@ -254,7 +265,7 @@ export default function JourneySchedule() {
                     <div 
                       className="w-full h-full"
                       style={{
-                        background: `linear-gradient(to right, transparent, ${index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'}, transparent)`
+                        background: "linear-gradient(to right, transparent, var(--accent-color), transparent)"
                       }}
                     />
                   </div>
@@ -264,15 +275,15 @@ export default function JourneySchedule() {
                     <div 
                       className="w-2 h-2 rounded-full"
                       style={{ 
-                        background: index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899',
-                        boxShadow: `0 0 10px ${index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'}`
+                        background: "var(--accent-color)",
+                        boxShadow: "0 0 10px rgba(0, 0, 0, 0.35)"
                       }}
                     />
                     <div 
                       className="w-2 h-2 rounded-full"
                       style={{ 
-                        background: index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899',
-                        boxShadow: `0 0 10px ${index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'}`,
+                        background: "var(--accent-color)",
+                        boxShadow: "0 0 10px rgba(0, 0, 0, 0.35)",
                         opacity: 0.6
                       }}
                     />
@@ -281,15 +292,15 @@ export default function JourneySchedule() {
                     <div 
                       className="w-2 h-2 rounded-full"
                       style={{ 
-                        background: index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899',
-                        boxShadow: `0 0 10px ${index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'}`
+                        background: "var(--accent-color)",
+                        boxShadow: "0 0 10px rgba(0, 0, 0, 0.35)"
                       }}
                     />
                     <div 
                       className="w-2 h-2 rounded-full"
                       style={{ 
-                        background: index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899',
-                        boxShadow: `0 0 10px ${index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'}`,
+                        background: "var(--accent-color)",
+                        boxShadow: "0 0 10px rgba(0, 0, 0, 0.35)",
                         opacity: 0.6
                       }}
                     />
@@ -302,7 +313,7 @@ export default function JourneySchedule() {
                 <h3 
                   className="text-3xl md:text-4xl font-bold mb-6 text-center"
                   style={{
-                    color: index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'
+                    color: "var(--accent-color)"
                   }}
                 >
                   {item.title}
@@ -315,7 +326,7 @@ export default function JourneySchedule() {
                       className="p-4 rounded-lg text-center"
                       style={{
                         background: "rgba(255, 255, 255, 0.03)",
-                        border: `1px solid ${index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'}40`
+                        border: "1px solid rgba(255, 255, 255, 0.08)"
                       }}
                     >
                       <p 
@@ -335,7 +346,7 @@ export default function JourneySchedule() {
                   <div 
                     className="w-[2px] h-16"
                     style={{
-                      background: `linear-gradient(to bottom, ${index === 0 ? '#8B5CF6' : index === 1 ? '#A855F7' : '#EC4899'}, transparent)`,
+                      background: "linear-gradient(to bottom, var(--accent-color), transparent)",
                       opacity: 0.3
                     }}
                   />

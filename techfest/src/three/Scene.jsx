@@ -1,5 +1,6 @@
 import { Canvas, useThree } from "@react-three/fiber"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
+import * as THREE from "three"
 import Camera from "./Camera"
 import Lights from "./Lights"
 import Car from "./Car"
@@ -10,7 +11,7 @@ import City from "./City"
  * Scene Content - All 3D objects
  * Uses frameloop="demand" for performance
  */
-function SceneContent({ scrollProgress }) {
+function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, worldProgress, isPaused, textState }) {
   const { invalidate } = useThree()
 
   useEffect(() => {
@@ -18,14 +19,53 @@ function SceneContent({ scrollProgress }) {
     invalidate()
   }, [scrollProgress, invalidate])
 
+  const fogRef = useRef()
+
+  useEffect(() => {
+    if (!fogRef.current) return
+    const accent = activeAccent.current || "#070617"
+    const base = new THREE.Color("#070617")
+    const accentColor = new THREE.Color(accent)
+    const phase = activePhase.current || "HERO"
+    const blend = phase === "EVENTS_SIDE_PROFILE" ? 0.15 : 0.0
+    base.lerp(accentColor, blend)
+    fogRef.current.color = base
+  }, [activeAccent, activePhase])
+
   return (
     <>
-      <Camera scrollProgress={scrollProgress} />
+      <Camera 
+        activePhase={activePhase}
+        phaseProgress={phaseProgress}
+      />
       <Lights />
-      <fog attach="fog" args={["#070617", 8, 25]} />
-      <Car scrollProgress={scrollProgress} />
-      <Road scrollProgress={scrollProgress} />
-      <City scrollProgress={scrollProgress} />
+      <fog ref={fogRef} attach="fog" args={["#070617", 8, 25]} />
+      <Car 
+        scrollProgress={scrollProgress}
+        scrollVelocity={scrollVelocity}
+        motionDensity={motionDensity}
+        activePhase={activePhase}
+        phaseProgress={phaseProgress}
+        activeCardIndex={activeCardIndex}
+        activeAccent={activeAccent}
+        worldProgress={worldProgress}
+        isPaused={isPaused}
+        textState={textState}
+      />
+      <Road 
+        motionDensity={motionDensity}
+        activePhase={activePhase}
+        phaseProgress={phaseProgress}
+        activeCardIndex={activeCardIndex}
+        activeAccent={activeAccent}
+      />
+      <City 
+        scrollProgress={scrollProgress}
+        scrollVelocity={scrollVelocity}
+        motionDensity={motionDensity}
+        activePhase={activePhase}
+        worldProgress={worldProgress}
+      />
     </>
   )
 }
@@ -47,7 +87,7 @@ function SceneContent({ scrollProgress }) {
  * - z-10: Content
  * - z-20: Header
  */
-export default function Scene({ scrollProgress }) {
+export default function Scene({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, worldProgress, isPaused, textState }) {
   return (
     <div 
       className="fixed inset-0 pointer-events-none"
@@ -69,7 +109,18 @@ export default function Scene({ scrollProgress }) {
           powerPreference: "high-performance"
         }}
       >
-        <SceneContent scrollProgress={scrollProgress} />
+        <SceneContent 
+          scrollProgress={scrollProgress}
+          scrollVelocity={scrollVelocity}
+          motionDensity={motionDensity}
+          activePhase={activePhase}
+          phaseProgress={phaseProgress}
+          activeCardIndex={activeCardIndex}
+          activeAccent={activeAccent}
+          worldProgress={worldProgress}
+          isPaused={isPaused}
+          textState={textState}
+        />
       </Canvas>
     </div>
   )

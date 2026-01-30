@@ -36,18 +36,109 @@ export default function AppJourney() {
   useLenis()
   const mainRef = useRef(null)
   const progressRef = useRef(0)
+  const velocityRef = useRef(0)
+  const motionDensityRef = useRef(0)
+  const phaseRef = useRef("HERO")
+  const phaseProgressRef = useRef(0)
+  const activeCardIndexRef = useRef(0)
+  const accentRef = useRef("#00E5FF")
+  const lastScrollRef = useRef(0)
+  const lastTimeRef = useRef(0)
+  const targetProgressRef = useRef(0)
+  const worldProgressRef = useRef(0)
+  const pauseTimerRef = useRef(0)
+  const isPausedRef = useRef(false)
+  const lastPhaseIdRef = useRef("HERO")
+  const textStateRef = useRef("IDLE")
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       // ===== SCROLL PROGRESS TRACKING =====
+      const phases = [
+        { id: "HERO", start: 0.0, end: 0.12 },
+        { id: "ROTATE_TO_SIDE", start: 0.12, end: 0.28 },
+        { id: "EVENTS_SIDE_PROFILE", start: 0.28, end: 0.62 },
+        { id: "ROTATE_FORWARD", start: 0.62, end: 0.78 },
+        { id: "FORWARD_CONTENT", start: 0.78, end: 1.0 }
+      ]
+
+      const easeOutQuad = (value) => 1 - (1 - value) * (1 - value)
+
       ScrollTrigger.create({
         trigger: document.body,
         start: "top top",
         end: "bottom bottom",
         scrub: 1,
         onUpdate: (self) => {
-          progressRef.current = self.progress
+          const progress = self.progress
+          const now = performance.now()
+          targetProgressRef.current = progress
+          const scrollY = self.scroll()
+          const lastScroll = lastScrollRef.current
+          const lastTime = lastTimeRef.current || now
+          const deltaScroll = Math.abs(scrollY - lastScroll)
+          const deltaTime = Math.max(16, now - lastTime)
+          const rawVelocity = Math.min(1, deltaScroll / deltaTime / 1.2)
+          const easedVelocity = easeOutQuad(rawVelocity)
+
+          progressRef.current = progress
+          velocityRef.current = easedVelocity
+          motionDensityRef.current = easeOutQuad(easedVelocity)
+          lastScrollRef.current = scrollY
+          lastTimeRef.current = now
+
+          const activePhase = phases.find((phase) => progress >= phase.start && progress < phase.end) || phases[phases.length - 1]
+          const phaseRange = activePhase.end - activePhase.start
+          const phaseProgress = phaseRange > 0 ? (progress - activePhase.start) / phaseRange : 0
+
+          if (phaseRef.current !== activePhase.id) {
+            phaseRef.current = activePhase.id
+          }
+
+          if (lastPhaseIdRef.current !== activePhase.id) {
+            lastPhaseIdRef.current = activePhase.id
+            isPausedRef.current = true
+            pauseTimerRef.current = 0
+          }
+
+          phaseProgressRef.current = Math.min(1, Math.max(0, phaseProgress))
+
+          let activeCardIndex = 0
+          if (progress >= 0.28 && progress < 0.62) {
+            const cardProgress = (progress - 0.28) / 0.34
+            activeCardIndex = Math.min(3, Math.max(0, Math.floor(cardProgress * 4)))
+          }
+
+          if (activeCardIndexRef.current !== activeCardIndex) {
+            activeCardIndexRef.current = activeCardIndex
+          }
+
+          if (import.meta.env.DEV) {
+            console.debug("JourneyPhase", {
+              phase: activePhase.id,
+              phaseProgress: phaseProgressRef.current.toFixed(2),
+              activeCardIndex
+            })
+          }
         }
+      })
+
+      // ===== WORLD PROGRESS SMOOTHING =====
+      const pauseDuration = 0.45
+      const smoothFactor = 0.08
+
+      gsap.ticker.add(() => {
+        const delta = gsap.ticker.deltaRatio() / 60
+        if (isPausedRef.current) {
+          pauseTimerRef.current += delta
+          if (pauseTimerRef.current < pauseDuration) {
+            return
+          }
+          isPausedRef.current = false
+          pauseTimerRef.current = 0
+        }
+
+        worldProgressRef.current += (targetProgressRef.current - worldProgressRef.current) * smoothFactor
       })
 
       // ===== PARALLAX SYSTEM =====
@@ -88,7 +179,7 @@ export default function AppJourney() {
           scrub: 1,
           onUpdate: (self) => {
             const progress = self.progress
-            
+
             // Environment color shifts
             if (progress < 0.2) {
               // Dawn/Morning - Cyan tints
@@ -110,66 +201,37 @@ export default function AppJourney() {
         })
       }
 
-      // ===== CAR REACTIONS =====
-      const car = document.querySelector("#car")
-      const carGlow = car?.querySelector("div")
+      // ===== ACCENT COLOR SYSTEM =====
+      ScrollTrigger.create({
+        trigger: mainRef.current,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+        onUpdate: (self) => {
+          const progress = self.progress
+          let accentColor = "#00E5FF"
 
-      // Initial scroll tilt
-      if (car) {
-        gsap.to(car, {
-          rotateZ: -1,
-          scrollTrigger: {
-            trigger: mainRef.current,
-            start: "top top",
-            end: "10% top",
-            scrub: 1
+          if (progress >= 0.28 && progress < 0.37) {
+            accentColor = "#3B82F6"
+          } else if (progress >= 0.37 && progress < 0.46) {
+            accentColor = "#8B5CF6"
+          } else if (progress >= 0.46 && progress < 0.55) {
+            accentColor = "#EC4899"
+          } else if (progress >= 0.55 && progress < 0.62) {
+            accentColor = "#22C55E"
+          } else if (progress >= 0.78) {
+            accentColor = "#00E5FF"
           }
-        })
 
-        gsap.to(car, {
-          rotateZ: 0,
-          scrollTrigger: {
-            trigger: mainRef.current,
-            start: "10% top",
-            end: "15% top",
-            scrub: 1
+          if (accentRef.current !== accentColor) {
+            accentRef.current = accentColor
+            document.documentElement.style.setProperty("--accent-color", accentColor)
           }
-        })
-
-        // Underglow color changes with environment + sync accent color
-        if (carGlow) {
-          ScrollTrigger.create({
-            trigger: mainRef.current,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 1,
-            onUpdate: (self) => {
-              const progress = self.progress
-              
-              let accentColor = "#22D3EE" // Cyan
-              
-              if (progress > 0.2 && progress < 0.4) {
-                accentColor = "#3B82F6" // Blue
-              } else if (progress >= 0.4 && progress < 0.6) {
-                accentColor = "#8B5CF6" // Purple
-              } else if (progress >= 0.6 && progress < 0.8) {
-                accentColor = "#EC4899" // Magenta
-              } else if (progress >= 0.8) {
-                accentColor = "#22C55E" // Lime
-              }
-              
-              // Update CSS variable for global accent (FIX: Use document.documentElement)
-              document.documentElement.style.setProperty('--accent-color', accentColor)
-              
-              // Update underglow
-              gsap.to(carGlow, {
-                background: `radial-gradient(ellipse, ${accentColor} 0%, transparent 70%)`,
-                duration: 0.8
-              })
-            }
-          })
         }
-      }
+      })
+
+      // ===== CAR REACTIONS =====
+      // 2D car is hidden; keep placeholder for future fallback
 
       ScrollTrigger.refresh()
     }, mainRef)
@@ -235,7 +297,18 @@ export default function AppJourney() {
 
       {/* Three.js Scene - Above unified background, behind content */}
       {/* Scene.jsx internally uses z-0, positioned here at z-[2] layer */}
-      <Scene scrollProgress={progressRef} />
+      <Scene 
+        scrollProgress={progressRef}
+        scrollVelocity={velocityRef}
+        motionDensity={motionDensityRef}
+        activePhase={phaseRef}
+        phaseProgress={phaseProgressRef}
+        activeCardIndex={activeCardIndexRef}
+        activeAccent={accentRef}
+        worldProgress={worldProgressRef}
+        isPaused={isPausedRef}
+        textState={textStateRef}
+      />
 
       {/* Fixed Background with Parallax - Hidden (using unified background instead) */}
       <div style={{ display: "none" }}>
@@ -254,13 +327,13 @@ export default function AppJourney() {
         <JourneyHero />
 
         {/* About Section */}
-        <JourneyAbout />
+        <JourneyAbout textStateRef={textStateRef} />
 
         {/* Events Section */}
-        <JourneyEvents />
+        <JourneyEvents activeCardIndexRef={activeCardIndexRef} />
 
         {/* Schedule Section */}
-        <JourneySchedule />
+        <JourneySchedule textStateRef={textStateRef} />
 
         {/* Workshops Section */}
         <JourneyWorkshops />

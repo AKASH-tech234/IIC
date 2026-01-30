@@ -14,7 +14,7 @@ import { ExpandableCards } from "../../components/ui/expandable-cards"
  * - Environment shifts from open road to city lights
  * - Background parallax increases
  */
-export default function JourneyAbout() {
+export default function JourneyAbout({ textStateRef }) {
   const sectionRef = useRef(null)
 
   useEffect(() => {
@@ -62,6 +62,25 @@ export default function JourneyAbout() {
             "--accent-color": "#22D3EE", // Cyan
             duration: 0.8
           })
+        }
+      })
+
+      // Text state orchestration
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top 75%",
+        end: "top 30%",
+        onEnter: () => {
+          if (textStateRef) textStateRef.current = "TEXT_ACTIVE"
+        },
+        onLeave: () => {
+          if (textStateRef) textStateRef.current = "MOTION_ALLOWED"
+        },
+        onEnterBack: () => {
+          if (textStateRef) textStateRef.current = "TEXT_ACTIVE"
+        },
+        onLeaveBack: () => {
+          if (textStateRef) textStateRef.current = "EXIT"
         }
       })
     }, sectionRef)

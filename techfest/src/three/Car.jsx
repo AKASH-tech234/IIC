@@ -1,5 +1,6 @@
-import { useRef } from "react"
+import { useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
+import * as THREE from "three"
 
 /**
  * 3D Sports Car Component - Scroll-Driven Animation
@@ -11,76 +12,143 @@ import { useFrame } from "@react-three/fiber"
  * - Subtle vibration effect
  * - Neon accents and emissive headlights
  */
-export default function Car({ scrollProgress }) {
+export default function Car({ scrollProgress, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, worldProgress, isPaused, textState }) {
   const carRef = useRef()
   const frontLeftWheelRef = useRef()
   const frontRightWheelRef = useRef()
   const rearLeftWheelRef = useRef()
   const rearRightWheelRef = useRef()
-  
+
   // Refs for dynamic material updates
   const bodyMaterialRef = useRef()
   const cabinMaterialRef = useRef()
   const headlightRefs = useRef([])
   const underglowRef = useRef()
 
+  const straightCurve = useMemo(() => new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 0, -24),
+    new THREE.Vector3(0, 0, -48),
+    new THREE.Vector3(0, 0, -72),
+    new THREE.Vector3(0, 0, -96),
+    new THREE.Vector3(0, 0, -120)
+  ]), [])
+
+  const turnCurve = useMemo(() => new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 0, -18),
+    new THREE.Vector3(0, 0, -36),
+    new THREE.Vector3(4, 0, -54),
+    new THREE.Vector3(10, 0, -72),
+    new THREE.Vector3(18, 0, -90),
+    new THREE.Vector3(26, 0, -108),
+    new THREE.Vector3(34, 0, -126)
+  ]), [])
+
+  const lastPhaseRef = useRef(null)
+  const lockedPoseRef = useRef(null)
+  const lastCardIndexRef = useRef(activeCardIndex?.current ?? 0)
+
   useFrame(() => {
     if (!carRef.current) return
-    
+
     const progress = scrollProgress.current || 0
-    
-    // HERO PHASE: Presence Mode (progress < 0.05)
-    // Car is background presence - lights ON, body subtle
-    const isHeroPhase = progress < 0.05
-    
-    // CINEMATIC LIGHTING: Lights visible first, body emerges later
-    // Hero (0-5%): Body dark, lights bright (presence)
-    // Journey (5%+): Body becomes visible, motion begins
-    const bodyOpacity = isHeroPhase ? 0.3 : Math.min(1, 0.3 + (progress - 0.05) * 10)
-    const lightIntensity = isHeroPhase ? 2.5 : 2.0
-    
-    // FORWARD MOTION - Car moves toward camera as you scroll
-    // Hero phase: car stays distant (z = -8)
-    // Journey phase: car moves forward (z = -8 to +2)
-    const forwardMotion = isHeroPhase ? -8 : -8 + ((progress - 0.05) * 10.5)
-    carRef.current.position.z = forwardMotion
-    
-    // Subtle vibration (engine idle) - minimal in Hero
-    const vibrationIntensity = isHeroPhase ? 0.01 : 0.02
+    const density = motionDensity.current || 0
+    const phase = activePhase.current || "HERO"
+    const phaseProgressValue = phaseProgress.current || 0
+    const worldProgressValue = worldProgress?.current ?? progress
+    const isPausedPhase = isPaused?.current ?? false
+    const isTextActive = textState?.current === "TEXT_ACTIVE"
+
+    if (phase !== lastPhaseRef.current) {
+      lastPhaseRef.current = phase
+      lockedPoseRef.current = null
+    }
+
+    const isHeroPhase = phase === "HERO"
+    const isEventsPhase = phase === "EVENTS_SIDE_PROFILE"
+    const isTurningPhase = phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD"
+
+    const curve = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? turnCurve : straightCurve
+    const sectionConfig = {
+      HERO: { span: 0.02, base: 0.0, start: 0.0, length: 0.12 },
+      ROTATE_TO_SIDE: { span: 0.18, base: 0.02, start: 0.12, length: 0.16 },
+      EVENTS_SIDE_PROFILE: { span: 0.04, base: 0.2, start: 0.28, length: 0.34 },
+      ROTATE_FORWARD: { span: 0.12, base: 0.24, start: 0.62, length: 0.16 },
+      FORWARD_CONTENT: { span: 0.08, base: 0.36, start: 0.78, length: 0.22 }
+    }
+    const { span, base, start, length } = sectionConfig[phase] || sectionConfig.HERO
+    const sectionT = Math.min(1, Math.max(0, (worldProgressValue - start) / length))
+    const speedFactor = isTextActive ? 0.2 : 1
+    const curveProgress = Math.min(1, Math.max(0, base + sectionT * span * speedFactor))
+    const curvePoint = curve.getPoint(curveProgress)
+    const curveTangent = curve.getTangent(curveProgress).normalize()
+
+    const basePosition = curvePoint.clone().add(new THREE.Vector3(0, 0.3, 0))
+    const targetYaw = Math.atan2(curveTangent.x, curveTangent.z)
+
+    if (isEventsPhase) {
+      if (!lockedPoseRef.current) {
+        lockedPoseRef.current = {
+          position: basePosition.clone(),
+          yaw: targetYaw
+        }
+      }
+      carRef.current.position.lerp(lockedPoseRef.current.position, 0.1)
+      carRef.current.rotation.y += (lockedPoseRef.current.yaw - carRef.current.rotation.y) * 0.1
+    } else {
+      carRef.current.position.lerp(basePosition, 0.12)
+      carRef.current.rotation.y += (targetYaw - carRef.current.rotation.y) * 0.12
+    }
+
+    const vibrationIntensity = isEventsPhase ? 0.003 : isHeroPhase ? 0.01 : 0.02
     const vibration = Math.sin(Date.now() * 0.002) * vibrationIntensity
-    carRef.current.position.y = 0.3 + vibration
-    
-    // Forward tilt when scrolling (speed effect) - none in Hero
-    const tilt = isHeroPhase ? 0 : Math.sin(progress * 5) * 0.05
-    carRef.current.rotation.x = tilt * 0.5
-    
-    // Wheel rotation based on scroll - minimal in Hero
-    const wheelRotation = isHeroPhase ? 0 : (progress - 0.05) * Math.PI * 20
+    carRef.current.position.y += vibration
+
+    const tilt = isHeroPhase ? 0 : Math.sin(progress * 5) * (isEventsPhase ? 0.01 : 0.03)
+    carRef.current.rotation.x = tilt
+
+    const wheelRotation = isHeroPhase || isEventsPhase ? 0 : (progress - 0.05) * Math.PI * 14
     if (frontLeftWheelRef.current) frontLeftWheelRef.current.rotation.x = wheelRotation
     if (frontRightWheelRef.current) frontRightWheelRef.current.rotation.x = wheelRotation
     if (rearLeftWheelRef.current) rearLeftWheelRef.current.rotation.x = wheelRotation
     if (rearRightWheelRef.current) rearRightWheelRef.current.rotation.x = wheelRotation
-    
-    // DYNAMIC MATERIAL UPDATES: Lights first, body later
-    // Update body materials opacity
+
+    const accentColor = activeAccent.current || "#00E5FF"
     if (bodyMaterialRef.current) {
-      bodyMaterialRef.current.opacity = bodyOpacity
+      bodyMaterialRef.current.opacity = isHeroPhase ? 0.3 : Math.min(1, 0.3 + (progress - 0.05) * 10)
       bodyMaterialRef.current.transparent = true
+      bodyMaterialRef.current.emissive.set(accentColor)
     }
     if (cabinMaterialRef.current) {
-      cabinMaterialRef.current.opacity = bodyOpacity
+      cabinMaterialRef.current.opacity = isHeroPhase ? 0.3 : Math.min(1, 0.3 + (progress - 0.05) * 10)
       cabinMaterialRef.current.transparent = true
     }
-    
-    // Update headlight intensity (always bright)
+
     headlightRefs.current.forEach(light => {
-      if (light) light.emissiveIntensity = lightIntensity
+      if (light) {
+        const shimmer = isEventsPhase ? 0.3 + Math.sin(Date.now() * 0.001) * 0.1 : 0
+        light.emissiveIntensity = isHeroPhase ? 2.5 : 2.0 + shimmer
+        light.emissive.set(accentColor)
+      }
     })
-    
-    // Update underglow (subtle in Hero, stronger in Journey)
+
     if (underglowRef.current) {
-      underglowRef.current.emissiveIntensity = isHeroPhase ? 0.3 : 0.5
+      const breathe = isEventsPhase ? 0.1 + Math.sin(Date.now() * 0.0012) * 0.1 : 0
+      underglowRef.current.emissive.set(accentColor)
+      underglowRef.current.color.set(accentColor)
+      underglowRef.current.emissiveIntensity = isHeroPhase ? 0.3 : 0.5 + density * 0.2 + breathe
       underglowRef.current.opacity = isHeroPhase ? 0.2 : 0.3
+    }
+
+    if (activeCardIndex && lastCardIndexRef.current !== activeCardIndex.current) {
+      lastCardIndexRef.current = activeCardIndex.current
+      carRef.current.position.y -= 0.04
+    }
+
+    if (isPausedPhase || isTextActive) {
+      carRef.current.position.lerp(carRef.current.position, 0.4)
+      return
     }
   })
 
