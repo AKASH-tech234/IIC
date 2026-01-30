@@ -6,6 +6,7 @@ import Lights from "./Lights"
 import Car from "./Car"
 import Road from "./Road"
 import City from "./City"
+import Sky from "./Sky"
 
 /**
  * Scene Content - All 3D objects
@@ -21,15 +22,22 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
 
   const fogRef = useRef()
 
+  const horizonColor = useRef("#04202A")
+
   useEffect(() => {
     if (!fogRef.current) return
     const accent = activeAccent.current || "#070617"
-    const base = new THREE.Color("#070617")
+    const base = new THREE.Color("#03050B")
     const accentColor = new THREE.Color(accent)
     const phase = activePhase.current || "HERO"
-    const blend = phase === "EVENTS_SIDE_PROFILE" ? 0.15 : 0.0
+    const blend = phase === "EVENTS_SIDE_PROFILE" ? 0.22 : 0.06
     base.lerp(accentColor, blend)
     fogRef.current.color = base
+
+    const horizonBase = new THREE.Color("#083042")
+    const horizonAccent = new THREE.Color(accent)
+    horizonBase.lerp(horizonAccent, phase === "EVENTS_SIDE_PROFILE" ? 0.3 : 0.05)
+    horizonColor.current = `#${horizonBase.getHexString()}`
   }, [activeAccent, activePhase])
 
   return (
@@ -39,7 +47,8 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         phaseProgress={phaseProgress}
       />
       <Lights />
-      <fog ref={fogRef} attach="fog" args={["#070617", 8, 25]} />
+      <Sky horizonColor={horizonColor.current} />
+      <fog ref={fogRef} attach="fog" args={["#05080F", 12, 160]} />
       <Car 
         scrollProgress={scrollProgress}
         scrollVelocity={scrollVelocity}
@@ -57,10 +66,8 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         activeAccent={activeAccent}
       />
       <City 
-        scrollProgress={scrollProgress}
-        scrollVelocity={scrollVelocity}
         motionDensity={motionDensity}
-        activePhase={activePhase}
+        activeAccent={activeAccent}
       />
     </>
   )

@@ -116,9 +116,9 @@ export default function JourneyEvents({ activeCardIndexRef }) {
           />
         </div>
 
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 section-stack">
           <h2
-            className="text-4xl sm:text-5xl md:text-6xl uppercase tracking-[0.2em]"
+            className="text-4xl sm:text-5xl md:text-6xl uppercase tracking-[0.04em] section-title"
             style={{
               fontFamily: "var(--font-display)",
               color: "#FFFFFF"
@@ -127,7 +127,7 @@ export default function JourneyEvents({ activeCardIndexRef }) {
             Events In Motion
           </h2>
           <p
-            className="mt-6 text-base md:text-lg"
+            className="mt-2 text-base md:text-lg section-body"
             style={{
               fontFamily: "var(--font-body)",
               color: "rgba(255,255,255,0.7)"
