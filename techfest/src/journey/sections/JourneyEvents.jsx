@@ -2,63 +2,40 @@ import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
-/**
- * Journey Events Section
- * 
- * Side-profile card sequence aligned with the 3D rotation phase.
- * Cards translate on X only, one visible at a time.
- */
-export default function JourneyEvents({ activeCardIndexRef }) {
+export default function JourneyEvents() {
   const sectionRef = useRef(null)
-  const lastIndexRef = useRef(-1)
+  const linesRef = useRef([])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const cards = gsap.utils.toArray(".events-card")
-      const totalCards = cards.length
+      const cards = gsap.utils.toArray(".events-arc-card")
+
+      gsap.set(cards, { opacity: 0, y: 20 })
+      gsap.set(linesRef.current, { strokeDashoffset: 200 })
 
       ScrollTrigger.create({
         trigger: sectionRef.current,
-        start: "top top",
-        end: "bottom bottom",
+        start: "top 55%",
+        end: "bottom 50%",
         scrub: 1,
         onUpdate: (self) => {
           const progress = self.progress
-          cards.forEach((card, index) => {
-            const cardProgress = gsap.utils.clamp(0, 1, (progress * totalCards) - index)
-            const enter = gsap.utils.interpolate(220, 0, Math.min(cardProgress / 0.5, 1))
-            const exit = gsap.utils.interpolate(0, -220, Math.max((cardProgress - 0.5) / 0.5, 0))
-            const x = cardProgress <= 0.5 ? enter : exit
-            const opacity = cardProgress <= 0.5
-              ? gsap.utils.interpolate(0, 1, cardProgress / 0.5)
-              : gsap.utils.interpolate(1, 0, (cardProgress - 0.5) / 0.5)
+          const reveal = gsap.utils.clamp(0, 1, progress * 1.2)
 
-            gsap.set(card, {
-              x,
-              opacity,
-              zIndex: Math.round(opacity * 10)
+          cards.forEach((card, index) => {
+            gsap.to(card, {
+              opacity: reveal,
+              y: 0,
+              duration: 0.4,
+              delay: index * 0.1
             })
           })
-        }
-      })
 
-      ScrollTrigger.create({
-        trigger: sectionRef.current,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 1,
-        onUpdate: (self) => {
-          const activeIndex = Math.min(totalCards - 1, Math.floor(self.progress * totalCards))
-          const activeCard = cards[activeIndex]
-
-          if (activeCard?.dataset?.accent) {
-            document.documentElement.style.setProperty("--accent-color", activeCard.dataset.accent)
-          }
-
-          if (activeCardIndexRef && lastIndexRef.current !== activeIndex) {
-            lastIndexRef.current = activeIndex
-            activeCardIndexRef.current = activeIndex
-          }
+          linesRef.current.forEach((line) => {
+            if (line) {
+              line.style.strokeDashoffset = `${200 - 200 * reveal}`
+            }
+          })
         }
       })
     }, sectionRef)
@@ -66,131 +43,67 @@ export default function JourneyEvents({ activeCardIndexRef }) {
     return () => ctx.revert()
   }, [])
 
-  const events = [
-    {
-      title: "AI",
-      description: "Models, intelligence, and applied ML systems.",
-      accent: "#3B82F6"
-    },
-    {
-      title: "Robotics",
-      description: "Build physical systems with precise control.",
-      accent: "#8B5CF6"
-    },
-    {
-      title: "Hackathon",
-      description: "Prototype fast, ship bold solutions in 24 hours.",
-      accent: "#EC4899"
-    },
-    {
-      title: "Design",
-      description: "Human-first systems and creative problem solving.",
-      accent: "#22C55E"
-    }
+  const tracks = [
+    { title: "AI", accent: "#3B82F6" },
+    { title: "WEB", accent: "#8B5CF6" },
+    { title: "CLOUD", accent: "#EC4899" },
+    { title: "SECURITY", accent: "#22C55E" }
   ]
 
   return (
-    <section
-      ref={sectionRef}
-      id="journey-events"
-      className="relative min-h-[160vh] w-full flex items-center py-32"
-    >
-      <div className="relative z-10 w-full px-6 md:px-8">
-        <div className="mb-10 flex items-center gap-4 justify-center">
-          <div 
-            className="w-12 h-[2px]"
-            style={{ background: "linear-gradient(to right, var(--accent-color), transparent)" }}
-          />
-          <span 
-            className="text-xs tracking-[0.3em] uppercase"
-            style={{
-              color: "var(--accent-color)",
-              fontFamily: "var(--font-body)"
-            }}
-          >
-            Milestone 02
-          </span>
-          <div 
-            className="w-12 h-[2px]"
-            style={{ background: "linear-gradient(to left, var(--accent-color), transparent)" }}
-          />
-        </div>
-
+    <section ref={sectionRef} id="journey-events" className="relative min-h-[160vh] w-full px-6 md:px-10 py-28">
+      <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16 section-stack">
-          <h2
-            className="text-4xl sm:text-5xl md:text-6xl uppercase tracking-[0.04em] section-title"
-            style={{
-              fontFamily: "var(--font-display)",
-              color: "#FFFFFF"
-            }}
-          >
-            Events In Motion
+          <p className="text-xs tracking-[0.35em] uppercase text-cyan-300">Milestone 02</p>
+          <h2 className="text-4xl md:text-6xl uppercase section-title" style={{ fontFamily: "var(--font-display)" }}>
+            Mission Curve
           </h2>
-          <p
-            className="mt-2 text-base md:text-lg section-body"
-            style={{
-              fontFamily: "var(--font-body)",
-              color: "rgba(255,255,255,0.7)"
-            }}
-          >
-            Each track appears beside the car as a milestone in the journey.
+          <p className="text-base md:text-lg text-slate-300 section-body">
+            Four tracks emerge together at the curve, framing the journey’s core domains.
           </p>
         </div>
 
-        <div className="relative flex justify-end">
-          <div className="relative h-[360px] w-full max-w-[520px]">
-            {events.map((event, index) => (
-              <div
-                key={event.title}
-                className="events-card absolute inset-0 flex items-center justify-end"
-                data-accent={event.accent}
-                style={{
-                  transform: "translateX(220px)",
-                  opacity: 0
-                }}
-              >
+        <div className="relative flex justify-center">
+          <div className="relative w-full max-w-5xl h-[420px]">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 400" fill="none">
+              {tracks.map((track, index) => (
+                <path
+                  key={track.title}
+                  ref={(el) => (linesRef.current[index] = el)}
+                  d={`M400 320 C${320 + index * 40} 260 ${260 + index * 80} 200 ${180 + index * 140} 120`}
+                  stroke={track.accent}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray="200"
+                />
+              ))}
+            </svg>
+
+            <div className="absolute inset-0 flex items-center justify-center gap-6">
+              {tracks.map((track, index) => (
                 <div
-                  className="w-full rounded-2xl px-8 py-10"
+                  key={track.title}
+                  className="events-arc-card"
                   style={{
-                    background: "rgba(8, 12, 20, 0.9)",
-                    border: `1px solid ${event.accent}60`,
-                    boxShadow: `0 20px 60px rgba(0,0,0,0.4)`
+                    transform: `translateY(${index % 2 === 0 ? -40 : 40}px)`
                   }}
                 >
-                  <p
-                    className="text-xs tracking-[0.35em] uppercase"
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      color: event.accent
-                    }}
-                  >
-                    Track 0{index + 1}
-                  </p>
-                  <h3
-                    className="mt-4 text-3xl uppercase tracking-[0.15em]"
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      color: "#FFFFFF"
-                    }}
-                  >
-                    {event.title}
-                  </h3>
-                  <p
-                    className="mt-4 text-base leading-relaxed"
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      color: "rgba(255,255,255,0.7)"
-                    }}
-                  >
-                    {event.description}
-                  </p>
                   <div
-                    className="mt-6 h-[2px] w-20"
-                    style={{ background: event.accent }}
-                  />
+                    className="px-6 py-4 rounded-xl"
+                    style={{
+                      background: "rgba(6, 16, 26, 0.75)",
+                      border: `1px solid ${track.accent}66`,
+                      boxShadow: "0 12px 28px rgba(0,0,0,0.4)"
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Track</p>
+                    <h3 className="text-xl uppercase" style={{ color: track.accent, fontFamily: "var(--font-display)" }}>
+                      {track.title}
+                    </h3>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
