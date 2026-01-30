@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
+import { buildRoadCurve } from "./curveUtils"
 
 /**
  * 3D Sports Car Component - Scroll-Driven Animation
@@ -12,7 +13,7 @@ import * as THREE from "three"
  * - Subtle vibration effect
  * - Neon accents and emissive headlights
  */
-export default function Car({ scrollProgress, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent }) {
+export default function Car({ scrollProgress, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }) {
   const carRef = useRef()
   const frontLeftWheelRef = useRef()
   const frontRightWheelRef = useRef()
@@ -25,25 +26,8 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
   const headlightRefs = useRef([])
   const underglowRef = useRef()
 
-  const straightCurve = useMemo(() => new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(0, 0, -24),
-    new THREE.Vector3(0, 0, -48),
-    new THREE.Vector3(0, 0, -72),
-    new THREE.Vector3(0, 0, -96),
-    new THREE.Vector3(0, 0, -120)
-  ]), [])
-
-  const turnCurve = useMemo(() => new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(0, 0, -18),
-    new THREE.Vector3(0, 0, -36),
-    new THREE.Vector3(4, 0, -54),
-    new THREE.Vector3(10, 0, -72),
-    new THREE.Vector3(18, 0, -90),
-    new THREE.Vector3(26, 0, -108),
-    new THREE.Vector3(34, 0, -126)
-  ]), [])
+  const straightCurve = useMemo(() => buildRoadCurve("STRAIGHT"), [])
+  const turnCurve = useMemo(() => buildRoadCurve("TURN"), [])
 
   const lastPhaseRef = useRef(null)
   const lockedPoseRef = useRef(null)
@@ -65,6 +49,7 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
     const isHeroPhase = phase === "HERO"
     const isEventsPhase = phase === "EVENTS_SIDE_PROFILE"
     const isTurningPhase = phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD"
+    const isTextHold = textPhase?.current === "HOLD"
 
     const curve = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? turnCurve : straightCurve
     const curveProgress = phaseProgressValue
@@ -74,7 +59,7 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
     const basePosition = curvePoint.clone().add(new THREE.Vector3(0, 0.3, 0))
     const targetYaw = Math.atan2(curveTangent.x, curveTangent.z)
 
-    const lerpSpeed = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.05 : 0.12
+    const lerpSpeed = isTextHold ? 0.03 : phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.05 : 0.12
 
     if (isEventsPhase) {
       if (!lockedPoseRef.current) {

@@ -1,77 +1,55 @@
-# MNNIT TechSummit 2026 - Official Website
+# MNNIT TechSummit 2026
 
-Modern, immersive single-page application for MNNIT TechSummit 2026 featuring scroll-driven animations and cinematic parallax effects.
+Cinematic single-page web experience for TechSummit 2026 featuring a 3D car journey, scroll-driven storytelling, and a Tron-inspired UI.
 
-## 🚀 Quick Start
+## Design Inspiration
+- Tron-like neon-on-dark aesthetic with strong silhouettes and a hero vehicle as the narrative anchor.
+- Calm, cinematic motion that prioritizes readability and spatial grounding.
+- Scroll as a “journey” through milestones rather than a standard section stack.
 
+## Libraries & Tools Used
+- React 19 + Vite
+- GSAP + ScrollTrigger
+- Framer Motion
+- Tailwind CSS
+- Three.js + React Three Fiber
+
+## Frontend Concept & Flow
+- The user enters a hero scene where the car is centered and the road anchors the frame.
+- Scroll transitions drive the car through milestones (About, Events arc, Schedule timeline).
+- Events moment: all tracks appear together with connector lines while the car slows.
+- Schedule includes interactive day cards, plus speaker micro-interactions for each day.
+- The experience ends at “Reach the Future,” followed by a global reach footer.
+
+## Key Architecture
+- `AppJourney` orchestrates scroll phases and passes refs to the 3D scene.
+- `Scene` (React Three Fiber) renders car, road, lights, and environment layers.
+- A shared spline curve drives the road, car, and camera alignment.
+- Journey sections are layered above the 3D scene and timed with GSAP triggers.
+
+## Key Components
+- `src/three/Scene.jsx` – 3D scene composition (car, road, city, sky, fog).
+- `src/three/Road.jsx` – TubeGeometry road + center line synced to spline.
+- `src/three/Car.jsx` – car motion aligned to spline + phase pacing.
+- `src/journey/sections/JourneyEvents.jsx` – arc track layout with connector lines.
+- `src/journey/sections/JourneySchedule.jsx` – timeline + speakers + carousel cards.
+- `src/components/ui/apple-cards-carousel.jsx` – interactive flip cards.
+
+## Simulated Experience
+- A virtual “drive” through innovation milestones with a physically grounded road.
+- Cinematic pacing: car slows at key sections while text and cards settle.
+- Micro-interactions (hover lift, flip, blur fades) reinforce depth and focus.
+
+## Current Frontend Features
+- 3D journey scene: car, road spline, camera alignment, phase-based motion
+- Scroll-driven sections: Hero, About timeline, Events arc, Schedule timeline
+- Speakers cards with micro-interactions (hover lift + image zoom)
+- Carousel cards with hover flip details
+- Custom cursor
+- Glass navigation and subtle UI micro-interactions
+
+## How to Run
 ```bash
 npm install
 npm run dev
 ```
-
-Visit: http://localhost:5173/
-
-## 📚 Documentation
-
-- **[PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md)** - 📖 **Complete codebase documentation for AI assistants**
-  - Full architecture explanation
-  - Component library reference
-  - Animation system details
-  - Known issues and solutions
-  - Design system reference
-  
-- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Implementation notes and deliverables
-
-- **[src/journey/ARCHITECTURE.md](./src/journey/ARCHITECTURE.md)** - Journey system technical architecture
-
-## 🎨 Two Design Versions
-
-Switch between versions in `src/App.jsx`:
-
-```javascript
-const VERSION = "journey" // "core" or "journey"
-```
-
-### Journey Version (Default)
-- Vertical scroll → Horizontal parallax
-- Fixed car with subtle animations
-- Multi-layer environment transitions
-- Cinematic, modern aesthetic
-
-### Core Version
-- Fixed innovation orb
-- Vertical timeline
-- Abstract, technical aesthetic
-
-## ⚠️ Known Issues
-
-**World Map Import Error** - `src/components/ui/world-map.jsx` has DottedMap constructor issue. See PROJECT_CONTEXT.md for details.
-
-## 🛠️ Tech Stack
-
-- React 19 + Vite (Rolldown)
-- GSAP 3 + ScrollTrigger
-- Framer Motion
-- Tailwind CSS 4
-- Three.js (optional 3D)
-
-## 📱 Features
-
-✅ Scroll-driven parallax animations  
-✅ Mobile responsive  
-✅ Accessibility support (reduced motion)  
-✅ GPU-accelerated performance  
-✅ Glass morphism UI  
-✅ Dynamic environment transitions  
-
-
-## Assets & Attributions
-
-- Car Model by **Ignition Labs**  
-  License: **CC-BY 3.0**  
-  Source: https://poly.pizza/m/5zUWP5UsLg-  
-  License details: https://creativecommons.org/licenses/by/3.0/
-
----
-
-*Built with ❤️ for MNNIT TechSummit 2026*

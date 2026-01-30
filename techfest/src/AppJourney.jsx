@@ -14,7 +14,6 @@ import JourneySchedule from "./journey/sections/JourneySchedule"
 import JourneyWorkshops from "./journey/sections/JourneyWorkshops"
 import JourneyFinalCTA from "./journey/sections/JourneyFinalCTA"
 import JourneyFooter from "./journey/sections/JourneyFooter"
-
 gsap.registerPlugin(ScrollTrigger)
 
 /**
@@ -45,6 +44,7 @@ export default function AppJourney() {
   const lastScrollRef = useRef(0)
   const lastTimeRef = useRef(0)
   const lastPhaseIdRef = useRef("HERO")
+  const textPhaseRef = useRef("ENTER")
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -91,6 +91,14 @@ export default function AppJourney() {
 
           if (lastPhaseIdRef.current !== activePhase.id) {
             lastPhaseIdRef.current = activePhase.id
+          }
+
+          if (phaseProgress < 0.25) {
+            textPhaseRef.current = "ENTER"
+          } else if (phaseProgress < 0.75) {
+            textPhaseRef.current = "HOLD"
+          } else {
+            textPhaseRef.current = "EXIT"
           }
 
           phaseProgressRef.current = Math.min(1, Math.max(0, phaseProgress))
@@ -279,6 +287,7 @@ export default function AppJourney() {
         phaseProgress={phaseProgressRef}
         activeCardIndex={activeCardIndexRef}
         activeAccent={accentRef}
+        textPhase={textPhaseRef}
       />
 
       {/* Fixed Background with Parallax - Hidden (using unified background instead) */}
