@@ -10,7 +10,7 @@ export default function JourneyEvents() {
     const ctx = gsap.context(() => {
       const cards = gsap.utils.toArray(".events-arc-card")
 
-      gsap.set(cards, { opacity: 0, y: 20 })
+      gsap.set(cards, { opacity: 0, y: 10, filter: "blur(4px)" })
       gsap.set(linesRef.current, { strokeDashoffset: 200 })
 
       ScrollTrigger.create({
@@ -26,8 +26,10 @@ export default function JourneyEvents() {
             gsap.to(card, {
               opacity: reveal,
               y: 0,
-              duration: 0.4,
-              delay: index * 0.1
+              filter: "blur(0px)",
+              duration: 0.7,
+              delay: index * 0.1,
+              ease: "power2.out"
             })
           })
 
@@ -70,10 +72,10 @@ export default function JourneyEvents() {
                 <path
                   key={track.title}
                   ref={(el) => (linesRef.current[index] = el)}
-                  d={`M400 320 C${320 + index * 40} 260 ${260 + index * 80} 200 ${180 + index * 140} 120`}
+                  d={`M400 320 L${200 + index * 140} 140`}
                   stroke={track.accent}
                   strokeWidth="2"
-                  strokeLinecap="round"
+                  strokeLinecap="square"
                   strokeDasharray="200"
                 />
               ))}

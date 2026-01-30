@@ -9,15 +9,15 @@ export default function JourneyAbout() {
     const ctx = gsap.context(() => {
       const cards = gsap.utils.toArray(".timeline-card")
 
-      cards.forEach((card, index) => {
+      cards.forEach((card) => {
         ScrollTrigger.create({
           trigger: card,
-          start: "top 75%",
-          end: "bottom 35%",
-          onEnter: () => gsap.to(card, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }),
-          onLeave: () => gsap.to(card, { opacity: 0, x: -30, duration: 0.4, ease: "power2.in" }),
-          onEnterBack: () => gsap.to(card, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }),
-          onLeaveBack: () => gsap.to(card, { opacity: 0, x: -30, duration: 0.4, ease: "power2.in" })
+          start: "top 70%",
+          end: "bottom 40%",
+          onEnter: () => gsap.to(card, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power2.out" }),
+          onLeave: () => gsap.to(card, { opacity: 0, y: 10, filter: "blur(4px)", duration: 0.6, ease: "power2.out" }),
+          onEnterBack: () => gsap.to(card, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power2.out" }),
+          onLeaveBack: () => gsap.to(card, { opacity: 0, y: 10, filter: "blur(4px)", duration: 0.6, ease: "power2.out" })
         })
       })
     }, sectionRef)
@@ -76,7 +76,7 @@ export default function JourneyAbout() {
             {timeline.map((item, index) => (
               <div
                 key={item.title}
-                className="timeline-card opacity-0 translate-x-[-30px]"
+                className="timeline-card opacity-0 translate-y-[10px]"
                 style={{ maxWidth: "520px" }}
               >
                 {item.card ? (

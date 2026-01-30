@@ -45,15 +45,17 @@ export default function JourneyHero() {
       
       gsap.fromTo(titleLetters,
         { 
-          opacity: 0, 
-          y: 40 
+          opacity: 0,
+          y: 12,
+          filter: "blur(4px)"
         },
         { 
           opacity: 1, 
           y: 0,
-          duration: 0.6,
-          stagger: 0.05, // 50ms per letter
-          ease: "power3.out"
+          filter: "blur(0px)",
+          duration: 0.7,
+          stagger: 0.03,
+          ease: "power2.out"
         }
       )
 
@@ -62,11 +64,12 @@ export default function JourneyHero() {
       const titleDelay = 0.6 + (titleLetters.length * 0.05)
       
       gsap.fromTo(".hero-tagline",
-        { opacity: 0, y: 20 },
+        { opacity: 0, y: 10, filter: "blur(4px)" },
         { 
           opacity: 1, 
-          y: 0, 
-          duration: 0.8,
+          y: 0,
+          filter: "blur(0px)",
+          duration: 0.7,
           delay: titleDelay,
           ease: "power2.out"
         }
@@ -75,27 +78,27 @@ export default function JourneyHero() {
       // ===== 3. DESCRIPTION ANIMATION: Fade with blur removal =====
       // Delay: +0.2s after tagline starts
       gsap.fromTo(".hero-description",
-        { opacity: 0, filter: "blur(4px)" },
+        { opacity: 0, y: 10, filter: "blur(4px)" },
         { 
           opacity: 1, 
+          y: 0,
           filter: "blur(0px)", 
-          duration: 0.8,
+          duration: 0.7,
           delay: titleDelay + 0.2,
           ease: "power2.out"
         }
       )
 
-      // ===== 4. CTA BUTTONS: Scale + stagger =====
-      // Delay: +0.4s after description starts
+      // ===== 4. CTA BUTTONS: Fade in =====
       gsap.fromTo(".hero-cta-button",
-        { opacity: 0, scale: 0.9 },
+        { opacity: 0, y: 10 },
         { 
           opacity: 1, 
-          scale: 1,
-          duration: 0.6, 
-          stagger: 0.15, // 150ms between buttons
-          delay: titleDelay + 0.6,
-          ease: "back.out(1.7)"
+          y: 0,
+          duration: 0.7, 
+          stagger: 0.1,
+          delay: titleDelay + 0.4,
+          ease: "power2.out"
         }
       )
 
@@ -174,7 +177,8 @@ export default function JourneyHero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           
           {/* Primary CTA - Tron Button (Hard Edges) */}
-          <button 
+          <a 
+            href="#wip"
             className="hero-cta-button px-10 py-4 font-semibold text-lg tracking-wide transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070617]"
             style={{
               fontFamily: "var(--font-display)",
@@ -198,10 +202,10 @@ export default function JourneyHero() {
             aria-label="Register for MNNIT TechSummit 2026"
           >
             Register Now
-          </button>
+          </a>
 
           {/* Secondary CTA - Tron Outline Button */}
-          <button 
+          <a href="#journey-events" 
             className="hero-cta-button px-10 py-4 font-medium text-lg tracking-wide transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070617]"
             style={{
               fontFamily: "var(--font-display)",
@@ -223,7 +227,7 @@ export default function JourneyHero() {
             aria-label="Explore events at TechSummit"
           >
             Explore Events
-          </button>
+          </a>
         </div>
       </div>
     </section>

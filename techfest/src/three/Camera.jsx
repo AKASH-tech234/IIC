@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react"
 import { useThree } from "@react-three/fiber"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
+import { buildRoadCurve } from "./curveUtils"
 
 /**
  * Dynamic Chase Camera
@@ -15,25 +16,8 @@ export default function Camera({ activePhase, phaseProgress }) {
   const lastPhaseRef = useRef(null)
   const lockedPoseRef = useRef(null)
 
-  const straightCurve = useMemo(() => new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(0, 0, -24),
-    new THREE.Vector3(0, 0, -48),
-    new THREE.Vector3(0, 0, -72),
-    new THREE.Vector3(0, 0, -96),
-    new THREE.Vector3(0, 0, -120)
-  ]), [])
-
-  const turnCurve = useMemo(() => new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(0, 0, -18),
-    new THREE.Vector3(0, 0, -36),
-    new THREE.Vector3(4, 0, -54),
-    new THREE.Vector3(10, 0, -72),
-    new THREE.Vector3(18, 0, -90),
-    new THREE.Vector3(26, 0, -108),
-    new THREE.Vector3(34, 0, -126)
-  ]), [])
+  const straightCurve = useMemo(() => buildRoadCurve("STRAIGHT"), [])
+  const turnCurve = useMemo(() => buildRoadCurve("TURN"), [])
 
   const heroPosition = useMemo(() => new THREE.Vector3(0, 2.8, 6), [])
   const heroLookAt = useMemo(() => new THREE.Vector3(0, 1.2, 0), [])

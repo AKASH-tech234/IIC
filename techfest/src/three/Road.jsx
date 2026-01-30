@@ -1,45 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
+import { buildRoadCurve } from "./curveUtils"
 
-const ROAD_RADIUS = 2.4
+const ROAD_RADIUS = 2.8
 const LINE_RADIUS = 0.08
-const TUBE_SEGMENTS = 160
-
-const buildCurve = (profile) => {
-  if (profile === "TURN") {
-    return new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(0, 0, -18),
-      new THREE.Vector3(0, 0, -36),
-      new THREE.Vector3(4, 0, -54),
-      new THREE.Vector3(10, 0, -72),
-      new THREE.Vector3(18, 0, -90),
-      new THREE.Vector3(26, 0, -108),
-      new THREE.Vector3(34, 0, -126)
-    ])
-  }
-
-  if (profile === "POST_TURN") {
-    return new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(0, 0, -24),
-      new THREE.Vector3(0, 0, -48),
-      new THREE.Vector3(0, 0, -72),
-      new THREE.Vector3(0, 0, -96),
-      new THREE.Vector3(0, 0, -120)
-    ])
-  }
-
-  return new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(0, 0, -24),
-    new THREE.Vector3(0, 0, -48),
-    new THREE.Vector3(0, 0, -72),
-    new THREE.Vector3(0, 0, -96),
-    new THREE.Vector3(0, 0, -120)
-  ])
-}
+const CENTER_RADIUS = 0.05
+const TUBE_SEGMENTS = 200
 
 /**
  * Road Component
@@ -50,6 +17,7 @@ const buildCurve = (profile) => {
  */
 export default function Road({ motionDensity, activePhase, activeAccent }) {
   const lineMaterialRef = useRef()
+  const centerMaterialRef = useRef()
   const roadMaterialRef = useRef()
   const lastPhaseRef = useRef(activePhase.current)
   const [curveProfile, setCurveProfile] = useState("HERO_STRAIGHT")
@@ -58,12 +26,10 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
     const phase = activePhase.current || "HERO"
     const density = motionDensity.current || 0
 
-    let nextProfile = "HERO_STRAIGHT"
+    let nextProfile = "STRAIGHT"
     if (phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE") {
       nextProfile = "TURN"
-    } else if (phase === "ROTATE_FORWARD") {
-      nextProfile = "POST_TURN"
-    } else if (phase === "FORWARD_CONTENT") {
+    } else if (phase === "ROTATE_FORWARD" || phase === "FORWARD_CONTENT") {
       nextProfile = "POST_TURN"
     }
 
@@ -73,35 +39,44 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
     }
 
     if (lineMaterialRef.current && activeAccent.current) {
-      const emissiveIntensity = 0.35 + density * 0.4
+      const isEvent = phase === "EVENTS_SIDE_PROFILE"
+      const emissiveIntensity = isEvent ? 1.0 : 0.7
       lineMaterialRef.current.emissive.set(activeAccent.current)
       lineMaterialRef.current.color.set(activeAccent.current)
       lineMaterialRef.current.emissiveIntensity = emissiveIntensity
     }
 
+    if (centerMaterialRef.current) {
+      centerMaterialRef.current.emissiveIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.9 : 0.4
+    }
+
     if (roadMaterialRef.current) {
-      roadMaterialRef.current.roughness = 0.95 - density * 0.1
-      roadMaterialRef.current.emissiveIntensity = 0.06 + density * 0.08
+      roadMaterialRef.current.roughness = 0.9
+      roadMaterialRef.current.emissiveIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.14 : 0.1
     }
   })
 
-  const curve = useMemo(() => buildCurve(curveProfile), [curveProfile])
+  const curve = useMemo(() => buildRoadCurve(curveProfile), [curveProfile])
   const roadGeometry = useMemo(() => new THREE.TubeGeometry(curve, TUBE_SEGMENTS, ROAD_RADIUS, 12, false), [curve])
   const lineGeometry = useMemo(() => new THREE.TubeGeometry(curve, TUBE_SEGMENTS, LINE_RADIUS, 8, false), [curve])
+  const centerGeometry = useMemo(() => new THREE.TubeGeometry(curve, TUBE_SEGMENTS, CENTER_RADIUS, 8, false), [curve])
+  const edgeGeometry = useMemo(() => new THREE.TubeGeometry(curve, TUBE_SEGMENTS, 0.12, 8, false), [curve])
 
   useEffect(() => () => roadGeometry.dispose(), [roadGeometry])
   useEffect(() => () => lineGeometry.dispose(), [lineGeometry])
+  useEffect(() => () => centerGeometry.dispose(), [centerGeometry])
+  useEffect(() => () => edgeGeometry.dispose(), [edgeGeometry])
 
   return (
-    <group position={[0, -0.05, 0]}>
+    <group position={[0, -0.02, 0]}>
       <mesh geometry={roadGeometry} rotation={[-Math.PI / 2, 0, 0]}>
         <meshStandardMaterial
           ref={roadMaterialRef}
-          color="#06080F"
+          color="#05070D"
           metalness={0.1}
-          roughness={0.95}
-          emissive="#0A0F1A"
-          emissiveIntensity={0.08}
+          roughness={0.9}
+          emissive="#00E5FF"
+          emissiveIntensity={0.12}
         />
       </mesh>
       <mesh geometry={lineGeometry} rotation={[-Math.PI / 2, 0, 0]}>
@@ -110,6 +85,32 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
           color="#00E5FF"
           emissive="#00E5FF"
           emissiveIntensity={0.7}
+        />
+      </mesh>
+      <mesh geometry={centerGeometry} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshStandardMaterial
+          ref={centerMaterialRef}
+          color="#EAFBFF"
+          emissive="#EAFBFF"
+          emissiveIntensity={0.4}
+        />
+      </mesh>
+      <mesh geometry={edgeGeometry} rotation={[-Math.PI / 2, 0, 0]} position={[-2.6, 0, 0]}>
+        <meshStandardMaterial
+          color="#1A2A3A"
+          emissive="#1A2A3A"
+          emissiveIntensity={0.08}
+          transparent
+          opacity={0.08}
+        />
+      </mesh>
+      <mesh geometry={edgeGeometry} rotation={[-Math.PI / 2, 0, 0]} position={[2.6, 0, 0]}>
+        <meshStandardMaterial
+          color="#1A2A3A"
+          emissive="#1A2A3A"
+          emissiveIntensity={0.08}
+          transparent
+          opacity={0.08}
         />
       </mesh>
     </group>

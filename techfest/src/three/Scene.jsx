@@ -12,7 +12,7 @@ import Sky from "./Sky"
  * Scene Content - All 3D objects
  * Uses frameloop="demand" for performance
  */
-function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent }) {
+function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }) {
   const { invalidate } = useThree()
 
   useEffect(() => {
@@ -57,6 +57,7 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         phaseProgress={phaseProgress}
         activeCardIndex={activeCardIndex}
         activeAccent={activeAccent}
+        textPhase={textPhase}
       />
       <Road 
         motionDensity={motionDensity}
@@ -90,7 +91,7 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
  * - z-10: Content
  * - z-20: Header
  */
-export default function Scene({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent }) {
+export default function Scene({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }) {
   return (
     <div 
       className="fixed inset-0 pointer-events-none"
@@ -120,6 +121,7 @@ export default function Scene({ scrollProgress, scrollVelocity, motionDensity, a
           phaseProgress={phaseProgress}
           activeCardIndex={activeCardIndex}
           activeAccent={activeAccent}
+          textPhase={textPhase}
         />
       </Canvas>
     </div>

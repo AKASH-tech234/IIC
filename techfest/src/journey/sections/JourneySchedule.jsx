@@ -20,10 +20,11 @@ export default function JourneySchedule() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.fromTo(".schedule-heading",
-        { opacity: 0, scale: 0.9 },
+        { opacity: 0, y: 10, filter: "blur(4px)" },
         {
           opacity: 1,
-          scale: 1,
+          y: 0,
+          filter: "blur(0px)",
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top 70%",
@@ -35,11 +36,12 @@ export default function JourneySchedule() {
 
       // Road markers pass beneath (move up)
       gsap.fromTo(".road-marker",
-        { opacity: 0, y: 200 },
+        { opacity: 0, y: 12, filter: "blur(4px)" },
         {
           opacity: 1,
           y: 0,
-          stagger: 0.3,
+          filter: "blur(0px)",
+          stagger: 0.2,
           scrollTrigger: {
             trigger: ".timeline-container",
             start: "top 70%",
@@ -51,15 +53,32 @@ export default function JourneySchedule() {
 
       // Timeline text fades in after marker passes
       gsap.fromTo(".timeline-content",
-        { opacity: 0, x: -50 },
+        { opacity: 0, y: 10, filter: "blur(4px)" },
         {
           opacity: 1,
-          x: 0,
-          stagger: 0.3,
+          y: 0,
+          filter: "blur(0px)",
+          stagger: 0.2,
           scrollTrigger: {
             trigger: ".timeline-container",
             start: "top 60%",
             end: "top 15%",
+            scrub: 1
+          }
+        }
+      )
+
+      gsap.fromTo(".speaker-card",
+        { opacity: 0, y: 12, filter: "blur(4px)" },
+        {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          stagger: 0.15,
+          scrollTrigger: {
+            trigger: ".timeline-container",
+            start: "top 55%",
+            end: "top 20%",
             scrub: 1
           }
         }
@@ -87,17 +106,32 @@ export default function JourneySchedule() {
     {
       day: "Day 1",
       title: "Opening & Foundations",
-      events: ["Opening Ceremony", "Keynote Sessions", "Technical Workshops"]
+      events: ["Opening Ceremony", "Keynote Sessions", "Technical Workshops"],
+      speakers: [
+        { name: "Aditi Rao", role: "AI Researcher", photo: "https://images.unsplash.com/photo-1524502397800-2eeaad7c3fe5?w=600" },
+        { name: "Karan Mehta", role: "Robotics Lead", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600" },
+        { name: "Neha Singh", role: "Product Strategist", photo: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600" }
+      ]
     },
     {
       day: "Day 2",
       title: "Hackathon Sprint",
-      events: ["24-Hour Hackathon", "Engineering Challenges", "Live Coding Battles"]
+      events: ["24-Hour Hackathon", "Engineering Challenges", "Live Coding Battles"],
+      speakers: [
+        { name: "Rohan Verma", role: "Cloud Architect", photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600" },
+        { name: "Sara Ali", role: "Security Analyst", photo: "https://images.unsplash.com/photo-1524503033411-c9566986fc8f?w=600" },
+        { name: "Vikram Das", role: "DevOps Coach", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600" }
+      ]
     },
     {
       day: "Day 3",
       title: "Finals & Awards",
-      events: ["Final Presentations", "Project Demos", "Awards Ceremony"]
+      events: ["Final Presentations", "Project Demos", "Awards Ceremony"],
+      speakers: [
+        { name: "Priya Nair", role: "Design Director", photo: "https://images.unsplash.com/photo-1524502397800-2eeaad7c3fe5?w=600" },
+        { name: "Arjun Patel", role: "Tech Evangelist", photo: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=600" },
+        { name: "Maya Kapoor", role: "Innovation Lead", photo: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600" }
+      ]
     }
   ]
 
@@ -293,6 +327,30 @@ export default function JourneySchedule() {
 
               {/* Timeline Content - Fades in after marker passes */}
               <div className="timeline-content max-w-2xl mx-auto">
+                <div className="mt-10">
+                  <p className="text-sm uppercase tracking-[0.25em] text-slate-400 mb-4 text-center">Featured Speakers</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {item.speakers.map((speaker) => (
+                      <div
+                        key={speaker.name}
+                        className="speaker-card group rounded-2xl overflow-hidden border border-white/10 bg-[#0B111A]/70 backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:border-cyan-300/40"
+                      >
+                        <div className="relative h-48 overflow-hidden">
+                          <img
+                            src={speaker.photo}
+                            alt={speaker.name}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#0B111A] via-transparent to-transparent opacity-90" />
+                        </div>
+                        <div className="p-4 text-center">
+                          <p className="text-base font-semibold text-white">{speaker.name}</p>
+                          <p className="text-xs uppercase tracking-[0.2em] text-cyan-200/80 mt-1">{speaker.role}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 <h3 
                   className="text-3xl md:text-4xl font-bold mb-6 text-center"
                   style={{

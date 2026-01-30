@@ -9,18 +9,18 @@
  */
 export default function Footer() {
   const socialLinks = [
-    { name: "Twitter", url: "#", icon: "X" },
-    { name: "Instagram", url: "#", icon: "IG" },
-    { name: "LinkedIn", url: "#", icon: "in" },
-    { name: "GitHub", url: "#", icon: "GH" }
+    { name: "Twitter", url: "#wip", icon: "X" },
+    { name: "Instagram", url: "#wip", icon: "IG" },
+    { name: "LinkedIn", url: "#wip", icon: "in" },
+    { name: "GitHub", url: "#wip", icon: "GH" }
   ]
 
   const quickLinks = [
-    { name: "About", url: "#foundation" },
-    { name: "Events", url: "#engineering" },
-    { name: "Schedule", url: "#software" },
-    { name: "Sponsors", url: "#" },
-    { name: "FAQs", url: "#" }
+    { name: "About", url: "#journey-about" },
+    { name: "Events", url: "#journey-events" },
+    { name: "Schedule", url: "#journey-schedule" },
+    { name: "Sponsors", url: "#wip" },
+    { name: "FAQs", url: "#wip" }
   ]
 
   return (
@@ -102,9 +102,9 @@ export default function Footer() {
             © 2026 MNNIT Allahabad. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-cyan-400 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-cyan-400 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-cyan-400 transition-colors">Code of Conduct</a>
+            <a href="#wip" className="hover:text-cyan-400 transition-colors">Privacy Policy</a>
+            <a href="#wip" className="hover:text-cyan-400 transition-colors">Terms of Service</a>
+            <a href="#wip" className="hover:text-cyan-400 transition-colors">Code of Conduct</a>
           </div>
         </div>
 

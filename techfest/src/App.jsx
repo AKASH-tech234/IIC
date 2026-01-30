@@ -1,4 +1,3 @@
-import AppCore from "./AppCore"
 import AppJourney from "./AppJourney"
 
 /**
@@ -11,12 +10,6 @@ import AppJourney from "./AppJourney"
  * Change VERSION to switch between implementations
  */
 
-const VERSION = "journey" // "core" or "journey"
-
 export default function App() {
-  if (VERSION === "journey") {
-    return <AppJourney />
-  }
-  
-  return <AppCore />
+  return <AppJourney />
 }
