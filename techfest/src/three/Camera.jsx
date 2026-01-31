@@ -107,7 +107,14 @@ export default function Camera({
 
     // FIXED LOCAL OFFSET - adjusts per phase for visibility
     let localOffset
-    if (phase === "EVENTS_SIDE_PROFILE") {
+    let additionalTilt = 0 // Additional tilt angle for HERO phase
+    
+    if (phase === "HERO") {
+      // PHASE 12: Forward-facing view with upward tilt to showcase city
+      // Position: slightly behind and elevated, looking forward
+      localOffset = new THREE.Vector3(0, 3.5, 4 + zBreathing) // Elevated position
+      additionalTilt = 8 * (Math.PI / 180) // 8° upward tilt to see city skyline
+    } else if (phase === "EVENTS_SIDE_PROFILE") {
       // PHASE 9: Side-top view with downward bias for grounded feel (was 4, now 3.8)
       localOffset = new THREE.Vector3(6, 3.8, 2) // Downward bias: camera feels more grounded
     } else {
@@ -140,9 +147,18 @@ export default function Camera({
     // Smooth follow - ALWAYS lerp, supports reverse scrolling
     camera.position.lerp(cameraTarget, lerpFactor)
     
-    // Apply tilt by adjusting lookAt target slightly upward
+    // Apply tilt by adjusting lookAt target
     const lookAtTarget = carPosition.clone()
-    lookAtTarget.y += Math.tan(tiltAngle) * localOffset.z // Tilt based on distance
+    
+    // PHASE 12: For HERO, look forward into the city (ahead of car)
+    if (phase === "HERO") {
+      lookAtTarget.z -= 10 // Look 10 units forward (into the distance)
+      lookAtTarget.y += Math.tan(additionalTilt) * 10 // Apply upward tilt to see city skyline
+    } else {
+      // Normal phase: look at car with optional tilt
+      lookAtTarget.y += Math.tan(tiltAngle) * localOffset.z // Tilt based on distance
+    }
+    
     camera.lookAt(lookAtTarget)
     
     // Track phase changes

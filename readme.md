@@ -15,6 +15,41 @@ Cinematic single-page web experience for TechSummit 2026 featuring a 3D car jour
 - Spatially grounded 3D environment with physically-based camera
 - Motion scales intelligently across device sizes (mobile, tablet, desktop)
 
+## ✨ Special Features
+
+### 🎯 Interactive Elements
+- **Custom Cursor** - Dynamic cursor with hover effects and pointer tracking
+- **Parallax Storytelling** - Multi-layer depth with scroll-based parallax
+- **Micro-interactions** - Hover lifts, blur fades, 3D pin effects, card flips
+- **Smooth Scroll Physics** - Lenis-powered smooth scrolling with inertia
+
+### 🎭 Unique Experiences
+- **3D Car Journey** - Real-time 3D vehicle following a spline curve
+- **Cinematic Camera** - Chase camera with device-aware breathing effects
+- **Scroll-Driven Narrative** - GSAP timeline orchestration synced to scroll
+- **Device-Aware Motion** - Animations scale based on device capability
+
+### 👥 Content Sections
+- **Speakers / Team Section** - Interactive cards with hover micro-interactions
+- **Event Cards** - Left/right cinematic entry animations
+- **Schedule Carousel** - Apple-style flip cards with day-based filtering
+- **Workshop Cards** - 3D pin hover effects with depth
+- **World Map** - Animated global reach visualization
+
+## 📖 Main Page Sections
+
+The journey experience consists of 7 core sections:
+
+1. **🚀 Hero** - Opening scene with car reveal, title compression animation, and primary CTA
+2. **📚 About** - TechFest overview with alternating side-entry point animations
+3. **🎪 Events** - Featured event showcase with left/right cinematic card entrance
+4. **📅 Schedule** - Day-wise timeline with interactive carousel cards
+5. **🛠️ Workshops** - Workshop listings with 3D hover lift effects
+6. **🏁 Final CTA** - Journey destination with camera tilt and call-to-action
+7. **🌍 Footer** - World map, social links, and global reach visualization
+
+Each section has its own GSAP timeline with device-scaled motion for optimal experience across all screen sizes.
+
 ## 🛠️ Tech Stack
 
 **Frontend Core**
@@ -43,7 +78,7 @@ src/
 └── index.css                  # Global styles + Tailwind directives
 ```
 
-### Director Pattern (Phase 10-11)
+### Director Pattern
 **Single Sources of Truth for Behavior**
 
 ```
