@@ -47,8 +47,8 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
 
   const geometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), [])
 
-  // City bands along the entire road - extended to Z: -1200
-  const CITY_BANDS = [-80, -220, -380, -540, -700, -860, -1020]
+  // City bands along FULL road - MUST cover entire traversal to Z: -1200
+  const CITY_BANDS = [-100, -250, -400, -550, -700, -850, -1000, -1150]
   
   const farBuildings = useMemo(() => {
     const allBuildings = []
@@ -56,8 +56,8 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
       const bandBuildings = createBuildings({
         count: 28,
         xRange: 160,
-        zCenter: bandZ - 80,
-        zJitter: 60,
+        zCenter: bandZ - 100, // FAR: extends deeper (-200 to -1250)
+        zJitter: 80,
         heightRange: [14, 26],
         scaleRange: [1.6, 3]
       })
@@ -72,8 +72,8 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
       const bandBuildings = createBuildings({
         count: 20,
         xRange: 120,
-        zCenter: bandZ,
-        zJitter: 60,
+        zCenter: bandZ, // MID: covers -100 to -1150
+        zJitter: 70,
         heightRange: [14, 28],
         scaleRange: [1.6, 3.2]
       })
@@ -88,8 +88,8 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
       const bandBuildings = createBuildings({
         count: 14,
         xRange: 80,
-        zCenter: bandZ + 40,
-        zJitter: 50,
+        zCenter: bandZ + 50, // NEAR: covers -50 to -1100
+        zJitter: 60,
         heightRange: [12, 20],
         scaleRange: [1.2, 2.2]
       })
@@ -156,6 +156,17 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
     ]
   }, [])
 
+  // LANDMARK ARCHITECTURE - FIXED placement in frustum
+  const landmarks = useMemo(() => ({
+    megaTower: { x: -75, z: -450, height: 55, radius: 0.9 }, // Moved into view, shorter for fog
+    arc: { x1: 15, x2: 25, z: -150, height: 22, thickness: 1.2 }, // Already visible
+    asymmetricCluster: [ // Offset from road, in frustum
+      { x: 70, z: -650, height: 22, scale: 2.5 },
+      { x: 75, z: -655, height: 17, scale: 2.0 },
+      { x: 80, z: -648, height: 20, scale: 2.2 }
+    ]
+  }), [])
+
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime()
     const density = motionDensity?.current ?? 0
@@ -184,14 +195,20 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
       layer.current.children.forEach((child, i) => {
         if (!child.isMesh || !child.material || child.material.emissiveIntensity === undefined) return
 
-        // Layered depth with spotlight effect
+        // AMPLIFIED spotlight effect
         if (idx === 0) {
-          // FAR layer - no emissive (silhouette)
-          child.material.emissiveIntensity = 0
+          // FAR layer - slight visible dim glow during EVENTS for depth
+          const farGlow = isEventsHold ? 0.08 : 0
+          child.material.emissiveIntensity = farGlow
         } else {
           const flicker = Math.sin(t * 0.35 + i * 0.7) * 0.15 + 0.82
-          // MID layer gets boost during EVENTS, keep visibility
-          const layerBoost = idx === 1 ? (isEventsHold ? 0.45 : 0.35) : 0.3
+          // AMPLIFIED: MID +40%, NEAR +35% during EVENTS
+          let layerBoost
+          if (idx === 1) {
+            layerBoost = isEventsHold ? 0.5 : 0.35 // MID: +40%
+          } else {
+            layerBoost = isEventsHold ? 0.4 : 0.3 // NEAR: +35%
+          }
           child.material.emissiveIntensity = flicker * layerBoost
         }
       })
@@ -270,6 +287,46 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
           </mesh>
         )
       })}
+
+      {/* LANDMARK 1: Mega-tower - Signature vertical element */}
+      <mesh position={[landmarks.megaTower.x, landmarks.megaTower.height / 2, landmarks.megaTower.z]}>
+        <cylinderGeometry args={[landmarks.megaTower.radius, landmarks.megaTower.radius * 1.2, landmarks.megaTower.height, 8]} />
+        <meshStandardMaterial
+          color="#121B3A"
+          emissive="#121B3A"
+          emissiveIntensity={0.05}
+          roughness={0.95}
+          metalness={0.05}
+        />
+      </mesh>
+
+      {/* LANDMARK 2: Arc structure - Spanning near road */}
+      <group position={[(landmarks.arc.x1 + landmarks.arc.x2) / 2, 0, landmarks.arc.z]}>
+        <mesh position={[0, landmarks.arc.height / 2, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <torusGeometry args={[landmarks.arc.height / 2, landmarks.arc.thickness / 2, 8, 16, Math.PI]} />
+          <meshStandardMaterial
+            color="#24347A"
+            emissive={activeAccent?.current || "#00E5FF"}
+            emissiveIntensity={0.15}
+            roughness={0.85}
+            metalness={0.15}
+          />
+        </mesh>
+      </group>
+
+      {/* LANDMARK 3: Asymmetric cluster - Offset masses */}
+      {landmarks.asymmetricCluster.map((building, i) => (
+        <mesh key={`cluster-${i}`} position={[building.x, building.height / 2, building.z]}>
+          <boxGeometry args={[building.scale, building.height, building.scale]} />
+          <meshStandardMaterial
+            color="#1A2550"
+            emissive="#1A2550"
+            emissiveIntensity={0.12}
+            roughness={0.9}
+            metalness={0.1}
+          />
+        </mesh>
+      ))}
     </>
   )
 }

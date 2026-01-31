@@ -224,7 +224,7 @@ export default function AppJourney() {
           } else if (progress >= 0.55 && progress < 0.62) {
             accentColor = "#22C55E"
           } else if (progress >= 0.78) {
-            accentColor = "#00E5FF"
+            accentColor = "#00F5E5" // Warmer teal for FINAL (+5% hue shift)
           }
 
           if (accentRef.current !== accentColor) {

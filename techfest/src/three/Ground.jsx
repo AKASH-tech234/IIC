@@ -5,15 +5,26 @@ import { useFrame } from "@react-three/fiber"
 /**
  * Ground Plane - Mandatory depth reference with Tron elements
  */
-export default function Ground({ activePhase }) {
+export default function Ground({ activePhase, scrollProgress }) {
   const transitStripRef = useRef()
   
   useFrame(() => {
     if (!transitStripRef.current) return
     const phase = activePhase?.current || "HERO"
+    const progress = scrollProgress?.current || 0
     
-    // Spotlight effect - ground strip boost during EVENTS
-    const targetIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.12 : phase === "FORWARD_CONTENT" ? 0.10 : 0.08
+    // MOMENT OF ARRIVAL - Ground strip activates on first scroll
+    let targetIntensity
+    if (progress < 0.05) {
+      // Ramp up from 0 to base during first 5% scroll
+      targetIntensity = (progress / 0.05) * 0.08
+    } else if (phase === "EVENTS_SIDE_PROFILE") {
+      targetIntensity = 0.18
+    } else if (phase === "FORWARD_CONTENT") {
+      targetIntensity = 0.10
+    } else {
+      targetIntensity = 0.08
+    }
     transitStripRef.current.emissiveIntensity += (targetIntensity - transitStripRef.current.emissiveIntensity) * 0.1
   })
   // Light panels positions - extended to Z: -1200

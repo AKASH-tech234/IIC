@@ -16,6 +16,7 @@ import Ground from "./Ground"
 function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }) {
   const { invalidate } = useThree()
   const carRef = useRef() // Shared ref for Car and Camera coordination
+  const horizonGlowRef = useRef()
 
   useEffect(() => {
     // Invalidate (re-render) when scroll changes
@@ -30,6 +31,7 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
     if (!fogRef.current) return
     const accent = activeAccent.current || "#070617"
     const phase = activePhase.current || "HERO"
+    const progress = scrollProgress.current || 0
     
     // Phase-based fog color grading with spotlight dimming
     let baseFogColor
@@ -42,10 +44,10 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
       fogBlend = 0.03
       horizonIntensity = 0
     } else if (phase === "EVENTS_SIDE_PROFILE") {
-      // Accent-forward + spotlight (darken fog for contrast)
-      baseFogColor = new THREE.Color("#08091C")
+      // AMPLIFIED: Much darker sky for contrast (-12%)
+      baseFogColor = new THREE.Color("#050812")
       fogBlend = 0.15
-      horizonIntensity = 0.4
+      horizonIntensity = 0.65 // +60% glow intensity
     } else if (phase === "FORWARD_CONTENT") {
       // Brighter, hopeful
       baseFogColor = new THREE.Color("#0F1A33")
@@ -64,10 +66,21 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
 
     const horizonBase = new THREE.Color("#00E5FF")
     const horizonAccent = new THREE.Color(accent)
-    horizonBase.lerp(horizonAccent, horizonIntensity)
+    
+    // MOMENT OF ARRIVAL - Horizon glow ramps up on first scroll
+    let finalHorizonIntensity = horizonIntensity
+    if (progress < 0.05) {
+      finalHorizonIntensity = horizonIntensity * (progress / 0.05)
+    }
+    
+    horizonBase.lerp(horizonAccent, finalHorizonIntensity)
     horizonColor.current = `#${horizonBase.getHexString()}`
-  }, [activeAccent, activePhase])
+  }, [activeAccent, activePhase, scrollProgress])
 
+  // Phase-based lighting drama
+  const phase = activePhase.current || "HERO"
+  const isEventsPhase = phase === "EVENTS_SIDE_PROFILE"
+  
   return (
     <>
       <Camera 
@@ -76,7 +89,8 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         carRef={carRef}
       />
       <Lights />
-      <ambientLight intensity={0.6} />
+      {/* AMPLIFIED: Reduce ambient during EVENTS for spotlight effect */}
+      <ambientLight intensity={isEventsPhase ? 0.35 : 0.6} />
       <directionalLight 
         position={[50, 80, 20]} 
         color="#88ccff" 
@@ -89,14 +103,14 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         intensity={0.6}
         castShadow={false}
       />
-      {/* Edge definition light - from horizon toward camera */}
+      {/* AMPLIFIED: Boost edge light during EVENTS for drama */}
       <directionalLight 
         position={[0, 20, -400]} 
         color="#5588BB" 
-        intensity={0.3}
+        intensity={isEventsPhase ? 0.6 : 0.3}
         castShadow={false}
       />
-      <Ground activePhase={activePhase} />
+      <Ground activePhase={activePhase} scrollProgress={scrollProgress} />
       <Sky horizonColor={horizonColor.current} />
       <fog ref={fogRef} attach="fog" args={["#0A1022", 60, 400]} />
       <Car 
@@ -113,9 +127,8 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
       <Road 
         motionDensity={motionDensity}
         activePhase={activePhase}
-        phaseProgress={phaseProgress}
-        activeCardIndex={activeCardIndex}
         activeAccent={activeAccent}
+        scrollProgress={scrollProgress}
       />
       <City 
         motionDensity={motionDensity}

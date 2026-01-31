@@ -22,69 +22,49 @@ export default function Camera({ activePhase, phaseProgress, carRef }) {
   const exitLookAt = useMemo(() => new THREE.Vector3(0, 0.8, -8), [])
 
   useFrame(() => {
+    // CRITICAL: Camera MUST read carRef EVERY FRAME
+    if (!carRef || !carRef.current) return
+
     const phase = activePhase.current || "HERO"
-    const phaseProgressValue = phaseProgress.current || 0
-    
-    // Cinematic FOV shift - pronounced zoom during EVENTS
+    const carPosition = carRef.current.position
+
+    // FOV shift
     const targetFOV = phase === "EVENTS_SIDE_PROFILE" ? 38 : 50
     camera.fov += (targetFOV - camera.fov) * 0.08
     camera.updateProjectionMatrix()
-    
-    // HERO OVERRIDE - Cinematic intro framing
-    if (phase === "HERO") {
-      camera.position.lerp(new THREE.Vector3(0, 5.5, 12), 0.08)
-      camera.lookAt(0, 2.5, -20)
-      return
-    }
 
+    // Track phase changes
     if (phase !== lastPhaseRef.current) {
       lastPhaseRef.current = phase
       lockedPoseRef.current = null
     }
 
-    if (phase === "FORWARD_CONTENT") {
-      camera.position.lerp(exitPosition, 0.08)
-      camera.lookAt(exitLookAt)
-      return
-    }
-
-    // CAMERA ANCHORED TO CAR - read car position directly
-    if (!carRef || !carRef.current) return
-
-    const carPosition = carRef.current.position
-    const carRotation = carRef.current.rotation
-
-    // Local offset based on phase
-    const turnBlend = phase === "ROTATE_TO_SIDE" ? phaseProgressValue : phase === "ROTATE_FORWARD" ? 1 - phaseProgressValue : phase === "EVENTS_SIDE_PROFILE" ? 1 : 0
-    const zoomOut = turnBlend * turnBlend * (3 - 2 * turnBlend)
-
+    // FIXED LOCAL OFFSET - no mode switching
     let localOffset
     if (phase === "EVENTS_SIDE_PROFILE") {
-      localOffset = new THREE.Vector3(4, 3.0, 0) // Side view
-    } else if (phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD") {
-      localOffset = new THREE.Vector3(0, 2.8 + zoomOut * 0.6, 6.0 + zoomOut * 3.0) // Zoomed out
+      localOffset = new THREE.Vector3(4, 2.7, 0)
     } else {
-      localOffset = new THREE.Vector3(0, 2.2, 6) // Default follow cam
+      localOffset = new THREE.Vector3(0, 2.2, 6) // Always behind car
     }
 
-    // Apply offset in world space
-    const desiredPosition = carPosition.clone().add(localOffset)
+    // Camera target = car position + offset (NEVER independent)
+    const cameraTarget = carPosition.clone().add(localOffset)
 
+    // EVENTS lock
     if (phase === "EVENTS_SIDE_PROFILE") {
       if (!lockedPoseRef.current) {
         lockedPoseRef.current = {
-          position: desiredPosition.clone(),
+          position: cameraTarget.clone(),
           lookAt: carPosition.clone()
         }
       }
-
       camera.position.lerp(lockedPoseRef.current.position, 0.08)
       camera.lookAt(lockedPoseRef.current.lookAt)
       return
     }
 
-    // Smooth follow
-    camera.position.lerp(desiredPosition, 0.1)
+    // Smooth follow - ALWAYS lerp, NEVER set directly
+    camera.position.lerp(cameraTarget, 0.08)
     camera.lookAt(carPosition)
   })
 

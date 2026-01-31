@@ -24,17 +24,26 @@ export const roadFrames = {
  * Car and camera sample this same curve
  * Road geometry is static, movement is via curve progress
  */
-export default function Road({ motionDensity, activePhase, activeAccent }) {
+export default function Road({ motionDensity, activePhase, activeAccent, scrollProgress }) {
   const lineMaterialRef = useRef()
   const roadMaterialRef = useRef()
   const centerLineRef = useRef()
 
   useFrame(() => {
     const phase = activePhase.current || "HERO"
+    const progress = scrollProgress?.current || 0
 
-    // Spotlight effect - road center line boost during EVENTS
+    // MOMENT OF ARRIVAL - Center line activates progressively on first scroll
     if (centerLineRef.current) {
-      const targetIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.9 : 0.6
+      let targetIntensity
+      if (progress < 0.05) {
+        // Ramp up from 0 to base during first 5% scroll
+        targetIntensity = (progress / 0.05) * 0.6
+      } else if (phase === "EVENTS_SIDE_PROFILE") {
+        targetIntensity = 0.9
+      } else {
+        targetIntensity = 0.6
+      }
       centerLineRef.current.emissiveIntensity += (targetIntensity - centerLineRef.current.emissiveIntensity) * 0.1
     }
 
