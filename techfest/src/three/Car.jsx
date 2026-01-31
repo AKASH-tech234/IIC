@@ -1,8 +1,8 @@
 import { useRef, forwardRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
-import { masterRoadCurve } from "./curveUtils"
-import { roadFrames, ROAD_RADIUS } from "./Road"
+import { totalRoadLength, getSegmentAtDistance } from "./curveUtils"
+import { getSegmentFrames, ROAD_RADIUS } from "./Road"
 
 /**
  * 3D Sports Car Component - Scroll-Driven Animation
@@ -49,18 +49,22 @@ const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgr
     const isTurningPhase = phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD"
     const isTextHold = textPhase?.current === "HOLD"
 
-    // SINGLE SOURCE OF TRUTH - sample master curve
-    const t = THREE.MathUtils.clamp(phaseProgressValue, 0, 0.98)
-    const curvePoint = masterRoadCurve.getPointAt(t)
+    // DISTANCE-BASED POSITIONING - True forward journey
+    const distance = progress * totalRoadLength
+    const { segment, localT } = getSegmentAtDistance(distance)
     
-    // Get Frenet frame with INTERPOLATION for smooth motion
-    const f = t * (roadFrames.normals.length - 1)
+    // Sample current segment curve
+    const curvePoint = segment.curve.getPointAt(localT)
+    
+    // Get Frenet frames for current segment
+    const segmentFrames = getSegmentFrames(segment.id)
+    const f = localT * (segmentFrames.normals.length - 1)
     const i0 = Math.floor(f)
-    const i1 = Math.min(i0 + 1, roadFrames.normals.length - 1)
+    const i1 = Math.min(i0 + 1, segmentFrames.normals.length - 1)
     const lerpT = f - i0
     
-    const normal = roadFrames.normals[i0].clone().lerp(roadFrames.normals[i1], lerpT).normalize()
-    const tangent = roadFrames.tangents[i0].clone().lerp(roadFrames.tangents[i1], lerpT).normalize()
+    const normal = segmentFrames.normals[i0].clone().lerp(segmentFrames.normals[i1], lerpT).normalize()
+    const tangent = segmentFrames.tangents[i0].clone().lerp(segmentFrames.tangents[i1], lerpT).normalize()
     
     // Lift car ABOVE tube surface using normal (NOT world Y)
     const CAR_CLEARANCE = 0.35
@@ -70,31 +74,13 @@ const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgr
 
     const lerpSpeed = isTextHold ? 0.03 : phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.05 : 0.12
 
-    if (isEventsPhase) {
-      // EVENTS GALLERY HOLD - Lock position completely, no forward motion
-      if (!lockedPoseRef.current) {
-        lockedPoseRef.current = {
-          position: basePosition.clone(),
-          normal: normal.clone(),
-          tangent: tangent.clone()
-        }
-      }
-      // Freeze position - no lerp, direct copy
-      carRef.current.position.copy(lockedPoseRef.current.position)
-      carRef.current.up.copy(lockedPoseRef.current.normal)
-      
-      const lookAtTarget = lockedPoseRef.current.position.clone().add(lockedPoseRef.current.tangent)
-      carRef.current.lookAt(lookAtTarget)
-    } else {
-      // Reset locked pose when leaving events
-      lockedPoseRef.current = null
-      
-      carRef.current.position.lerp(basePosition, lerpSpeed)
-      carRef.current.up.lerp(normal, lerpSpeed)
-      
-      const lookAtTarget = basePosition.clone().add(tangent)
-      carRef.current.lookAt(lookAtTarget)
-    }
+    // ALWAYS update car position based on scroll distance (allows reverse scrolling)
+    // During EVENTS, position updates but motion feels slower due to cinematic holds
+    carRef.current.position.lerp(basePosition, lerpSpeed)
+    carRef.current.up.lerp(normal, lerpSpeed)
+    
+    const lookAtTarget = basePosition.clone().add(tangent)
+    carRef.current.lookAt(lookAtTarget)
 
     // Subtle vibration along the normal (not world Y)
     const vibrationIntensity = isEventsPhase ? 0.003 : isHeroPhase ? 0.01 : 0.02
@@ -142,10 +128,9 @@ const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgr
       carRef.current.position.y -= 0.04
     }
 
-    // DEBUG: Log car position vs road end
-    if (Math.random() < 0.01) { // Log occasionally to avoid spam
-      const roadEndZ = masterRoadCurve.points[masterRoadCurve.points.length - 1].z
-      console.log('CAR Z:', carRef.current.position.z.toFixed(1), 'ROAD END Z:', roadEndZ.toFixed(1), 'CAR POS:', carRef.current.position.x.toFixed(1), carRef.current.position.y.toFixed(1), carRef.current.position.z.toFixed(1))
+    // DEBUG: Log car progress through segments
+    if (Math.random() < 0.01) {
+      console.log('CAR - Segment:', segment.id, 'LocalT:', localT.toFixed(3), 'Distance:', distance.toFixed(1), '/', totalRoadLength.toFixed(1), 'Pos Z:', carRef.current.position.z.toFixed(1))
     }
   })
 

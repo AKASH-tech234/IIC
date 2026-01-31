@@ -1,7 +1,6 @@
 import * as THREE from "three"
 import { useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
-import { masterRoadCurve } from "./curveUtils"
 
 const createMaterial = (color, emissiveScale, emissiveIntensity, roughness = 0.9, metalness = 0.1) =>
   new THREE.MeshStandardMaterial({
@@ -103,31 +102,19 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
   const midMat = useMemo(() => createMaterial("#1A2550", 0.08, 0.35, 0.9, 0.1), []) // Medium
   const nearMat = useMemo(() => createMaterial("#24347A", 0.1, 0.3, 0.85, 0.15), []) // Most detail
   
-  // Roadside pylons that FOLLOW the road curve
+  // Roadside pylons - using absolute Z coordinates
   const pylons = useMemo(() => {
     const pylonArray = []
-    const curveLength = masterRoadCurve.getLength()
-    const spacing = 25
-    const numPylons = Math.floor(curveLength / spacing)
+    const spacing = 50
     
-    for (let i = 1; i < numPylons; i++) {
-      const t = i / numPylons
-      const point = masterRoadCurve.getPointAt(t)
-      const tangent = masterRoadCurve.getTangentAt(t)
-      
-      // Get perpendicular offset (left and right of road)
-      const perpendicular = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize()
-      const offset = 5.8
+    // Place pylons from Z: 0 to -1200
+    for (let z = -25; z > -1200; z -= spacing) {
+      // Simple placement along road center
+      const x = z < -200 ? (z < -700 ? 40 : 20 + ((z + 200) / 500) * 20) : 0
       
       pylonArray.push(
-        { 
-          position: point.clone().add(perpendicular.clone().multiplyScalar(offset)),
-          height: THREE.MathUtils.randFloat(1.8, 2.4)
-        },
-        { 
-          position: point.clone().add(perpendicular.clone().multiplyScalar(-offset)),
-          height: THREE.MathUtils.randFloat(1.8, 2.4)
-        }
+        { x: x - 5.8, z, height: THREE.MathUtils.randFloat(1.8, 2.4) },
+        { x: x + 5.8, z, height: THREE.MathUtils.randFloat(1.8, 2.4) }
       )
     }
     return pylonArray
@@ -246,9 +233,9 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
       {renderLayer(midRef, midBuildings, midMat, 0, 0)}
       {renderLayer(nearRef, nearBuildings, nearMat, 0.2, 0.7)}
       
-      {/* Roadside pylons that follow curve */}
+      {/* Roadside pylons - absolute positioning */}
       {pylons.map((pylon, i) => (
-        <mesh key={`pylon-${i}`} position={[pylon.position.x, pylon.height / 2, pylon.position.z]}>
+        <mesh key={`pylon-${i}`} position={[pylon.x, pylon.height / 2, pylon.z]}>
           <boxGeometry args={[0.15, pylon.height, 0.15]} />
           <meshStandardMaterial
             color={activeAccent?.current || "#00E5FF"}

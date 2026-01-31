@@ -1,20 +1,26 @@
 import { useEffect, useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
-import { masterRoadCurve } from "./curveUtils"
+import { roadSegments } from "./curveUtils"
 
 export const ROAD_RADIUS = 2.8
 const LINE_RADIUS = 0.08
 const CENTER_RADIUS = 0.08
-const TUBE_SEGMENTS = 500
+const SEGMENTS_PER_CURVE = 100
 
-// Compute Frenet frames for car positioning
-// NOTE: TubeGeometry uses inverted normals, we need to flip them
-const rawFrames = masterRoadCurve.computeFrenetFrames(TUBE_SEGMENTS, false)
-export const roadFrames = {
-  tangents: rawFrames.tangents,
-  normals: rawFrames.normals.map(n => n.clone().multiplyScalar(-1)), // FLIP normals
-  binormals: rawFrames.binormals
+// Compute and store Frenet frames for each segment
+const segmentFramesMap = {}
+roadSegments.forEach(segment => {
+  const rawFrames = segment.curve.computeFrenetFrames(SEGMENTS_PER_CURVE, false)
+  segmentFramesMap[segment.id] = {
+    tangents: rawFrames.tangents,
+    normals: rawFrames.normals.map(n => n.clone().multiplyScalar(-1)), // FLIP normals
+    binormals: rawFrames.binormals
+  }
+})
+
+export function getSegmentFrames(segmentId) {
+  return segmentFramesMap[segmentId]
 }
 
 /**
@@ -62,75 +68,85 @@ export default function Road({ motionDensity, activePhase, activeAccent, scrollP
     }
   })
 
-  // Build geometry ONCE on master curve
-  const roadGeometry = useMemo(() => {
-    const geom = new THREE.TubeGeometry(masterRoadCurve, TUBE_SEGMENTS, ROAD_RADIUS, 12, false)
-    const curveLength = masterRoadCurve.getLength()
-    const endZ = masterRoadCurve.points[masterRoadCurve.points.length - 1].z
-    console.log('Road geometry created - curve length:', curveLength.toFixed(1), 'end Z:', endZ.toFixed(1))
-    return geom
+  // Build geometry for EACH segment - true forward journey
+  const geometries = useMemo(() => {
+    const roadGeos = []
+    const lineGeos = []
+    const centerGeos = []
+    const edgeGeos = []
+    
+    roadSegments.forEach(segment => {
+      roadGeos.push(new THREE.TubeGeometry(segment.curve, SEGMENTS_PER_CURVE, ROAD_RADIUS, 12, false))
+      lineGeos.push(new THREE.TubeGeometry(segment.curve, SEGMENTS_PER_CURVE, LINE_RADIUS, 8, false))
+      centerGeos.push(new THREE.TubeGeometry(segment.curve, SEGMENTS_PER_CURVE, CENTER_RADIUS, 8, false))
+      edgeGeos.push(new THREE.TubeGeometry(segment.curve, SEGMENTS_PER_CURVE, 0.12, 8, false))
+    })
+    
+    console.log('Road geometries created -', roadSegments.length, 'segments')
+    return { roadGeos, lineGeos, centerGeos, edgeGeos }
   }, [])
-  const lineGeometry = useMemo(() => new THREE.TubeGeometry(masterRoadCurve, TUBE_SEGMENTS, LINE_RADIUS, 8, false), [])
-  const centerGeometry = useMemo(() => {
-    const geom = new THREE.TubeGeometry(masterRoadCurve, TUBE_SEGMENTS, CENTER_RADIUS, 8, false)
-    console.log('Center line geometry created - radius:', CENTER_RADIUS, 'segments:', TUBE_SEGMENTS)
-    return geom
-  }, [])
-  const edgeGeometry = useMemo(() => new THREE.TubeGeometry(masterRoadCurve, TUBE_SEGMENTS, 0.12, 8, false), [])
 
-  useEffect(() => () => roadGeometry.dispose(), [roadGeometry])
-  useEffect(() => () => lineGeometry.dispose(), [lineGeometry])
-  useEffect(() => () => centerGeometry.dispose(), [centerGeometry])
-  useEffect(() => () => edgeGeometry.dispose(), [edgeGeometry])
+  useEffect(() => {
+    return () => {
+      geometries.roadGeos.forEach(g => g.dispose())
+      geometries.lineGeos.forEach(g => g.dispose())
+      geometries.centerGeos.forEach(g => g.dispose())
+      geometries.edgeGeos.forEach(g => g.dispose())
+    }
+  }, [geometries])
 
   return (
     <group position={[0, 0, 0]}>
-      <mesh geometry={roadGeometry}>
-        <meshStandardMaterial
-          ref={roadMaterialRef}
-          color="#111111"
-          metalness={0.35}
-          roughness={0.85}
-          emissive="#00E5FF"
-          emissiveIntensity={0.3}
-        />
-      </mesh>
-      <mesh geometry={lineGeometry}>
-        <meshStandardMaterial
-          ref={lineMaterialRef}
-          color="#00E5FF"
-          emissive="#00E5FF"
-          emissiveIntensity={0.7}
-        />
-      </mesh>
-      {/* Center line - white stripe with spotlight boost */}
-      <mesh geometry={centerGeometry} position={[0, 0.08, 0]}>
-        <meshStandardMaterial
-          ref={centerLineRef}
-          color="#FFFFFF"
-          emissive="#FFFFFF"
-          emissiveIntensity={0.6}
-          toneMapped={false}
-        />
-      </mesh>
-      <mesh geometry={edgeGeometry} position={[-2.6, 0, 0]}>
-        <meshStandardMaterial
-          color="#1A2A3A"
-          emissive="#1A2A3A"
-          emissiveIntensity={0.08}
-          transparent
-          opacity={0.08}
-        />
-      </mesh>
-      <mesh geometry={edgeGeometry} position={[2.6, 0, 0]}>
-        <meshStandardMaterial
-          color="#1A2A3A"
-          emissive="#1A2A3A"
-          emissiveIntensity={0.08}
-          transparent
-          opacity={0.08}
-        />
-      </mesh>
+      {/* Render each segment sequentially */}
+      {roadSegments.map((segment, i) => (
+        <group key={segment.id}>
+          <mesh geometry={geometries.roadGeos[i]}>
+            <meshStandardMaterial
+              ref={i === 0 ? roadMaterialRef : null}
+              color="#111111"
+              metalness={0.35}
+              roughness={0.85}
+              emissive="#00E5FF"
+              emissiveIntensity={0.3}
+            />
+          </mesh>
+          <mesh geometry={geometries.lineGeos[i]}>
+            <meshStandardMaterial
+              ref={i === 0 ? lineMaterialRef : null}
+              color="#00E5FF"
+              emissive="#00E5FF"
+              emissiveIntensity={0.7}
+            />
+          </mesh>
+          <mesh geometry={geometries.centerGeos[i]} position={[0, 0.08, 0]}>
+            <meshStandardMaterial
+              ref={i === 0 ? centerLineRef : null}
+              color="#FFFFFF"
+              emissive="#FFFFFF"
+              emissiveIntensity={0.6}
+              toneMapped={false}
+            />
+          </mesh>
+          <mesh geometry={geometries.edgeGeos[i]} position={[-2.6, 0, 0]}>
+            <meshStandardMaterial
+              color="#1A2A3A"
+              emissive="#1A2A3A"
+              emissiveIntensity={0.08}
+              transparent
+              opacity={0.08}
+            />
+          </mesh>
+          <mesh geometry={geometries.edgeGeos[i]} position={[2.6, 0, 0]}>
+            <meshStandardMaterial
+              color="#1A2A3A"
+              emissive="#1A2A3A"
+              emissiveIntensity={0.08}
+              transparent
+              opacity={0.08}
+            />
+          </mesh>
+        </group>
+      ))}
     </group>
   )
 }
