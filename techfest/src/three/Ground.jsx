@@ -5,13 +5,31 @@ import { useFrame } from "@react-three/fiber"
 /**
  * Ground Plane - Mandatory depth reference with Tron elements
  */
-export default function Ground({ activePhase, scrollProgress }) {
+export default function Ground({ 
+  activePhase, 
+  scrollProgress,
+  // Phase 5: UI ↔ World coupling signals
+  sectionPulse
+}) {
   const transitStripRef = useRef()
   
-  useFrame(() => {
+  // Phase 5: Ripple pulse tracking
+  const ripplePulseStartTimeRef = useRef(0)
+  const lastRippleSectionRef = useRef(null)
+  
+  useFrame(({ clock }) => {
     if (!transitStripRef.current) return
     const phase = activePhase?.current || "HERO"
     const progress = scrollProgress?.current || 0
+    const now = clock.elapsedTime
+    
+    // ===== PHASE 5: RIPPLE PULSE DETECTION =====
+    // Detect new section pulse and start ripple animation
+    if (sectionPulse?.current && sectionPulse.current !== lastRippleSectionRef.current) {
+      ripplePulseStartTimeRef.current = now
+      lastRippleSectionRef.current = sectionPulse.current
+      // Note: Don't reset sectionPulse here, let Road.jsx consume it
+    }
     
     // MOMENT OF ARRIVAL - Ground strip activates on first scroll
     let targetIntensity
@@ -25,6 +43,18 @@ export default function Ground({ activePhase, scrollProgress }) {
     } else {
       targetIntensity = 0.08
     }
+    
+    // ===== PHASE 5: GROUND STRIP RIPPLE (120ms outward expansion) =====
+    const timeSinceRipple = (now - ripplePulseStartTimeRef.current) * 1000 // Convert to ms
+    if (timeSinceRipple < 120) {
+      // Ripple effect: expanding wave of intensity
+      const t = timeSinceRipple / 120
+      const eased = Math.sin(t * Math.PI) // Smooth pulse in/out
+      // Add intensity boost that feels like a ripple expanding outward
+      const rippleBoost = eased * 0.12 // Peak +0.12 intensity
+      targetIntensity += rippleBoost
+    }
+    
     transitStripRef.current.emissiveIntensity += (targetIntensity - transitStripRef.current.emissiveIntensity) * 0.1
   })
   // Light panels positions - extended to Z: -1200

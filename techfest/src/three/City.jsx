@@ -1,6 +1,7 @@
 import * as THREE from "three"
 import { useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
+import { roadSegments, getSegmentAtDistance, totalRoadLength } from "./curveUtils"
 
 const createMaterial = (color, emissiveScale, emissiveIntensity, roughness = 0.9, metalness = 0.1) =>
   new THREE.MeshStandardMaterial({
@@ -11,23 +12,43 @@ const createMaterial = (color, emissiveScale, emissiveIntensity, roughness = 0.9
     emissiveIntensity
   })
 
-const ROAD_CLEAR_WIDTH = 55 // Keep buildings away from road corridor (prevents collision at curve apex X:40)
+const ROAD_CLEAR_WIDTH = 55 // Keep buildings away from road corridor
+
+/**
+ * Check if a position is too close to the road curve
+ */
+const isTooCloseToRoad = (x, z, clearWidth) => {
+  // Sample road curve at this Z position to find road center X
+  // Find approximate distance along road for this Z
+  let roadX = 0
+  
+  // Simple check: find closest segment and approximate road position
+  for (const segment of roadSegments) {
+    const points = segment.curve.getPoints(20)
+    for (const point of points) {
+      if (Math.abs(point.z - z) < 30) { // Within range
+        roadX = point.x
+        break
+      }
+    }
+  }
+  
+  // Check if building is too close to road center at this Z
+  return Math.abs(x - roadX) < clearWidth
+}
 
 const createBuildings = ({ count, xRange, zCenter, zJitter, heightRange, scaleRange }) => {
   const buildings = []
 
   for (let i = 0; i < count; i += 1) {
     const x = THREE.MathUtils.randFloatSpread(xRange)
+    const z = zCenter + THREE.MathUtils.randFloatSpread(zJitter)
     
-    // Skip if too close to road
-    if (Math.abs(x) < ROAD_CLEAR_WIDTH) continue
+    // Skip if too close to road curve at this position
+    if (isTooCloseToRoad(x, z, ROAD_CLEAR_WIDTH)) continue
     
     buildings.push({
-      position: new THREE.Vector3(
-        x,
-        0,
-        zCenter + THREE.MathUtils.randFloatSpread(zJitter)
-      ),
+      position: new THREE.Vector3(x, 0, z),
       height: THREE.MathUtils.randFloat(...heightRange),
       scale: THREE.MathUtils.randFloat(...scaleRange),
       seed: Math.random() * 100
@@ -118,19 +139,38 @@ export default function City({ motionDensity, activeAccent, activePhase, current
   const midMat = useMemo(() => createMaterial("#1A2550", 0.08, 0.35, 0.9, 0.1), []) // Medium
   const nearMat = useMemo(() => createMaterial("#24347A", 0.1, 0.3, 0.85, 0.15), []) // Most detail
   
-  // Roadside pylons - using absolute Z coordinates
+  // Roadside pylons - following actual road curve
   const pylons = useMemo(() => {
     const pylonArray = []
-    const spacing = 50
+    const spacing = 50 // Distance between pylons along road
+    const numPylons = Math.floor(totalRoadLength / spacing)
     
-    // Place pylons from Z: 0 to -1200
-    for (let z = -25; z > -1200; z -= spacing) {
-      // Simple placement along road center
-      const x = z < -200 ? (z < -700 ? 40 : 20 + ((z + 200) / 500) * 20) : 0
+    // Place pylons along the actual road curve
+    for (let i = 0; i < numPylons; i++) {
+      const distance = i * spacing
+      const { segment, localT } = getSegmentAtDistance(distance)
       
+      // Get the actual curve point
+      const curvePoint = segment.curve.getPointAt(localT)
+      
+      // Place pylons on both sides of the road (offset perpendicular to curve)
+      const nextT = Math.min(localT + 0.01, 1)
+      const nextPoint = segment.curve.getPointAt(nextT)
+      const tangent = new THREE.Vector3().subVectors(nextPoint, curvePoint).normalize()
+      const perpendicular = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize()
+      
+      const offset = 5.8
       pylonArray.push(
-        { x: x - 5.8, z, height: THREE.MathUtils.randFloat(1.8, 2.4) },
-        { x: x + 5.8, z, height: THREE.MathUtils.randFloat(1.8, 2.4) }
+        { 
+          x: curvePoint.x - perpendicular.x * offset, 
+          z: curvePoint.z - perpendicular.z * offset, 
+          height: THREE.MathUtils.randFloat(1.8, 2.4) 
+        },
+        { 
+          x: curvePoint.x + perpendicular.x * offset, 
+          z: curvePoint.z + perpendicular.z * offset, 
+          height: THREE.MathUtils.randFloat(1.8, 2.4) 
+        }
       )
     }
     return pylonArray

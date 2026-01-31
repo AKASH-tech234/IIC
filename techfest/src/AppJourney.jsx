@@ -46,6 +46,14 @@ export default function AppJourney() {
   const lastPhaseIdRef = useRef("HERO")
   const textPhaseRef = useRef("ENTER")
 
+  // ===== PHASE 5: UI ↔ WORLD COUPLING SIGNALS =====
+  // Signal refs for Three.js world reactions
+  const sectionActiveRef = useRef("HERO") // Current active section ID
+  const sectionPulseRef = useRef(null) // Temporary flag for section enter pulse
+  const cardChangeSignalRef = useRef(null) // Flag for EVENTS card transitions
+  const finalCTAActiveRef = useRef(false) // Boolean for FINAL CTA state
+  const lastPulseTimeRef = useRef(0) // Debounce timestamp for pulses
+
   useEffect(() => {
     const ctx = gsap.context(() => {
       // ===== SCROLL PROGRESS TRACKING =====
@@ -133,6 +141,42 @@ export default function AppJourney() {
 
           if (activeCardIndexRef.current !== activeCardIndex) {
             activeCardIndexRef.current = activeCardIndex
+            // Signal card change to Three.js world
+            const now = performance.now()
+            if (now - lastPulseTimeRef.current > 300) {
+              cardChangeSignalRef.current = activeCardIndex
+              lastPulseTimeRef.current = now
+              if (import.meta.env.DEV) {
+                console.log("🎨 CARD CHANGE →", activeCardIndex)
+              }
+            }
+          }
+
+          // ===== PHASE 5: EMIT SECTION SIGNALS =====
+          // Detect section transitions and emit pulse signals
+          if (lastPhaseIdRef.current !== activePhase.id) {
+            const now = performance.now()
+            // Debounce: only emit pulse if 300ms have passed since last pulse
+            if (now - lastPulseTimeRef.current > 300) {
+              sectionActiveRef.current = activePhase.id
+              sectionPulseRef.current = activePhase.id
+              lastPulseTimeRef.current = now
+              
+              if (import.meta.env.DEV) {
+                console.log("🎬 SECTION ENTER →", activePhase.id)
+              }
+            }
+            lastPhaseIdRef.current = activePhase.id
+          }
+
+          // Detect FINAL CTA section (FORWARD_CONTENT phase)
+          if (activePhase.id === "FORWARD_CONTENT" && !finalCTAActiveRef.current) {
+            finalCTAActiveRef.current = true
+            if (import.meta.env.DEV) {
+              console.log("🏁 FINAL CTA ACTIVE")
+            }
+          } else if (activePhase.id !== "FORWARD_CONTENT" && finalCTAActiveRef.current) {
+            finalCTAActiveRef.current = false
           }
 
           if (import.meta.env.DEV) {
@@ -310,6 +354,11 @@ export default function AppJourney() {
         activeCardIndex={activeCardIndexRef}
         activeAccent={accentRef}
         textPhase={textPhaseRef}
+        // Phase 5: UI ↔ World coupling signals
+        sectionActive={sectionActiveRef}
+        sectionPulse={sectionPulseRef}
+        cardChangeSignal={cardChangeSignalRef}
+        finalCTAActive={finalCTAActiveRef}
       />
 
       {/* Fixed Background with Parallax - Hidden (using unified background instead) */}

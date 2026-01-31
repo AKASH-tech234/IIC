@@ -14,7 +14,17 @@ import { getSegmentFrames, ROAD_RADIUS } from "./Road"
  * - Subtle vibration effect
  * - Neon accents and emissive headlights
  */
-const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }, ref) => {
+const Car = forwardRef(({ 
+  scrollProgress, 
+  motionDensity, 
+  activePhase, 
+  phaseProgress, 
+  activeCardIndex, 
+  activeAccent, 
+  textPhase,
+  // Phase 5: UI ↔ World coupling signals
+  cardChangeSignal
+}, ref) => {
   const carRef = useRef()
   const currentSegmentRef = useRef({ id: "HERO", localT: 0 })
   
@@ -46,9 +56,22 @@ const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgr
   const lastPhaseRef = useRef(null)
   const lockedPoseRef = useRef(null)
   const lastCardIndexRef = useRef(activeCardIndex?.current ?? 0)
+  
+  // Phase 5: Card change pulse tracking
+  const cardPulseStartTimeRef = useRef(0)
+  const lastCardSignalRef = useRef(null)
 
-  useFrame(() => {
+  useFrame(({ clock }) => {
     if (!carRef.current) return
+    const now = clock.elapsedTime
+    
+    // ===== PHASE 5: CARD CHANGE PULSE DETECTION =====
+    // Detect card change signal and trigger underglow pulse
+    if (cardChangeSignal?.current !== null && cardChangeSignal.current !== lastCardSignalRef.current) {
+      cardPulseStartTimeRef.current = now
+      lastCardSignalRef.current = cardChangeSignal.current
+      // Note: cardChangeSignal will be reset by Road.jsx
+    }
 
     const progress = scrollProgress.current || 0
     const density = motionDensity.current || 0
@@ -86,7 +109,8 @@ const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgr
     const tangent = segmentFrames.tangents[i0].clone().lerp(segmentFrames.tangents[i1], lerpT).normalize()
     
     // Lift car ABOVE tube surface using normal (NOT world Y)
-    const CAR_CLEARANCE = 0.35
+    // Adjusted clearance: ROAD_RADIUS is 2.8, so we need minimal clearance to sit ON the road
+    const CAR_CLEARANCE = 0.05 // Reduced from 0.35 to make car sit on road surface
     const basePosition = curvePoint.clone().add(
       normal.clone().multiplyScalar(ROAD_RADIUS + CAR_CLEARANCE)
     )
@@ -136,16 +160,26 @@ const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgr
 
     if (underglowRef.current) {
       const breathe = isEventsPhase ? 0.1 + Math.sin(Date.now() * 0.0012) * 0.1 : 0
+      let baseIntensity = isHeroPhase ? 0.3 : 0.5 + density * 0.2 + breathe
+      
+      // ===== PHASE 5: UNDERGLOW PULSE ON CARD CHANGE (100ms synchronized with road) =====
+      const timeSinceCardPulse = (now - cardPulseStartTimeRef.current) * 1000 // Convert to ms
+      if (timeSinceCardPulse < 100) {
+        // Brief intensity pulse synchronized with road glow
+        const t = timeSinceCardPulse / 100
+        const eased = Math.sin(t * Math.PI) // Smooth pulse in/out
+        const pulseBoost = eased * 0.4 // +0.4 peak intensity boost
+        baseIntensity += pulseBoost
+      }
+      
       underglowRef.current.emissive.set(accentColor)
       underglowRef.current.color.set(accentColor)
-      underglowRef.current.emissiveIntensity = isHeroPhase ? 0.3 : 0.5 + density * 0.2 + breathe
+      underglowRef.current.emissiveIntensity = baseIntensity
       underglowRef.current.opacity = isHeroPhase ? 0.2 : 0.3
     }
 
-    if (activeCardIndex && lastCardIndexRef.current !== activeCardIndex.current) {
-      lastCardIndexRef.current = activeCardIndex.current
-      carRef.current.position.y -= 0.04
-    }
+    // Card index tracking removed - Y position adjustment was causing floating issues
+    // Card changes are now handled via underglow pulse only (Phase 5)
 
     // DEBUG: Log car progress through segments
     if (Math.random() < 0.01) {

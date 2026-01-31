@@ -27,7 +27,21 @@ function getSegmentVisualConfig(segmentId) {
   return configs[segmentId] || configs.HERO
 }
 
-function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }) {
+function SceneContent({ 
+  scrollProgress, 
+  scrollVelocity, 
+  motionDensity, 
+  activePhase, 
+  phaseProgress, 
+  activeCardIndex, 
+  activeAccent, 
+  textPhase,
+  // Phase 5: UI ↔ World coupling signals
+  sectionActive,
+  sectionPulse,
+  cardChangeSignal,
+  finalCTAActive
+}) {
   const { invalidate } = useThree()
   const carRef = useRef() // Shared ref for Car and Camera coordination
   const currentSegmentRef = useRef({ id: "HERO", localT: 0 })
@@ -41,8 +55,13 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
   const fogRef = useRef()
 
   const horizonColor = useRef("#04202A")
+  
+  // Phase 5: Horizon glow pulse tracking
+  const horizonPulseStartTimeRef = useRef(0)
+  const lastHorizonSectionRef = useRef(null)
+  const baseHorizonIntensityRef = useRef(0)
 
-  useFrame(() => {
+  useFrame(({ clock }) => {
     if (!fogRef.current) return
     
     // Read current segment from car
@@ -54,6 +73,15 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
     
     const accent = activeAccent.current || "#070617"
     const progress = scrollProgress.current || 0
+    const now = clock.elapsedTime
+    
+    // ===== PHASE 5: HORIZON GLOW PULSE DETECTION =====
+    // Detect new section pulse and trigger horizon response
+    if (sectionPulse?.current && sectionPulse.current !== lastHorizonSectionRef.current) {
+      horizonPulseStartTimeRef.current = now
+      lastHorizonSectionRef.current = sectionPulse.current
+      // Note: Don't reset sectionPulse here, let Road.jsx consume it
+    }
     
     // SEGMENT-BASED VISUAL IDENTITY
     const config = getSegmentVisualConfig(segmentId)
@@ -75,6 +103,28 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
       finalHorizonIntensity = horizonIntensity * (progress / 0.05)
     }
     
+    // Store base intensity for pulse calculation
+    baseHorizonIntensityRef.current = finalHorizonIntensity
+    
+    // ===== PHASE 5: HORIZON GLOW PULSE (+8-10% boost for 150ms, then 200ms return) =====
+    const timeSinceHorizonPulse = (now - horizonPulseStartTimeRef.current) * 1000 // Convert to ms
+    if (timeSinceHorizonPulse < 350) {
+      // Total duration: 150ms rise + 200ms fall
+      if (timeSinceHorizonPulse < 150) {
+        // Rise phase: boost intensity by 8-10%
+        const t = timeSinceHorizonPulse / 150
+        const eased = 1 - Math.pow(1 - t, 2) // Ease out quad
+        const boost = eased * 0.09 // +9% peak boost
+        finalHorizonIntensity = baseHorizonIntensityRef.current + boost
+      } else {
+        // Fall phase: smooth return to baseline
+        const t = (timeSinceHorizonPulse - 150) / 200
+        const eased = Math.pow(t, 2) // Ease in quad
+        const boost = (1 - eased) * 0.09
+        finalHorizonIntensity = baseHorizonIntensityRef.current + boost
+      }
+    }
+    
     horizonBase.lerp(horizonAccent, finalHorizonIntensity)
     horizonColor.current = `#${horizonBase.getHexString()}`
   })
@@ -89,6 +139,7 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         activePhase={activePhase}
         carRef={carRef}
         currentSegment={currentSegmentRef}
+        finalCTAActive={finalCTAActive}
       />
       <Lights />
       {/* AMPLIFIED: Reduce ambient during EVENTS for spotlight effect */}
@@ -112,7 +163,11 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         intensity={isEventsPhase ? 0.6 : 0.3}
         castShadow={false}
       />
-      <Ground activePhase={activePhase} scrollProgress={scrollProgress} />
+      <Ground 
+        activePhase={activePhase} 
+        scrollProgress={scrollProgress}
+        sectionPulse={sectionPulse}
+      />
       <Sky horizonColor={horizonColor.current} />
       <fog ref={fogRef} attach="fog" args={["#0A1022", 60, 400]} />
       <Car 
@@ -125,6 +180,7 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         activeCardIndex={activeCardIndex}
         activeAccent={activeAccent}
         textPhase={textPhase}
+        cardChangeSignal={cardChangeSignal}
       />
       <Road 
         motionDensity={motionDensity}
@@ -132,6 +188,8 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         activeAccent={activeAccent}
         scrollProgress={scrollProgress}
         currentSegment={currentSegmentRef}
+        sectionPulse={sectionPulse}
+        cardChangeSignal={cardChangeSignal}
       />
       <City 
         motionDensity={motionDensity}
@@ -160,7 +218,21 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
  * - z-10: Content
  * - z-20: Header
  */
-export default function Scene({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }) {
+export default function Scene({ 
+  scrollProgress, 
+  scrollVelocity, 
+  motionDensity, 
+  activePhase, 
+  phaseProgress, 
+  activeCardIndex, 
+  activeAccent, 
+  textPhase,
+  // Phase 5: UI ↔ World coupling signals
+  sectionActive,
+  sectionPulse,
+  cardChangeSignal,
+  finalCTAActive
+}) {
   return (
     <div 
       className="fixed inset-0 pointer-events-none"
@@ -196,6 +268,10 @@ export default function Scene({ scrollProgress, scrollVelocity, motionDensity, a
           activeCardIndex={activeCardIndex}
           activeAccent={activeAccent}
           textPhase={textPhase}
+          sectionActive={sectionActive}
+          sectionPulse={sectionPulse}
+          cardChangeSignal={cardChangeSignal}
+          finalCTAActive={finalCTAActive}
         />
       </Canvas>
     </div>

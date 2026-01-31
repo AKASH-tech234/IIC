@@ -90,10 +90,7 @@ export default function JourneySchedule() {
         start: "top center",
         end: "bottom center",
         onEnter: () => {
-          gsap.to(":root", {
-            "--accent-color": "#8B5CF6", // Purple
-            duration: 0.8
-          })
+          document.documentElement.style.setProperty("--accent-color", "#8B5CF6") // Purple
         }
       })
 

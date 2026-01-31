@@ -34,10 +34,7 @@ export default function JourneyFinalCTA() {
           }
           
           // Update to lime accent
-          gsap.to(":root", {
-            "--accent-color": "#22C55E", // Lime
-            duration: 0.8
-          })
+          document.documentElement.style.setProperty("--accent-color", "#22C55E") // Lime
         }
       })
 

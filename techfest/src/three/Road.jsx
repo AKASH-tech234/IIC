@@ -30,21 +30,67 @@ export function getSegmentFrames(segmentId) {
  * Car and camera sample this same curve
  * Road geometry is static, movement is via curve progress
  */
-export default function Road({ motionDensity, activePhase, activeAccent, scrollProgress, currentSegment }) {
+export default function Road({ 
+  motionDensity, 
+  activePhase, 
+  activeAccent, 
+  scrollProgress, 
+  currentSegment,
+  // Phase 5: UI ↔ World coupling signals
+  sectionPulse,
+  cardChangeSignal
+}) {
   const lineMaterialRef = useRef()
   const roadMaterialRef = useRef()
   const centerLineRef = useRef()
+  
+  // Phase 5: Pulse tracking with timestamps
+  const pulseStartTimeRef = useRef(0)
+  const lastPulseSectionRef = useRef(null)
+  const cardPulseStartTimeRef = useRef(0)
+  const lastCardIndexRef = useRef(null)
 
-  useFrame(() => {
+  useFrame(({ clock }) => {
     const phase = activePhase.current || "HERO"
     const progress = scrollProgress?.current || 0
     const distance = currentSegment?.current?.distance || 0
+    const now = clock.elapsedTime
+
+    // ===== PHASE 5: SECTION PULSE DETECTION =====
+    // Detect new section pulse and start pulse animation
+    if (sectionPulse?.current && sectionPulse.current !== lastPulseSectionRef.current) {
+      pulseStartTimeRef.current = now
+      lastPulseSectionRef.current = sectionPulse.current
+      sectionPulse.current = null // Reset pulse flag (consumed by Three.js)
+    }
+
+    // ===== PHASE 5: CARD CHANGE PULSE DETECTION =====
+    if (cardChangeSignal?.current !== null && cardChangeSignal.current !== lastCardIndexRef.current) {
+      cardPulseStartTimeRef.current = now
+      lastCardIndexRef.current = cardChangeSignal.current
+      cardChangeSignal.current = null // Reset signal flag
+    }
 
     // ROAD CONTINUITY - Center line intensifies before turns
     if (centerLineRef.current) {
       let targetIntensity = 0.6
       
-      if (progress < 0.05) {
+      // ===== PHASE 5: CENTERLINE PULSE (0.6 → 1.2 → 0.6 over 140ms) =====
+      const timeSincePulse = (now - pulseStartTimeRef.current) * 1000 // Convert to ms
+      if (timeSincePulse < 140) {
+        // Pulse animation: 0-50ms rise, 50-140ms fall
+        if (timeSincePulse < 50) {
+          // Rise phase: exponential ease out
+          const t = timeSincePulse / 50
+          const eased = 1 - Math.pow(1 - t, 3) // Ease out cubic
+          targetIntensity = 0.6 + (1.2 - 0.6) * eased
+        } else {
+          // Fall phase: exponential ease in
+          const t = (timeSincePulse - 50) / 90
+          const eased = Math.pow(t, 2) // Ease in quad
+          targetIntensity = 1.2 - (1.2 - 0.6) * eased
+        }
+      } else if (progress < 0.05) {
         // Moment of arrival
         targetIntensity = (progress / 0.05) * 0.6
       } else if (distance > 180 && distance < 200) {
@@ -62,7 +108,18 @@ export default function Road({ motionDensity, activePhase, activeAccent, scrollP
 
     if (lineMaterialRef.current && activeAccent.current) {
       const isEvent = phase === "EVENTS_SIDE_PROFILE"
-      const emissiveIntensity = isEvent ? 1.0 : 0.7
+      let emissiveIntensity = isEvent ? 1.0 : 0.7
+      
+      // ===== PHASE 5: CARD CHANGE - GLOW TIGHTEN (80ms pulse) =====
+      const timeSinceCardPulse = (now - cardPulseStartTimeRef.current) * 1000
+      if (timeSinceCardPulse < 80) {
+        // Brief intensity boost on card change
+        const t = timeSinceCardPulse / 80
+        const eased = Math.sin(t * Math.PI) // Smooth pulse in/out
+        const boost = eased * 0.3 // +30% peak intensity
+        emissiveIntensity += boost
+      }
+      
       lineMaterialRef.current.emissive.set(activeAccent.current)
       lineMaterialRef.current.color.set(activeAccent.current)
       lineMaterialRef.current.emissiveIntensity = emissiveIntensity
