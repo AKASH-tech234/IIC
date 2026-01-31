@@ -156,25 +156,31 @@ export default function JourneyHero() {
       <div className="relative z-10 w-full px-6 md:px-8 text-center section-stack">
         
         {/* H1: Event Title - Letter-by-letter reveal (Tron Display) */}
-        <h1 className="mb-4 section-title" aria-label="MNNIT TechSummit 2026">
-          {"MNNIT TECHSUMMIT   2026".split("").map((char, i) => (
-            <span 
-              key={i}
-              className="hero-title-letter inline-block"
-              aria-hidden="true"
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "clamp(3rem, 6vw, 5.5rem)",
-                fontWeight: 600,
-                color: "#FFFFFF",
-                letterSpacing: "0.06em",
-                lineHeight: 1.1,
-                textTransform: "uppercase"
-              }}
-            >
-              {char === " " ? "\u00A0" : char}
-            </span>
-          ))}
+        {/* 2026 on separate line, centrally aligned */}
+        <h1 className="mb-4 section-title flex flex-col items-center" aria-label="MNNIT TechSummit 2026">
+          {/* First line: MNNIT TECHSUMMIT */}
+          <div className="flex flex-wrap justify-center">
+            {"MNNIT TECHSUMMIT".split("").map((char, i) => (
+              <span 
+                key={i}
+                className="hero-title-letter inline-block"
+                aria-hidden="true"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "clamp(3rem, 6vw, 5.5rem)",
+                  fontWeight: 600,
+                  color: "#FFFFFF",
+                  letterSpacing: "0.06em",
+                  lineHeight: 1.1,
+                  textTransform: "uppercase"
+                }}
+              >
+                {char === " " ? "\u00A0" : char}
+              </span>
+            ))}
+          </div>
+          {/* Second line: 2026 - centrally aligned */}
+        
         </h1>
 
         {/* H2: Tagline - Tron Display Style */}

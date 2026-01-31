@@ -90,10 +90,10 @@ export default function City({ motionDensity, activeAccent, activePhase, current
     const allBuildings = []
     CITY_BANDS.forEach(bandZ => {
       const bandBuildings = createBuildings({
-        count: 28,
-        xRange: 160,
-        zCenter: bandZ - 100, // FAR: extends deeper (-200 to -1250)
-        zJitter: 80,
+        count: 45, // Increased from 28 to 45
+        xRange: 180, // Increased spread
+        zCenter: bandZ - 100,
+        zJitter: 90, // More variation
         heightRange: [14, 26],
         scaleRange: [1.6, 3]
       })
@@ -106,10 +106,10 @@ export default function City({ motionDensity, activeAccent, activePhase, current
     const allBuildings = []
     CITY_BANDS.forEach(bandZ => {
       const bandBuildings = createBuildings({
-        count: 20,
-        xRange: 120,
-        zCenter: bandZ, // MID: covers -100 to -1150
-        zJitter: 70,
+        count: 35, // Increased from 20 to 35
+        xRange: 140, // Increased spread
+        zCenter: bandZ,
+        zJitter: 80, // More variation
         heightRange: [14, 28],
         scaleRange: [1.6, 3.2]
       })
@@ -122,10 +122,10 @@ export default function City({ motionDensity, activeAccent, activePhase, current
     const allBuildings = []
     CITY_BANDS.forEach(bandZ => {
       const bandBuildings = createBuildings({
-        count: 14,
-        xRange: 80,
-        zCenter: bandZ + 50, // NEAR: covers -50 to -1100
-        zJitter: 60,
+        count: 25, // Increased from 14 to 25
+        xRange: 100, // Increased spread
+        zCenter: bandZ + 50,
+        zJitter: 70, // More variation
         heightRange: [12, 20],
         scaleRange: [1.2, 2.2]
       })

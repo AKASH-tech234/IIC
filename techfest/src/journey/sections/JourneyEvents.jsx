@@ -31,16 +31,16 @@ export default function JourneyEvents() {
       if (cards[2]) gsap.set(cards[2], { opacity: 0, x: 120, scale: 0.9 })
       if (cards[3]) gsap.set(cards[3], { opacity: 0, x: 120, scale: 0.9 })
 
-      // Master Timeline - CINEMATIC LEFT/RIGHT ENTRY
+      // Master Timeline - CINEMATIC LEFT/RIGHT ENTRY (FASTER)
       tl = gsap.timeline({ paused: true })
 
-      // Cards 0,1 enter from LEFT
+      // Cards 0,1 enter from LEFT - REDUCED DURATION AND DELAYS
       if (cards[0]) {
         tl.to(cards[0], {
           opacity: beats.visualHierarchy.supporting.opacity, // 0.85
           x: 0,
           scale: beats.visualHierarchy.supporting.scale, // 0.96
-          duration: 0.8,
+          duration: 0.5, // Reduced from 0.8 to 0.5
           ease: "power2.out"
         }, 0.0)
       }
@@ -50,18 +50,18 @@ export default function JourneyEvents() {
           opacity: beats.visualHierarchy.supporting.opacity,
           x: 0,
           scale: beats.visualHierarchy.supporting.scale,
-          duration: 0.8,
+          duration: 0.5, // Reduced from 0.8 to 0.5
           ease: "power2.out"
-        }, 0.1) // Slight delay for cinematic feel
+        }, 0.05) // Reduced from 0.1 to 0.05
       }
 
-      // Cards 2,3 enter from RIGHT
+      // Cards 2,3 enter from RIGHT - REDUCED DURATION AND DELAYS
       if (cards[2]) {
         tl.to(cards[2], {
           opacity: beats.visualHierarchy.supporting.opacity,
           x: 0,
           scale: beats.visualHierarchy.supporting.scale,
-          duration: 0.8,
+          duration: 0.5, // Reduced from 0.8 to 0.5
           ease: "power2.out"
         }, 0.0)
       }
@@ -71,19 +71,19 @@ export default function JourneyEvents() {
           opacity: beats.visualHierarchy.supporting.opacity,
           x: 0,
           scale: beats.visualHierarchy.supporting.scale,
-          duration: 0.8,
+          duration: 0.5, // Reduced from 0.8 to 0.5
           ease: "power2.out"
-        }, 0.1) // Slight delay for cinematic feel
+        }, 0.05) // Reduced from 0.1 to 0.05
       }
 
-      // Active card (first one) scales to dominant after entry
+      // Active card (first one) scales to dominant after entry - FASTER
       if (cards[0]) {
         tl.to(cards[0], {
           scale: beats.visualHierarchy.active.scale,   // 1.0
           opacity: beats.visualHierarchy.active.opacity, // 1.0
-          duration: 0.4,
+          duration: 0.3, // Reduced from 0.4 to 0.3
           ease: "power2.out"
-        }, 0.9) // After cards settle
+        }, 0.55) // Reduced from 0.9 to 0.55 (after cards settle faster)
       }
 
       // ScrollTrigger - Pin section with exit grammar

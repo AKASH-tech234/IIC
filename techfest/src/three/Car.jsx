@@ -144,7 +144,8 @@ const Car = forwardRef(({
     // ===== PHASE 10: Wheel rotation - clamp when static =====
     // Wheels stop during HERO and EVENTS phases
     const curveSlowdown = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.4 : 1
-    let wheelRotation = isHeroPhase || isEventsPhase ? 0 : (progress - 0.05) * Math.PI * 14 * curveSlowdown
+    // Car starts further ahead on road (0.15 = 15% down the road)
+    let wheelRotation = isHeroPhase || isEventsPhase ? 0 : (progress - 0.15) * Math.PI * 14 * curveSlowdown
     
     // Clamp wheel rotation when static to prevent drift
     if (!isMoving && !isHeroPhase && !isEventsPhase) {
@@ -163,7 +164,7 @@ const Car = forwardRef(({
     
     // UPGRADED: Enhanced body material with better opacity and emissive
     if (bodyMaterialRef.current) {
-      bodyMaterialRef.current.opacity = isHeroPhase ? 0.5 : Math.min(1, 0.5 + (progress - 0.05) * 10) // Increased from 0.3
+      bodyMaterialRef.current.opacity = isHeroPhase ? 0.5 : Math.min(1, 0.5 + (progress - 0.15) * 10) // Car starts at 15%
       bodyMaterialRef.current.transparent = true
       bodyMaterialRef.current.emissive.set(accentColor)
       bodyMaterialRef.current.emissiveIntensity = isHeroPhase ? 0.08 : 0.12 // Increased glow
@@ -171,7 +172,7 @@ const Car = forwardRef(({
       bodyMaterialRef.current.roughness = 0.2 // Shinier
     }
     if (cabinMaterialRef.current) {
-      cabinMaterialRef.current.opacity = isHeroPhase ? 0.4 : Math.min(0.9, 0.4 + (progress - 0.05) * 10)
+      cabinMaterialRef.current.opacity = isHeroPhase ? 0.4 : Math.min(0.9, 0.4 + (progress - 0.15) * 10) // Car starts at 15%
       cabinMaterialRef.current.transparent = true
     }
 
