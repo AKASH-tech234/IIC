@@ -15,6 +15,7 @@ import JourneyWorkshops from "./journey/sections/JourneyWorkshops"
 import JourneyFinalCTA from "./journey/sections/JourneyFinalCTA"
 import JourneyFooter from "./journey/sections/JourneyFooter"
 import DebugVisualMode from "./journey/utils/DebugVisualMode"
+import { resolveDeviceProfile, logDeviceProfile } from "./journey/DeviceDirector"
 gsap.registerPlugin(ScrollTrigger)
 
 /**
@@ -34,6 +35,13 @@ gsap.registerPlugin(ScrollTrigger)
  */
 export default function AppJourney() {
   useLenis()
+  
+  // PHASE 11: Initialize DeviceDirector early (cache device profile)
+  useEffect(() => {
+    resolveDeviceProfile()
+    logDeviceProfile()
+  }, [])
+  
   const mainRef = useRef(null)
   const progressRef = useRef(0)
   const velocityRef = useRef(0)

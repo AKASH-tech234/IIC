@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
+import { applyDeviceMotionScaling } from "../DeviceDirector"
 
 export default function JourneyEvents() {
   const sectionRef = useRef(null)
@@ -33,6 +34,9 @@ export default function JourneyEvents() {
 
       // Master Timeline - CINEMATIC LEFT/RIGHT ENTRY (FASTER)
       tl = gsap.timeline({ paused: true })
+      
+      // PHASE 11: Apply device motion scaling
+      applyDeviceMotionScaling(tl)
 
       // Cards 0,1 enter from LEFT - REDUCED DURATION AND DELAYS
       if (cards[0]) {

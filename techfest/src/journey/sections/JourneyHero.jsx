@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
+import { applyDeviceMotionScaling } from "../DeviceDirector"
 
 /**
  * Journey Hero Section
@@ -59,6 +60,9 @@ export default function JourneyHero() {
         }
         
         tl = gsap.timeline({ paused: true })
+        
+        // PHASE 11: Apply device motion scaling
+        applyDeviceMotionScaling(tl)
 
         // 1. TITLE: Letter-spacing compression (CINEMATIC)
         // Beat: 0.0s - Title claims the frame

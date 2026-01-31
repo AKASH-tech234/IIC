@@ -3,6 +3,7 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
 import { PinContainer } from "../../components/ui/3d-pin"
+import { applyDeviceMotionScaling } from "../DeviceDirector"
 
 /**
  * Journey Workshops Section
@@ -105,6 +106,9 @@ export default function JourneyWorkshops() {
 
       // Master Timeline - Mask reveal from LEFT
       tl = gsap.timeline({ paused: true })
+      
+      // PHASE 11: Apply device motion scaling
+      applyDeviceMotionScaling(tl)
       
       // Beat 0.0s: Heading with lateral motion (x: 60 → 0)
       tl.fromTo(".workshops-heading", {

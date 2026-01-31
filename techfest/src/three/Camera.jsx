@@ -2,6 +2,7 @@ import { useRef } from "react"
 import { useThree } from "@react-three/fiber"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
+import { canCameraBreathe, getCameraBreathScale, canShiftFov } from "../journey/DeviceDirector"
 
 /**
  * Dynamic Chase Camera
@@ -57,27 +58,41 @@ export default function Camera({
     // Subtle FOV + Z offset breathing - felt, not seen
     // DISABLED during EVENTS (frozen gallery)
     // PHASE 9: Reduced during fast scroll
+    // PHASE 11: Device-aware breathing (scaled by device profile)
     
     const isEventsPhase = phase === "EVENTS_SIDE_PROFILE"
+    
+    // Check device permissions
+    const breathingAllowed = canCameraBreathe()
+    const deviceBreathScale = getCameraBreathScale()
     
     // Breathing effect - slow sine wave (4 second period)
     const breathingCycle = Math.sin(now * 0.5) // Period ~12.5 seconds
     
     // PHASE 9: Clamp breathing during scroll velocity spikes (reduce by 50%)
     const breathingDamping = isFastScroll ? 0.5 : 1.0
-    const fovBreathing = isEventsPhase ? 0 : breathingCycle * 0.5 * breathingDamping // ±0.5 FOV (reduced during fast scroll)
-    const zBreathing = isEventsPhase ? 0 : breathingCycle * 0.06 * breathingDamping // ±0.06 Z offset (reduced from 0.12 to 0.06, further dampened)
+    
+    // PHASE 11: Apply device scaling (mobile=0, tablet=0.5x, desktop=1.0x)
+    const finalBreathScale = breathingAllowed ? (breathingDamping * deviceBreathScale) : 0
+    
+    const fovBreathing = isEventsPhase ? 0 : breathingCycle * 0.5 * finalBreathScale // ±0.5 FOV (scaled by device)
+    const zBreathing = isEventsPhase ? 0 : breathingCycle * 0.06 * finalBreathScale // ±0.06 Z offset (scaled by device)
     
     // SEGMENT-AWARE FOV MICRO-BEATS
+    // PHASE 11: Only apply FOV shifts if device allows it
+    const allowFovShifts = canShiftFov()
     let targetFOV = 50
-    if (segmentId === "TURN_1" && localT < 0.3) {
-      targetFOV = 55 // Slight zoom-out before curve
-    } else if (segmentId === "EVENTS") {
-      targetFOV = 38 // Compression for gallery
-    } else if (segmentId === "TURN_2") {
-      targetFOV = 52 // Gentle recovery
-    } else if (segmentId === "FINAL") {
-      targetFOV = 50 // Stable approach
+    
+    if (allowFovShifts) {
+      if (segmentId === "TURN_1" && localT < 0.3) {
+        targetFOV = 55 // Slight zoom-out before curve
+      } else if (segmentId === "EVENTS") {
+        targetFOV = 38 // Compression for gallery
+      } else if (segmentId === "TURN_2") {
+        targetFOV = 52 // Gentle recovery
+      } else if (segmentId === "FINAL") {
+        targetFOV = 50 // Stable approach
+      }
     }
     
     // Apply breathing to target FOV

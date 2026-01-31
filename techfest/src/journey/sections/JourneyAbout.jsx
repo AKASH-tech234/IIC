@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
+import { applyDeviceMotionScaling } from "../DeviceDirector"
 
 export default function JourneyAbout() {
   const sectionRef = useRef(null)
@@ -27,6 +28,9 @@ export default function JourneyAbout() {
 
       // Master Timeline - Editorial beats with ALTERNATING SIDE ENTRY
       tl = gsap.timeline({ paused: true })
+      
+      // PHASE 11: Apply device motion scaling
+      applyDeviceMotionScaling(tl)
 
       // Beat 0.0s: Headline (dominant element claims frame) - NO MOVEMENT
       if (cards[0]) {

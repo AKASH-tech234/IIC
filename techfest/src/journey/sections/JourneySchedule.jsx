@@ -3,6 +3,7 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { Carousel, Card } from "../../components/ui/apple-cards-carousel"
 import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
+import { applyDeviceMotionScaling } from "../DeviceDirector"
 
 /**
  * Journey Schedule Section
@@ -39,6 +40,9 @@ export default function JourneySchedule() {
 
       // Master Timeline - Rhythmic beats with HORIZONTAL REVEAL FROM RIGHT
       tl = gsap.timeline({ paused: true })
+      
+      // PHASE 11: Apply device motion scaling
+      applyDeviceMotionScaling(tl)
       
       // Beat 0.0s: Heading - scale settle (1.02 → 1.0) + fade
       tl.fromTo(".schedule-heading", {
