@@ -5,13 +5,13 @@ import { useMemo } from "react"
  * Ground Plane - Mandatory depth reference with Tron elements
  */
 export default function Ground() {
-  // Light panels positions
+  // Light panels positions - extended to Z: -1200
   const panels = useMemo(() => {
     const arr = []
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 60; i++) {
       arr.push({
         x: (Math.random() - 0.5) * 300,
-        z: -Math.random() * 400 - 20,
+        z: -Math.random() * 1180 - 20,
         width: Math.random() * 8 + 4,
         height: Math.random() * 8 + 4
       })
@@ -19,13 +19,13 @@ export default function Ground() {
     return arr
   }, [])
 
-  // Low pylons
+  // Low pylons - extended to Z: -1200
   const pylons = useMemo(() => {
     const arr = []
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 30; i++) {
       arr.push({
         x: (Math.random() - 0.5) * 200,
-        z: -Math.random() * 350 - 30,
+        z: -Math.random() * 1150 - 30,
         height: Math.random() * 0.4 + 0.4
       })
     }
@@ -34,13 +34,25 @@ export default function Ground() {
 
   return (
     <group>
-      {/* Main ground plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, -200]}>
-        <planeGeometry args={[2000, 2000]} />
+      {/* Main ground plane - extended to cover entire road */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, -600]}>
+        <planeGeometry args={[2000, 2400]} />
         <meshStandardMaterial
           color="#02030A"
           roughness={0.95}
           metalness={0.05}
+        />
+      </mesh>
+
+      {/* Tron Transit Ground Layer - road corridor strip */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, -600]}>
+        <planeGeometry args={[140, 2400]} />
+        <meshStandardMaterial
+          color="#0A1420"
+          roughness={0.9}
+          metalness={0.1}
+          emissive="#0A1420"
+          emissiveIntensity={0.08}
         />
       </mesh>
 
@@ -68,14 +80,14 @@ export default function Ground() {
         </mesh>
       ))}
 
-      {/* Directional lines */}
-      {[...Array(15)].map((_, i) => (
+      {/* Directional lines - extended along road */}
+      {[...Array(30)].map((_, i) => (
         <mesh 
           key={`line-${i}`} 
           rotation={[-Math.PI / 2, 0, Math.PI / 6]} 
-          position={[(i - 7) * 30, -0.045, -150 - i * 15]}
+          position={[(i - 15) * 30, -0.045, -100 - i * 30]}
         >
-          <planeGeometry args={[0.3, 80]} />
+          <planeGeometry args={[0.3, 100]} />
           <meshBasicMaterial
             color="#0A1420"
             transparent

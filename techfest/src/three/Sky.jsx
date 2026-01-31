@@ -56,13 +56,24 @@ export default function Sky({ horizonColor }) {
         />
       </mesh>
       
-      {/* Horizon glow band */}
+      {/* Horizon glow band - primary */}
       <mesh position={[0, 8, -420]}>
         <planeGeometry args={[600, 140]} />
         <meshBasicMaterial
           color={horizonColor}
           transparent
           opacity={0.2}
+        />
+      </mesh>
+
+      {/* Second horizon glow - wider, softer, for curvature illusion */}
+      <mesh position={[0, 4, -450]}>
+        <planeGeometry args={[1200, 180]} />
+        <meshBasicMaterial
+          color="#00506A"
+          transparent
+          opacity={0.12}
+          depthWrite={false}
         />
       </mesh>
     </group>

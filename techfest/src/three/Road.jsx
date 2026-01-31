@@ -48,7 +48,9 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
   // Build geometry ONCE on master curve
   const roadGeometry = useMemo(() => {
     const geom = new THREE.TubeGeometry(masterRoadCurve, TUBE_SEGMENTS, ROAD_RADIUS, 12, false)
-    console.log('Road geometry created - curve length:', masterRoadCurve.getLength().toFixed(1), 'end Z:', masterRoadCurve.points[masterRoadCurve.points.length - 1].z.toFixed(1))
+    const curveLength = masterRoadCurve.getLength()
+    const endZ = masterRoadCurve.points[masterRoadCurve.points.length - 1].z
+    console.log('Road geometry created - curve length:', curveLength.toFixed(1), 'end Z:', endZ.toFixed(1))
     return geom
   }, [])
   const lineGeometry = useMemo(() => new THREE.TubeGeometry(masterRoadCurve, TUBE_SEGMENTS, LINE_RADIUS, 8, false), [])

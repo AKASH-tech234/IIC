@@ -15,6 +15,7 @@ import Ground from "./Ground"
  */
 function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }) {
   const { invalidate } = useThree()
+  const carRef = useRef() // Shared ref for Car and Camera coordination
 
   useEffect(() => {
     // Invalidate (re-render) when scroll changes
@@ -46,6 +47,7 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
       <Camera 
         activePhase={activePhase}
         phaseProgress={phaseProgress}
+        carRef={carRef}
       />
       <Lights />
       <ambientLight intensity={0.6} />
@@ -61,10 +63,18 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         intensity={0.6}
         castShadow={false}
       />
+      {/* Edge definition light - from horizon toward camera */}
+      <directionalLight 
+        position={[0, 20, -400]} 
+        color="#5588BB" 
+        intensity={0.3}
+        castShadow={false}
+      />
       <Ground />
       <Sky horizonColor={horizonColor.current} />
-      {/* FOG DISABLED IN DEBUG MODE */}
+      <fog ref={fogRef} attach="fog" args={["#0A1022", 60, 400]} />
       <Car 
+        ref={carRef}
         scrollProgress={scrollProgress}
         scrollVelocity={scrollVelocity}
         motionDensity={motionDensity}
@@ -125,12 +135,12 @@ export default function Scene({ scrollProgress, scrollVelocity, motionDensity, a
         gl={{ 
           antialias: true,
           alpha: true,
-          powerPreference: "high-performance",
-          toneMapping: 0 // THREE.NoToneMapping = 0 (TEMP DEBUG)
+          powerPreference: "high-performance"
         }}
-        onCreated={({ scene }) => {
-          scene.fog = null // TEMP DEBUG: Disable fog
-          console.log('DEBUG: Scene created, fog disabled, toneMapping disabled')
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping
+          gl.toneMappingExposure = 1.1
+          console.log('Scene created - fog and tone mapping enabled')
         }}
       >
         <SceneContent 

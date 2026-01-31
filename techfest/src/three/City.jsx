@@ -12,7 +12,7 @@ const createMaterial = (color, emissiveScale, emissiveIntensity) =>
     emissiveIntensity
   })
 
-const ROAD_CLEAR_WIDTH = 45 // Keep buildings away from road corridor (extra wide for curves)
+const ROAD_CLEAR_WIDTH = 55 // Keep buildings away from road corridor (prevents collision at curve apex X:40)
 
 const createBuildings = ({ count, xRange, zCenter, zJitter, heightRange, scaleRange }) => {
   const buildings = []
@@ -47,8 +47,8 @@ export default function City({ motionDensity, activeAccent }) {
 
   const geometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), [])
 
-  // City bands along the entire road
-  const CITY_BANDS = [-80, -220, -380, -540]
+  // City bands along the entire road - extended to Z: -1200
+  const CITY_BANDS = [-80, -220, -380, -540, -700, -860, -1020]
   
   const farBuildings = useMemo(() => {
     const allBuildings = []
@@ -98,9 +98,9 @@ export default function City({ motionDensity, activeAccent }) {
     return allBuildings
   }, [])
 
-  const farMat = useMemo(() => createMaterial("#3366FF", 0.5, 1.5), [])
-  const midMat = useMemo(() => createMaterial("#00CCFF", 0.8, 2.0), [])
-  const nearMat = useMemo(() => createMaterial("#00FFFF", 1.0, 3.0), [])
+  const farMat = useMemo(() => createMaterial("#121B3A", 0, 0), [])
+  const midMat = useMemo(() => createMaterial("#1A2550", 0.08, 0.35), [])
+  const nearMat = useMemo(() => createMaterial("#24347A", 0.1, 0.3), [])
   
   // Roadside pylons that FOLLOW the road curve
   const pylons = useMemo(() => {
@@ -132,6 +132,29 @@ export default function City({ motionDensity, activeAccent }) {
     return pylonArray
   }, [])
 
+  // Antenna spires for scale reference
+  const antennaSpires = useMemo(() => {
+    const spires = []
+    const positions = [
+      { x: -90, z: -180, height: 42 },
+      { x: 110, z: -320, height: 38 },
+      { x: -70, z: -480, height: 45 },
+      { x: 95, z: -640, height: 40 },
+      { x: -85, z: -820, height: 43 },
+      { x: 105, z: -980, height: 41 }
+    ]
+    return positions
+  }, [])
+
+  // Horizontal skybridges
+  const skybridges = useMemo(() => {
+    return [
+      { x1: -80, z: -250, x2: -40, height: 18 },
+      { x1: 60, z: -420, x2: 95, height: 20 },
+      { x1: -70, z: -710, x2: -35, height: 19 }
+    ]
+  }, [])
+
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime()
     const density = motionDensity?.current ?? 0
@@ -152,10 +175,14 @@ export default function City({ motionDensity, activeAccent }) {
       layer.current.children.forEach((child, i) => {
         if (!child.isMesh || !child.material || child.material.emissiveIntensity === undefined) return
 
-        // MAX VISIBILITY - ALL LAYERS BRIGHT
-        const flicker = Math.sin(t * 0.5 + i * 0.8) * 0.3 + 0.7
-        const layerBoost = [1.5, 2.0, 3.0][idx]
-        child.material.emissiveIntensity = flicker * layerBoost
+        // Layered depth: FAR silent, MID/NEAR subtle flicker
+        if (idx === 0) {
+          child.material.emissiveIntensity = 0
+        } else {
+          const flicker = Math.sin(t * 0.35 + i * 0.7) * 0.15 + 0.82
+          const layerBoost = idx === 1 ? 0.35 : 0.3
+          child.material.emissiveIntensity = flicker * layerBoost
+        }
       })
     })
   })
@@ -202,6 +229,36 @@ export default function City({ motionDensity, activeAccent }) {
           />
         </mesh>
       ))}
+
+      {/* Antenna spires for scale */}
+      {antennaSpires.map((spire, i) => (
+        <mesh key={`spire-${i}`} position={[spire.x, spire.height / 2, spire.z]}>
+          <cylinderGeometry args={[0.12, 0.18, spire.height, 8]} />
+          <meshStandardMaterial
+            color="#1A2550"
+            emissive="#1A2550"
+            emissiveIntensity={0.15}
+          />
+        </mesh>
+      ))}
+
+      {/* Horizontal skybridges */}
+      {skybridges.map((bridge, i) => {
+        const width = Math.abs(bridge.x2 - bridge.x1)
+        const centerX = (bridge.x1 + bridge.x2) / 2
+        return (
+          <mesh key={`bridge-${i}`} position={[centerX, bridge.height, bridge.z]}>
+            <boxGeometry args={[width, 0.3, 1.5]} />
+            <meshStandardMaterial
+              color="#1A2550"
+              emissive="#1A2550"
+              emissiveIntensity={0.2}
+              transparent
+              opacity={0.7}
+            />
+          </mesh>
+        )
+      })}
     </>
   )
 }

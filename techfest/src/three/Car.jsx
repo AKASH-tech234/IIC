@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useRef, forwardRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 import { masterRoadCurve } from "./curveUtils"
@@ -14,8 +14,8 @@ import { roadFrames, ROAD_RADIUS } from "./Road"
  * - Subtle vibration effect
  * - Neon accents and emissive headlights
  */
-export default function Car({ scrollProgress, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }) {
-  const carRef = useRef()
+const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }, ref) => {
+  const carRef = ref || useRef()
   const frontLeftWheelRef = useRef()
   const frontRightWheelRef = useRef()
   const rearLeftWheelRef = useRef()
@@ -354,4 +354,6 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
       </mesh>
     </group>
   )
-}
+})
+
+export default Car

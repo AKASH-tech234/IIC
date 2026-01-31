@@ -3,18 +3,22 @@ import * as THREE from "three"
 /**
  * SINGLE SOURCE OF TRUTH
  * One curve for entire journey - shared by road, car, and camera
+ * Extended to Z: -1200 for full journey coverage
  * NEVER rebuild this dynamically
  */
 export const masterRoadCurve = new THREE.CatmullRomCurve3(
   [
-    new THREE.Vector3(0, 0, 0),        // Start
+    new THREE.Vector3(0, 0, 0),        // Start - Hero
     new THREE.Vector3(0, 0, -80),      // Straight section
-    new THREE.Vector3(0, 0, -160),     // Pre-turn
+    new THREE.Vector3(0, 0, -160),     // Pre-turn - About
     new THREE.Vector3(12, 0, -240),    // Begin curve
-    new THREE.Vector3(30, 0, -340),    // Mid curve
+    new THREE.Vector3(30, 0, -340),    // Mid curve - Events
     new THREE.Vector3(40, 0, -440),    // End curve
     new THREE.Vector3(40, 0, -560),    // Post-curve straight
-    new THREE.Vector3(40, 0, -700)     // Extended past final section
+    new THREE.Vector3(40, 0, -700),    // Schedule section
+    new THREE.Vector3(40, 0, -860),    // Extended straight
+    new THREE.Vector3(40, 0, -1020),   // Workshops section
+    new THREE.Vector3(40, 0, -1200)    // Final section + buffer
   ],
   false,
   "catmullrom",

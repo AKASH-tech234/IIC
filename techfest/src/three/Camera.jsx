@@ -7,11 +7,11 @@ import { masterRoadCurve } from "./curveUtils"
 /**
  * Dynamic Chase Camera
  * 
- * Follows the car as it moves forward
- * Zooms in closer at footer (end of scroll)
+ * ANCHORED to car position - never leads, always follows
+ * Camera reads car position and applies local offset
  * Creates cinematic forward motion effect
  */
-export default function Camera({ activePhase, phaseProgress }) {
+export default function Camera({ activePhase, phaseProgress, carRef }) {
   const { camera } = useThree()
   const lastPhaseRef = useRef(null)
   const lockedPoseRef = useRef(null)
@@ -31,19 +31,10 @@ export default function Camera({ activePhase, phaseProgress }) {
       camera.lookAt(0, 2.5, -20)
       return
     }
-    
-    // During journey - ensure camera stays BEHIND and BELOW car
-    const clampedCameraY = Math.min(camera.position.y, 4.5) // Prevent camera going above car
 
     if (phase !== lastPhaseRef.current) {
       lastPhaseRef.current = phase
       lockedPoseRef.current = null
-    }
-
-    if (phase === "HERO") {
-      camera.position.copy(heroPosition)
-      camera.lookAt(heroLookAt)
-      return
     }
 
     if (phase === "FORWARD_CONTENT") {
@@ -52,28 +43,33 @@ export default function Camera({ activePhase, phaseProgress }) {
       return
     }
 
-    // Sample master curve - BEHIND car for follow cam
-    const FOLLOW_OFFSET = 0.045 // Camera trails car by ~30-40 world units
-    const carT = THREE.MathUtils.clamp(phaseProgressValue, 0, 0.98)
-    const camT = Math.max(carT - FOLLOW_OFFSET, 0)
-    const point = masterRoadCurve.getPointAt(camT)
+    // CAMERA ANCHORED TO CAR - read car position directly
+    if (!carRef || !carRef.current) return
 
+    const carPosition = carRef.current.position
+    const carRotation = carRef.current.rotation
+
+    // Local offset based on phase
     const turnBlend = phase === "ROTATE_TO_SIDE" ? phaseProgressValue : phase === "ROTATE_FORWARD" ? 1 - phaseProgressValue : phase === "EVENTS_SIDE_PROFILE" ? 1 : 0
     const zoomOut = turnBlend * turnBlend * (3 - 2 * turnBlend)
 
-    const baseOffset = phase === "EVENTS_SIDE_PROFILE" ? new THREE.Vector3(4, 3.0, 0) : new THREE.Vector3(0, 2.2, 0)
-    const zoomOffset = phase === "EVENTS_SIDE_PROFILE" ? new THREE.Vector3(3.2, 3.0, 0) : new THREE.Vector3(0, 2.8 + zoomOut * 0.6, 6.0 + zoomOut * 3.0)
+    let localOffset
+    if (phase === "EVENTS_SIDE_PROFILE") {
+      localOffset = new THREE.Vector3(4, 3.0, 0) // Side view
+    } else if (phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD") {
+      localOffset = new THREE.Vector3(0, 2.8 + zoomOut * 0.6, 6.0 + zoomOut * 3.0) // Zoomed out
+    } else {
+      localOffset = new THREE.Vector3(0, 2.2, 6) // Default follow cam
+    }
 
-    const desiredPosition = phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD"
-      ? point.clone().add(new THREE.Vector3(0, zoomOffset.y, zoomOffset.z))
-      : point.clone().add(baseOffset)
-    const lookAtPoint = masterRoadCurve.getPointAt(Math.min(0.98, carT))
+    // Apply offset in world space
+    const desiredPosition = carPosition.clone().add(localOffset)
 
     if (phase === "EVENTS_SIDE_PROFILE") {
       if (!lockedPoseRef.current) {
         lockedPoseRef.current = {
           position: desiredPosition.clone(),
-          lookAt: lookAtPoint.clone()
+          lookAt: carPosition.clone()
         }
       }
 
@@ -82,9 +78,9 @@ export default function Camera({ activePhase, phaseProgress }) {
       return
     }
 
+    // Smooth follow
     camera.position.lerp(desiredPosition, 0.1)
-    camera.position.y = Math.min(camera.position.y, 4.5) // Clamp Y to stay below car
-    camera.lookAt(lookAtPoint)
+    camera.lookAt(carPosition)
   })
 
   return null
