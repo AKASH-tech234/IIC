@@ -44,7 +44,24 @@ export default function Road({
   const lineMaterialRef = useRef()
   const roadMaterialRef = useRef()
   const centerLineRef = useRef()
-  
+
+  const sideStripMaterial = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color(BRAND_COLORS.semantic.roadSurface).multiplyScalar(0.75),
+        roughness: 0.92,
+        metalness: 0.12,
+        emissiveIntensity: 0
+      }),
+    []
+  )
+
+  useEffect(() => {
+    return () => {
+      sideStripMaterial.dispose()
+    }
+  }, [sideStripMaterial])
+
   // Phase 5: Pulse tracking with timestamps
   const pulseStartTimeRef = useRef(0)
   const lastPulseSectionRef = useRef(null)
@@ -127,9 +144,9 @@ export default function Road({
     }
 
     if (roadMaterialRef.current) {
-      roadMaterialRef.current.roughness = 0.9
-      const baseIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.14 : phase === "FORWARD_CONTENT" ? 0.07 : 0.1
-      roadMaterialRef.current.emissiveIntensity = baseIntensity
+      roadMaterialRef.current.roughness = 0.75
+      roadMaterialRef.current.metalness = 0.18
+      roadMaterialRef.current.emissiveIntensity = 0.04
     }
   })
 
@@ -170,10 +187,10 @@ export default function Road({
             <meshStandardMaterial
               ref={i === 0 ? roadMaterialRef : null}
               color={BRAND_COLORS.semantic.roadSurface}
-              metalness={0.35}
-              roughness={0.85}
-              emissive={BRAND_COLORS.semantic.road}
-              emissiveIntensity={0.3}
+              metalness={0.18}
+              roughness={0.75}
+              emissive={BRAND_COLORS.semantic.roadSurface}
+              emissiveIntensity={0.04}
             />
           </mesh>
           <mesh geometry={geometries.lineGeos[i]}>
@@ -197,19 +214,25 @@ export default function Road({
             <meshStandardMaterial
               color={BRAND_COLORS.semantic.city}
               emissive={BRAND_COLORS.semantic.city}
-              emissiveIntensity={0.08}
+              emissiveIntensity={0}
               transparent
-              opacity={0.08}
+              opacity={0.01}
             />
           </mesh>
           <mesh geometry={geometries.edgeGeos[i]} position={[2.6, 0, 0]}>
             <meshStandardMaterial
               color={BRAND_COLORS.semantic.city}
               emissive={BRAND_COLORS.semantic.city}
-              emissiveIntensity={0.08}
+              emissiveIntensity={0}
               transparent
-              opacity={0.08}
+              opacity={0.01}
             />
+          </mesh>
+          <mesh geometry={geometries.edgeGeos[i]} position={[-3.05, 0, 0]}>
+            <primitive object={sideStripMaterial} attach="material" />
+          </mesh>
+          <mesh geometry={geometries.edgeGeos[i]} position={[3.05, 0, 0]}>
+            <primitive object={sideStripMaterial} attach="material" />
           </mesh>
         </group>
       ))}

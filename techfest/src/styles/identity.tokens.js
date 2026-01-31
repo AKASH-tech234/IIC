@@ -33,7 +33,7 @@ export const BRAND_COLORS = {
   // Semantic colors - specific purposes
   semantic: {
     road: "#00E5FF",         // Road centerline
-    roadSurface: "#111111",  // Road asphalt
+    roadSurface: "#0E3A45",  // Road surface (muted blue-cyan)
     ground: "#02030A",       // Ground plane
     groundStrip: "#0A1420",  // Transit strip
     city: "#08131E",         // City buildings
