@@ -23,37 +23,68 @@ export default function JourneyEvents() {
       
       const beats = UI_BEATS.EVENTS
       
-      // Initial state: all cards hidden, no Y offset
-      gsap.set(cards, { opacity: 0, scale: 0.9, filter: "blur(4px)" })
-      gsap.set(linesRef.current, { strokeDashoffset: 200 })
+      // CINEMATIC: Cards enter from LEFT and RIGHT (2 from each side)
+      // Initial state: cards hidden with lateral offset
+      // Cards 0,1 (left side), Cards 2,3 (right side)
+      if (cards[0]) gsap.set(cards[0], { opacity: 0, x: -120, scale: 0.9 })
+      if (cards[1]) gsap.set(cards[1], { opacity: 0, x: -120, scale: 0.9 })
+      if (cards[2]) gsap.set(cards[2], { opacity: 0, x: 120, scale: 0.9 })
+      if (cards[3]) gsap.set(cards[3], { opacity: 0, x: 120, scale: 0.9 })
 
-      // Master Timeline - Staged focus with beats
+      // Master Timeline - CINEMATIC LEFT/RIGHT ENTRY
       tl = gsap.timeline({ paused: true })
 
-      // Beat 0.0s: All cards appear together (supporting opacity)
-      tl.to(cards, {
-        opacity: beats.visualHierarchy.supporting.opacity, // 0.85 - all cards supporting
-        scale: beats.visualHierarchy.supporting.scale,     // 0.96 - subtle scale
-        filter: "blur(0px)", // No blur on final state
-        duration: 0.8,
-        stagger: 0.08, // Very tight stagger - feel simultaneous
-        ease: "power2.out"
-      }, beats.timing.allCards)
+      // Cards 0,1 enter from LEFT
+      if (cards[0]) {
+        tl.to(cards[0], {
+          opacity: beats.visualHierarchy.supporting.opacity, // 0.85
+          x: 0,
+          scale: beats.visualHierarchy.supporting.scale, // 0.96
+          duration: 0.8,
+          ease: "power2.out"
+        }, 0.0)
+      }
+      
+      if (cards[1]) {
+        tl.to(cards[1], {
+          opacity: beats.visualHierarchy.supporting.opacity,
+          x: 0,
+          scale: beats.visualHierarchy.supporting.scale,
+          duration: 0.8,
+          ease: "power2.out"
+        }, 0.1) // Slight delay for cinematic feel
+      }
 
-      // Beat 0.20s: Active card (first) scales to dominant
-      tl.to(cards[0], {
-        scale: beats.visualHierarchy.active.scale,   // 1.0
-        opacity: beats.visualHierarchy.active.opacity, // 1.0
-        duration: 0.4,
-        ease: "power2.out"
-      }, beats.timing.activeCard)
+      // Cards 2,3 enter from RIGHT
+      if (cards[2]) {
+        tl.to(cards[2], {
+          opacity: beats.visualHierarchy.supporting.opacity,
+          x: 0,
+          scale: beats.visualHierarchy.supporting.scale,
+          duration: 0.8,
+          ease: "power2.out"
+        }, 0.0)
+      }
+      
+      if (cards[3]) {
+        tl.to(cards[3], {
+          opacity: beats.visualHierarchy.supporting.opacity,
+          x: 0,
+          scale: beats.visualHierarchy.supporting.scale,
+          duration: 0.8,
+          ease: "power2.out"
+        }, 0.1) // Slight delay for cinematic feel
+      }
 
-      // Lines draw in sync with card reveals
-      tl.to(linesRef.current, {
-        strokeDashoffset: 0,
-        duration: 0.6,
-        ease: "power1.inOut"
-      }, beats.timing.allCards + 0.4)
+      // Active card (first one) scales to dominant after entry
+      if (cards[0]) {
+        tl.to(cards[0], {
+          scale: beats.visualHierarchy.active.scale,   // 1.0
+          opacity: beats.visualHierarchy.active.opacity, // 1.0
+          duration: 0.4,
+          ease: "power2.out"
+        }, 0.9) // After cards settle
+      }
 
       // ScrollTrigger - Pin section with exit grammar
       st = ScrollTrigger.create({
@@ -104,20 +135,7 @@ export default function JourneyEvents() {
 
         <div className="relative flex justify-center">
           <div className="relative w-full max-w-5xl h-[420px]">
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 400" fill="none">
-              {tracks.map((track, index) => (
-                <path
-                  key={track.title}
-                  ref={(el) => (linesRef.current[index] = el)}
-                  d={`M400 320 L${200 + index * 140} 140`}
-                  stroke={track.accent}
-                  strokeWidth="2"
-                  strokeLinecap="square"
-                  strokeDasharray="200"
-                />
-              ))}
-            </svg>
-
+            {/* Track lines removed - clean card layout */}
             <div className="absolute inset-0 flex items-center justify-center gap-6">
               {tracks.map((track, index) => (
                 <div

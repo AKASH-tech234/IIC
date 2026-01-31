@@ -33,50 +33,63 @@ export default function JourneySchedule() {
       const contents = gsap.utils.toArray(".timeline-content")
       const speakers = gsap.utils.toArray(".speaker-card")
       
-      // Initial state
-      gsap.set(".schedule-heading", { opacity: 0, letterSpacing: "0.2em", filter: "blur(4px)" })
-      gsap.set([...markers, ...contents, ...speakers], { opacity: 0, filter: "blur(4px)" })
+      // Initial state - NO BLUR
+      gsap.set(".schedule-heading", { opacity: 0, letterSpacing: "0.2em" })
+      gsap.set([...markers, ...contents, ...speakers], { opacity: 0 })
 
-      // Master Timeline - Rhythmic beats
+      // Master Timeline - Rhythmic beats with HORIZONTAL REVEAL FROM RIGHT
       tl = gsap.timeline({ paused: true })
       
-      // Beat 0.0s: Heading holds longer (claims frame)
-      tl.to(".schedule-heading", {
+      // Beat 0.0s: Heading - scale settle (1.02 → 1.0) + fade
+      tl.fromTo(".schedule-heading", {
+        opacity: 0,
+        scale: 1.02,
+        letterSpacing: "0.2em"
+      }, {
         opacity: 1,
+        scale: 1.0, // Settle down
         letterSpacing: "0.05em",
-        filter: "blur(0px)", // No blur on final state
         duration: 0.6,
         ease: "power2.out"
       }, beats.timing.heading)
 
-      // Beat 0.20s: Items appear every 0.12s (fast tempo, rhythmic)
+      // Beat 0.20s: Items reveal from RIGHT (x: +32 → 0) every 0.12s (fast tempo)
       let currentTime = 0.20
       
-      // Road markers - fast tempo
+      // Road markers - horizontal reveal from right
       markers.forEach((marker, index) => {
-        tl.to(marker, {
+        tl.fromTo(marker, {
+          opacity: 0,
+          x: 32
+        }, {
           opacity: 1,
-          filter: "blur(0px)",
+          x: 0,
           duration: 0.4,
           ease: "power2.out"
         }, currentTime + (index * beats.timing.itemInterval))
       })
 
-      // Timeline content - slightly delayed
+      // Timeline content - horizontal reveal from right (slightly delayed)
       contents.forEach((content, index) => {
-        tl.to(content, {
+        tl.fromTo(content, {
+          opacity: 0,
+          x: 32
+        }, {
           opacity: 1,
-          filter: "blur(0px)",
+          x: 0,
           duration: 0.4,
           ease: "power2.out"
         }, currentTime + 0.05 + (index * beats.timing.itemInterval))
       })
 
-      // Speaker cards - same rhythm
+      // Speaker cards - horizontal reveal from right (same rhythm)
       speakers.forEach((speaker, index) => {
-        tl.to(speaker, {
+        tl.fromTo(speaker, {
+          opacity: 0,
+          x: 32
+        }, {
           opacity: 1,
-          filter: "blur(0px)",
+          x: 0,
           duration: 0.4,
           ease: "power2.out"
         }, currentTime + 0.1 + (index * beats.timing.itemInterval))

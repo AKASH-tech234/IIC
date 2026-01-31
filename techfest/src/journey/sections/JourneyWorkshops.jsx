@@ -89,34 +89,39 @@ export default function JourneyWorkshops() {
         }
       })
 
-      // ===== PHASE 10: CINEMATIC UI AUTHORING - Fast Tempo =====
-      // Master timeline with lateral motion (X allowed)
+      // ===== PHASE 10: CINEMATIC UI AUTHORING - MASK REVEAL FROM LEFT =====
+      // Container mask reveal with lateral momentum
       
       const beats = UI_BEATS.WORKSHOPS
       let tl = null
       let st = null
       
       // Initial state
-      gsap.set(".workshops-heading", { opacity: 0, x: 60, filter: "blur(4px)" })
-      gsap.set(".workshops-content", { opacity: 0, filter: "blur(4px)" })
+      gsap.set(".workshops-heading", { opacity: 0, x: 60 })
+      gsap.set(".workshops-content", { 
+        opacity: 0,
+        clipPath: "inset(0 100% 0 0)" // Start fully clipped from right
+      })
 
-      // Master Timeline - Fast tempo
+      // Master Timeline - Mask reveal from LEFT
       tl = gsap.timeline({ paused: true })
       
-      // Beat 0.0s: Heading with lateral motion
-      tl.to(".workshops-heading", {
+      // Beat 0.0s: Heading with lateral motion (x: 60 → 0)
+      tl.fromTo(".workshops-heading", {
+        opacity: 0,
+        x: 60
+      }, {
         opacity: 1,
         x: 0,
-        filter: "blur(0px)", // No blur on final state
         duration: 0.6,
         ease: "power2.out"
       }, beats.timing.heading)
 
-      // Beat 0.15s: Content (fast follow)
+      // Beat 0.15s: Content - MASK REVEAL LEFT → RIGHT
       tl.to(".workshops-content", {
         opacity: 1,
-        filter: "blur(0px)",
-        duration: 0.5,
+        clipPath: "inset(0 0% 0 0)", // Reveal left to right
+        duration: 0.8,
         ease: "power2.out"
       }, beats.timing.content)
 

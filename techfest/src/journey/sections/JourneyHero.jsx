@@ -79,18 +79,16 @@ export default function JourneyHero() {
         beats.timing.title
       )
 
-      // 2. TAGLINE: Mask wipe left to right (CINEMATIC)
+      // 2. TAGLINE: Mask wipe LEFT → RIGHT (DIRECTIONAL)
       // Beat: 0.40s - Wait for title to be fully legible
       tl.fromTo(".hero-tagline",
         { 
           opacity: 0, 
-          clipPath: "inset(0 100% 0 0)",
-          filter: "blur(6px)" 
+          clipPath: "inset(0 100% 0 0)" // Start fully clipped from right
         },
         { 
           opacity: 1,
-          clipPath: "inset(0 0% 0 0)", // Reveal from left
-          filter: "blur(0px)", // No blur on final state
+          clipPath: "inset(0 0% 0 0)", // Reveal left to right
           duration: 0.8,
           ease: "power1.out"
         },
@@ -111,17 +109,21 @@ export default function JourneyHero() {
         beats.timing.tagline + 0.15
       )
 
-      // 4. CTA BUTTONS: Fade in LAST
-      // Beat: 0.70s - Wait for camera to settle
+      // 4. CTA BUTTONS: Scale settle (1.02 → 1.0) + fade - LAST
+      // Beat: 0.75s - Minimum +0.3s after tagline (0.40 + 0.35 = 0.75)
       tl.fromTo(".hero-cta-button",
-        { opacity: 0 },
+        { 
+          opacity: 0,
+          scale: 1.02 
+        },
         { 
           opacity: 1,
+          scale: 1.0, // Settle down
           duration: 0.6, 
           stagger: 0.15,
           ease: "power2.out"
         },
-        beats.timing.cta
+        0.75 // Explicit timing: 0.75s (minimum +0.3s after tagline)
       )
 
         // Play timeline immediately on load (HERO is opening shot)

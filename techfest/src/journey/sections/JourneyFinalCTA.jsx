@@ -30,44 +30,50 @@ export default function JourneyFinalCTA() {
       
       const beats = UI_BEATS.FINAL
       
-      // Initial state
+      // Initial state - NO BLUR
       gsap.set(".final-cta-badge", { opacity: 0, scale: 1.05 })
-      gsap.set(".final-cta-heading", { opacity: 0, filter: "blur(6px)" })
+      gsap.set(".final-cta-heading", { opacity: 0 })
       gsap.set(".final-cta-text", { opacity: 0 })
       gsap.set(".final-cta-button", { opacity: 0 })
 
-      // Master Timeline - End frame beats
+      // Master Timeline - ARRIVAL AND STILLNESS (NO DIRECTIONAL MOTION)
       tl = gsap.timeline({ paused: true })
       
-      // Badge - Scale DOWN (settling feel)
-      tl.to(".final-cta-badge", {
+      // Beat 0.0s: Headline - opacity only (NO MOVEMENT)
+      tl.fromTo(".final-cta-heading", {
+        opacity: 0
+      }, {
         opacity: 1,
-        scale: 1.0, // Settle down, not pop up (1.05 → 1.0)
-        duration: 0.8,
-        ease: "expo.out" // Slow, calm easing
-      }, beats.timing.headline - 0.1) // Slightly before headline
-
-      // Beat 0.0s: Headline fade (claims frame)
-      tl.to(".final-cta-heading", {
-        opacity: 1,
-        filter: "blur(0px)", // No blur on final state
         duration: 0.8,
         ease: "power1.inOut"
-      }, beats.timing.headline)
+      }, 0.0)
 
-      // Text appears with headline
+      // Beat 0.35s: CTA - opacity only (large pause after headline)
+      tl.fromTo(".final-cta-button", {
+        opacity: 0
+      }, {
+        opacity: 1,
+        duration: 0.6,
+        ease: "power1.inOut"
+      }, 0.35)
+
+      // Beat 0.65s: Badge - scale settle (1.05 → 1.0) LAST
+      tl.fromTo(".final-cta-badge", {
+        opacity: 0,
+        scale: 1.05
+      }, {
+        opacity: 1,
+        scale: 1.0, // Settle down (arrival feel)
+        duration: 0.8,
+        ease: "expo.out" // Slow, calm easing
+      }, 0.65)
+
+      // Text appears with headline (not animated separately, just set visible)
       tl.to(".final-cta-text", {
         opacity: 1,
         duration: 0.7,
         ease: "power1.inOut"
-      }, beats.timing.headline + 0.15)
-
-      // Beat 0.30s: CTA fade (calm, no movement toward viewer)
-      tl.to(".final-cta-button", {
-        opacity: 1,
-        duration: 0.6,
-        ease: "power1.inOut"
-      }, beats.timing.cta)
+      }, 0.15)
 
       // ScrollTrigger with exit grammar
       st = ScrollTrigger.create({

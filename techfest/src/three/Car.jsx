@@ -160,13 +160,18 @@ const Car = forwardRef(({
     if (rearRightWheelRef.current) rearRightWheelRef.current.rotation.x = wheelRotation
 
     const accentColor = activeAccent.current || "#00E5FF"
+    
+    // UPGRADED: Enhanced body material with better opacity and emissive
     if (bodyMaterialRef.current) {
-      bodyMaterialRef.current.opacity = isHeroPhase ? 0.3 : Math.min(1, 0.3 + (progress - 0.05) * 10)
+      bodyMaterialRef.current.opacity = isHeroPhase ? 0.5 : Math.min(1, 0.5 + (progress - 0.05) * 10) // Increased from 0.3
       bodyMaterialRef.current.transparent = true
       bodyMaterialRef.current.emissive.set(accentColor)
+      bodyMaterialRef.current.emissiveIntensity = isHeroPhase ? 0.08 : 0.12 // Increased glow
+      bodyMaterialRef.current.metalness = 0.9 // More metallic
+      bodyMaterialRef.current.roughness = 0.2 // Shinier
     }
     if (cabinMaterialRef.current) {
-      cabinMaterialRef.current.opacity = isHeroPhase ? 0.3 : Math.min(1, 0.3 + (progress - 0.05) * 10)
+      cabinMaterialRef.current.opacity = isHeroPhase ? 0.4 : Math.min(0.9, 0.4 + (progress - 0.05) * 10)
       cabinMaterialRef.current.transparent = true
     }
 
@@ -251,15 +256,33 @@ const Car = forwardRef(({
         />
       </mesh>
 
-      {/* Rear Spoiler */}
-      <mesh position={[0, 0.7, -1.3]}>
-        <boxGeometry args={[1.2, 0.08, 0.3]} />
+      {/* UPGRADED: Rear Spoiler - Larger and brighter */}
+      <mesh position={[0, 0.7, -1.35]}>
+        <boxGeometry args={[1.4, 0.1, 0.35]} />
         <meshStandardMaterial 
           color="#8B5CF6" 
           metalness={1} 
-          roughness={0.1}
+          roughness={0.05}
           emissive="#8B5CF6"
-          emissiveIntensity={0.2}
+          emissiveIntensity={0.5}
+        />
+      </mesh>
+      
+      {/* Spoiler Support Struts */}
+      <mesh position={[-0.55, 0.5, -1.35]}>
+        <boxGeometry args={[0.06, 0.3, 0.06]} />
+        <meshStandardMaterial 
+          color="#1a1f3a" 
+          metalness={0.9} 
+          roughness={0.2}
+        />
+      </mesh>
+      <mesh position={[0.55, 0.5, -1.35]}>
+        <boxGeometry args={[0.06, 0.3, 0.06]} />
+        <meshStandardMaterial 
+          color="#1a1f3a" 
+          metalness={0.9} 
+          roughness={0.2}
         />
       </mesh>
 

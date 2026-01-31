@@ -22,47 +22,57 @@ export default function JourneyAbout() {
       
       const beats = UI_BEATS.ABOUT
       
-      // Initial state
-      gsap.set(cards, { opacity: 0, filter: "blur(4px)" })
+      // Initial state - NO BLUR
+      gsap.set(cards, { opacity: 0 })
 
-      // Master Timeline - Editorial beats with timeline offsets
+      // Master Timeline - Editorial beats with ALTERNATING SIDE ENTRY
       tl = gsap.timeline({ paused: true })
 
-      // Beat 0.0s: Headline (dominant element claims frame)
+      // Beat 0.0s: Headline (dominant element claims frame) - NO MOVEMENT
       if (cards[0]) {
-        tl.to(cards[0], {
+        tl.fromTo(cards[0], {
+          opacity: 0
+        }, {
           opacity: 1,
-          filter: "blur(0px)", // No blur on final state
           duration: 0.6,
           ease: "power2.out"
         }, beats.timing.headline)
       }
 
-      // Beat 0.25s: First point
+      // Beat 0.25s: Point 1 - Enter from LEFT (x: -24 → 0) - NO BLUR
       if (cards[1]) {
-        tl.to(cards[1], {
+        tl.fromTo(cards[1], {
+          opacity: 0,
+          x: -24
+        }, {
           opacity: 1,
-          filter: "blur(0px)",
+          x: 0,
           duration: 0.6,
           ease: "power2.out"
         }, beats.timing.point1)
       }
 
-      // Beat 0.45s: Second point
+      // Beat 0.45s: Point 2 - Enter from RIGHT (x: +24 → 0) - NO BLUR
       if (cards[2]) {
-        tl.to(cards[2], {
+        tl.fromTo(cards[2], {
+          opacity: 0,
+          x: 24
+        }, {
           opacity: 1,
-          filter: "blur(0px)",
+          x: 0,
           duration: 0.6,
           ease: "power2.out"
         }, beats.timing.point2)
       }
 
-      // Beat 0.65s: Third point
+      // Beat 0.65s: Point 3 - Enter from LEFT (x: -24 → 0) - NO BLUR
       if (cards[3]) {
-        tl.to(cards[3], {
+        tl.fromTo(cards[3], {
+          opacity: 0,
+          x: -24
+        }, {
           opacity: 1,
-          filter: "blur(0px)",
+          x: 0,
           duration: 0.6,
           ease: "power2.out"
         }, beats.timing.point3)
