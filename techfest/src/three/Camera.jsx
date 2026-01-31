@@ -10,7 +10,7 @@ import * as THREE from "three"
  * Camera reads car position and applies local offset
  * Creates cinematic forward motion effect
  */
-export default function Camera({ activePhase, carRef }) {
+export default function Camera({ activePhase, carRef, currentSegment }) {
   const { camera } = useThree()
   const lastPhaseRef = useRef(null)
   const lockedPoseRef = useRef(null)
@@ -21,9 +21,21 @@ export default function Camera({ activePhase, carRef }) {
 
     const phase = activePhase.current || "HERO"
     const carPosition = carRef.current.position
+    const segmentId = currentSegment?.current?.id || "HERO"
+    const localT = currentSegment?.current?.localT || 0
 
-    // FOV shift
-    const targetFOV = phase === "EVENTS_SIDE_PROFILE" ? 38 : 50
+    // SEGMENT-AWARE FOV MICRO-BEATS
+    let targetFOV = 50
+    if (segmentId === "TURN_1" && localT < 0.3) {
+      targetFOV = 55 // Slight zoom-out before curve
+    } else if (segmentId === "EVENTS") {
+      targetFOV = 38 // Compression for gallery
+    } else if (segmentId === "TURN_2") {
+      targetFOV = 52 // Gentle recovery
+    } else if (segmentId === "FINAL") {
+      targetFOV = 50 // Stable approach
+    }
+    
     camera.fov += (targetFOV - camera.fov) * 0.08
     camera.updateProjectionMatrix()
 

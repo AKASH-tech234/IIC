@@ -37,7 +37,23 @@ const createBuildings = ({ count, xRange, zCenter, zJitter, heightRange, scaleRa
   return buildings
 }
 
-export default function City({ motionDensity, activeAccent, activePhase }) {
+/**
+ * Get dominant landmark for each segment
+ */
+function getLandmarkEmissive(landmarkId, currentSegmentId) {
+  const dominantMap = {
+    HERO: 'arc',        // Z: -150
+    TURN_1: 'spires',   // Z: -180, -320
+    EVENTS: 'tower',    // Z: -450
+    TURN_2: 'bridge',   // Z: -710
+    FINAL: 'cluster'    // Z: -650
+  }
+  
+  const isDominant = dominantMap[currentSegmentId] === landmarkId
+  return isDominant ? 0.15 : 0.05 // Dominant vs background
+}
+
+export default function City({ motionDensity, activeAccent, activePhase, currentSegment }) {
   const farRef = useRef()
   const midRef = useRef()
   const nearRef = useRef()
@@ -161,6 +177,7 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
     const layerNames = ['FAR', 'MID', 'NEAR']
     const phase = activePhase?.current || "HERO"
     const isEventsHold = phase === "EVENTS_SIDE_PROFILE"
+    const segmentId = currentSegment?.current?.id || "HERO"
     
     ;[farRef, midRef, nearRef].forEach((layer, idx) => {
       if (!layer.current) return
@@ -245,19 +262,19 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
         </mesh>
       ))}
 
-      {/* Antenna spires for scale */}
+      {/* Antenna spires - Dominant in TURN_1 segment */}
       {antennaSpires.map((spire, i) => (
         <mesh key={`spire-${i}`} position={[spire.x, spire.height / 2, spire.z]}>
           <cylinderGeometry args={[0.12, 0.18, spire.height, 8]} />
           <meshStandardMaterial
             color="#1A2550"
             emissive="#1A2550"
-            emissiveIntensity={0.15}
+            emissiveIntensity={getLandmarkEmissive('spires', currentSegment?.current?.id || "HERO")}
           />
         </mesh>
       ))}
 
-      {/* Horizontal skybridges */}
+      {/* Horizontal skybridges - Dominant in TURN_2 segment */}
       {skybridges.map((bridge, i) => {
         const width = Math.abs(bridge.x2 - bridge.x1)
         const centerX = (bridge.x1 + bridge.x2) / 2
@@ -267,7 +284,7 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
             <meshStandardMaterial
               color="#1A2550"
               emissive="#1A2550"
-              emissiveIntensity={0.2}
+              emissiveIntensity={getLandmarkEmissive('bridge', currentSegment?.current?.id || "HERO")}
               transparent
               opacity={0.7}
             />
@@ -275,40 +292,40 @@ export default function City({ motionDensity, activeAccent, activePhase }) {
         )
       })}
 
-      {/* LANDMARK 1: Mega-tower - Signature vertical element */}
+      {/* LANDMARK 1: Mega-tower - Dominant in EVENTS segment */}
       <mesh position={[landmarks.megaTower.x, landmarks.megaTower.height / 2, landmarks.megaTower.z]}>
         <cylinderGeometry args={[landmarks.megaTower.radius, landmarks.megaTower.radius * 1.2, landmarks.megaTower.height, 8]} />
         <meshStandardMaterial
           color="#121B3A"
           emissive="#121B3A"
-          emissiveIntensity={0.05}
+          emissiveIntensity={getLandmarkEmissive('tower', currentSegment?.current?.id || "HERO")}
           roughness={0.95}
           metalness={0.05}
         />
       </mesh>
 
-      {/* LANDMARK 2: Arc structure - Spanning near road */}
+      {/* LANDMARK 2: Arc structure - Dominant in HERO segment */}
       <group position={[(landmarks.arc.x1 + landmarks.arc.x2) / 2, 0, landmarks.arc.z]}>
         <mesh position={[0, landmarks.arc.height / 2, 0]} rotation={[0, 0, Math.PI / 2]}>
           <torusGeometry args={[landmarks.arc.height / 2, landmarks.arc.thickness / 2, 8, 16, Math.PI]} />
           <meshStandardMaterial
             color="#24347A"
             emissive={activeAccent?.current || "#00E5FF"}
-            emissiveIntensity={0.15}
+            emissiveIntensity={getLandmarkEmissive('arc', currentSegment?.current?.id || "HERO")}
             roughness={0.85}
             metalness={0.15}
           />
         </mesh>
       </group>
 
-      {/* LANDMARK 3: Asymmetric cluster - Offset masses */}
+      {/* LANDMARK 3: Asymmetric cluster - Dominant in FINAL segment */}
       {landmarks.asymmetricCluster.map((building, i) => (
         <mesh key={`cluster-${i}`} position={[building.x, building.height / 2, building.z]}>
           <boxGeometry args={[building.scale, building.height, building.scale]} />
           <meshStandardMaterial
             color="#1A2550"
             emissive="#1A2550"
-            emissiveIntensity={0.12}
+            emissiveIntensity={getLandmarkEmissive('cluster', currentSegment?.current?.id || "HERO")}
             roughness={0.9}
             metalness={0.1}
           />

@@ -1,4 +1,4 @@
-import { useRef, forwardRef } from "react"
+import { useRef, forwardRef, useEffect } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 import { totalRoadLength, getSegmentAtDistance } from "./curveUtils"
@@ -15,7 +15,23 @@ import { getSegmentFrames, ROAD_RADIUS } from "./Road"
  * - Neon accents and emissive headlights
  */
 const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }, ref) => {
-  const carRef = ref || useRef()
+  const carRef = useRef()
+  const currentSegmentRef = useRef({ id: "HERO", localT: 0 })
+  
+  // Expose both carRef and currentSegmentRef through forwarded ref
+  useEffect(() => {
+    if (ref) {
+      if (typeof ref === 'function') {
+        ref(carRef.current)
+      } else {
+        ref.current = carRef.current
+        // Attach currentSegmentRef for Scene to read
+        if (carRef.current) {
+          carRef.current.currentSegmentRef = currentSegmentRef
+        }
+      }
+    }
+  }, [])
   const frontLeftWheelRef = useRef()
   const frontRightWheelRef = useRef()
   const rearLeftWheelRef = useRef()
@@ -52,6 +68,9 @@ const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgr
     // DISTANCE-BASED POSITIONING - True forward journey
     const distance = progress * totalRoadLength
     const { segment, localT } = getSegmentAtDistance(distance)
+    
+    // Store current segment for other components to read
+    currentSegmentRef.current = { id: segment.id, localT, distance }
     
     // Sample current segment curve
     const curvePoint = segment.curve.getPointAt(localT)

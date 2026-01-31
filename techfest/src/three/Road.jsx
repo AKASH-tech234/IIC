@@ -30,7 +30,7 @@ export function getSegmentFrames(segmentId) {
  * Car and camera sample this same curve
  * Road geometry is static, movement is via curve progress
  */
-export default function Road({ motionDensity, activePhase, activeAccent, scrollProgress }) {
+export default function Road({ motionDensity, activePhase, activeAccent, scrollProgress, currentSegment }) {
   const lineMaterialRef = useRef()
   const roadMaterialRef = useRef()
   const centerLineRef = useRef()
@@ -38,18 +38,25 @@ export default function Road({ motionDensity, activePhase, activeAccent, scrollP
   useFrame(() => {
     const phase = activePhase.current || "HERO"
     const progress = scrollProgress?.current || 0
+    const distance = currentSegment?.current?.distance || 0
 
-    // MOMENT OF ARRIVAL - Center line activates progressively on first scroll
+    // ROAD CONTINUITY - Center line intensifies before turns
     if (centerLineRef.current) {
-      let targetIntensity
+      let targetIntensity = 0.6
+      
       if (progress < 0.05) {
-        // Ramp up from 0 to base during first 5% scroll
+        // Moment of arrival
         targetIntensity = (progress / 0.05) * 0.6
+      } else if (distance > 180 && distance < 200) {
+        // Before TURN_1
+        targetIntensity = 0.6 + ((distance - 180) / 20) * 0.2
+      } else if (distance > 680 && distance < 700) {
+        // Before TURN_2
+        targetIntensity = 0.6 + ((distance - 680) / 20) * 0.2
       } else if (phase === "EVENTS_SIDE_PROFILE") {
         targetIntensity = 0.9
-      } else {
-        targetIntensity = 0.6
       }
+      
       centerLineRef.current.emissiveIntensity += (targetIntensity - centerLineRef.current.emissiveIntensity) * 0.1
     }
 

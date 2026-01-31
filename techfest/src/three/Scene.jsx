@@ -1,4 +1,4 @@
-import { Canvas, useThree } from "@react-three/fiber"
+import { Canvas, useThree, useFrame } from "@react-three/fiber"
 import { useEffect, useRef } from "react"
 import * as THREE from "three"
 import Camera from "./Camera"
@@ -13,9 +13,24 @@ import Ground from "./Ground"
  * Scene Content - All 3D objects
  * Uses frameloop="demand" for performance
  */
+/**
+ * Get segment-based visual configuration
+ */
+function getSegmentVisualConfig(segmentId) {
+  const configs = {
+    HERO: { fogColor: "#0A1022", fogBlend: 0.03, groundIntensity: 0.08, horizonIntensity: 0 },
+    TURN_1: { fogColor: "#0B1228", fogBlend: 0.04, groundIntensity: 0.09, horizonIntensity: 0.05 },
+    EVENTS: { fogColor: "#0C1430", fogBlend: 0.15, groundIntensity: 0.18, horizonIntensity: 0.65 },
+    TURN_2: { fogColor: "#0A0F20", fogBlend: 0.05, groundIntensity: 0.10, horizonIntensity: 0.08 },
+    FINAL: { fogColor: "#0D1835", fogBlend: 0.06, groundIntensity: 0.12, horizonIntensity: 0.15 }
+  }
+  return configs[segmentId] || configs.HERO
+}
+
 function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePhase, phaseProgress, activeCardIndex, activeAccent, textPhase }) {
   const { invalidate } = useThree()
   const carRef = useRef() // Shared ref for Car and Camera coordination
+  const currentSegmentRef = useRef({ id: "HERO", localT: 0 })
   const horizonGlowRef = useRef()
 
   useEffect(() => {
@@ -27,38 +42,25 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
 
   const horizonColor = useRef("#04202A")
 
-  useEffect(() => {
+  useFrame(() => {
     if (!fogRef.current) return
+    
+    // Read current segment from car
+    let segmentId = "HERO"
+    if (carRef.current && carRef.current.currentSegmentRef) {
+      currentSegmentRef.current = carRef.current.currentSegmentRef.current
+      segmentId = currentSegmentRef.current.id
+    }
+    
     const accent = activeAccent.current || "#070617"
-    const phase = activePhase.current || "HERO"
     const progress = scrollProgress.current || 0
     
-    // Phase-based fog color grading with spotlight dimming
-    let baseFogColor
-    let fogBlend
-    let horizonIntensity
+    // SEGMENT-BASED VISUAL IDENTITY
+    const config = getSegmentVisualConfig(segmentId)
     
-    if (phase === "HERO") {
-      // Colder, darker
-      baseFogColor = new THREE.Color("#0A1022")
-      fogBlend = 0.03
-      horizonIntensity = 0
-    } else if (phase === "EVENTS_SIDE_PROFILE") {
-      // AMPLIFIED: Much darker sky for contrast (-12%)
-      baseFogColor = new THREE.Color("#050812")
-      fogBlend = 0.15
-      horizonIntensity = 0.65 // +60% glow intensity
-    } else if (phase === "FORWARD_CONTENT") {
-      // Brighter, hopeful
-      baseFogColor = new THREE.Color("#0F1A33")
-      fogBlend = 0.05
-      horizonIntensity = 0.1
-    } else {
-      // Transition phases
-      baseFogColor = new THREE.Color("#0A1022")
-      fogBlend = 0.06
-      horizonIntensity = 0.05
-    }
+    let baseFogColor = new THREE.Color(config.fogColor)
+    let fogBlend = config.fogBlend
+    let horizonIntensity = config.horizonIntensity
     
     const accentColor = new THREE.Color(accent)
     baseFogColor.lerp(accentColor, fogBlend)
@@ -75,7 +77,7 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
     
     horizonBase.lerp(horizonAccent, finalHorizonIntensity)
     horizonColor.current = `#${horizonBase.getHexString()}`
-  }, [activeAccent, activePhase, scrollProgress])
+  })
 
   // Phase-based lighting drama
   const phase = activePhase.current || "HERO"
@@ -85,8 +87,8 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
     <>
       <Camera 
         activePhase={activePhase}
-        phaseProgress={phaseProgress}
         carRef={carRef}
+        currentSegment={currentSegmentRef}
       />
       <Lights />
       {/* AMPLIFIED: Reduce ambient during EVENTS for spotlight effect */}
@@ -129,11 +131,13 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         activePhase={activePhase}
         activeAccent={activeAccent}
         scrollProgress={scrollProgress}
+        currentSegment={currentSegmentRef}
       />
       <City 
         motionDensity={motionDensity}
         activeAccent={activeAccent}
         activePhase={activePhase}
+        currentSegment={currentSegmentRef}
       />
     </>
   )
@@ -169,7 +173,7 @@ export default function Scene({ scrollProgress, scrollVelocity, motionDensity, a
       <Canvas
         frameloop="always"
         camera={{ 
-          position: [0, 2.7, 7], // Medium zoom between initial (6) and zoomed out (8)
+          position: [0, 3.5, 10], // Zoomed out start for better overview
           fov: 60
         }}
         gl={{ 
