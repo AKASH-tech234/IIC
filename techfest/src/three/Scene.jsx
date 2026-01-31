@@ -29,16 +29,42 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
   useEffect(() => {
     if (!fogRef.current) return
     const accent = activeAccent.current || "#070617"
-    const base = new THREE.Color("#0A1022")
-    const accentColor = new THREE.Color(accent)
     const phase = activePhase.current || "HERO"
-    const blend = phase === "EVENTS_SIDE_PROFILE" ? 0.2 : 0.06
-    base.lerp(accentColor, blend)
-    fogRef.current.color = base
+    
+    // Phase-based fog color grading with spotlight dimming
+    let baseFogColor
+    let fogBlend
+    let horizonIntensity
+    
+    if (phase === "HERO") {
+      // Colder, darker
+      baseFogColor = new THREE.Color("#0A1022")
+      fogBlend = 0.03
+      horizonIntensity = 0
+    } else if (phase === "EVENTS_SIDE_PROFILE") {
+      // Accent-forward + spotlight (darken fog for contrast)
+      baseFogColor = new THREE.Color("#08091C")
+      fogBlend = 0.15
+      horizonIntensity = 0.4
+    } else if (phase === "FORWARD_CONTENT") {
+      // Brighter, hopeful
+      baseFogColor = new THREE.Color("#0F1A33")
+      fogBlend = 0.05
+      horizonIntensity = 0.1
+    } else {
+      // Transition phases
+      baseFogColor = new THREE.Color("#0A1022")
+      fogBlend = 0.06
+      horizonIntensity = 0.05
+    }
+    
+    const accentColor = new THREE.Color(accent)
+    baseFogColor.lerp(accentColor, fogBlend)
+    fogRef.current.color = baseFogColor
 
     const horizonBase = new THREE.Color("#00E5FF")
     const horizonAccent = new THREE.Color(accent)
-    horizonBase.lerp(horizonAccent, phase === "EVENTS_SIDE_PROFILE" ? 0.3 : 0)
+    horizonBase.lerp(horizonAccent, horizonIntensity)
     horizonColor.current = `#${horizonBase.getHexString()}`
   }, [activeAccent, activePhase])
 
@@ -70,7 +96,7 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
         intensity={0.3}
         castShadow={false}
       />
-      <Ground />
+      <Ground activePhase={activePhase} />
       <Sky horizonColor={horizonColor.current} />
       <fog ref={fogRef} attach="fog" args={["#0A1022", 60, 400]} />
       <Car 
@@ -94,6 +120,7 @@ function SceneContent({ scrollProgress, scrollVelocity, motionDensity, activePha
       <City 
         motionDensity={motionDensity}
         activeAccent={activeAccent}
+        activePhase={activePhase}
       />
     </>
   )

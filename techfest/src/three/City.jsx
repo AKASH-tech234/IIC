@@ -3,11 +3,11 @@ import { useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import { masterRoadCurve } from "./curveUtils"
 
-const createMaterial = (color, emissiveScale, emissiveIntensity) =>
+const createMaterial = (color, emissiveScale, emissiveIntensity, roughness = 0.9, metalness = 0.1) =>
   new THREE.MeshStandardMaterial({
     color,
-    roughness: 0.9,
-    metalness: 0.1,
+    roughness,
+    metalness,
     emissive: new THREE.Color(color).multiplyScalar(emissiveScale),
     emissiveIntensity
   })
@@ -38,7 +38,7 @@ const createBuildings = ({ count, xRange, zCenter, zJitter, heightRange, scaleRa
   return buildings
 }
 
-export default function City({ motionDensity, activeAccent }) {
+export default function City({ motionDensity, activeAccent, activePhase }) {
   const farRef = useRef()
   const midRef = useRef()
   const nearRef = useRef()
@@ -98,9 +98,10 @@ export default function City({ motionDensity, activeAccent }) {
     return allBuildings
   }, [])
 
-  const farMat = useMemo(() => createMaterial("#121B3A", 0, 0), [])
-  const midMat = useMemo(() => createMaterial("#1A2550", 0.08, 0.35), [])
-  const nearMat = useMemo(() => createMaterial("#24347A", 0.1, 0.3), [])
+  // Layered depth with procedural roughness variation
+  const farMat = useMemo(() => createMaterial("#121B3A", 0, 0, 0.95, 0.05), []) // Flattest
+  const midMat = useMemo(() => createMaterial("#1A2550", 0.08, 0.35, 0.9, 0.1), []) // Medium
+  const nearMat = useMemo(() => createMaterial("#24347A", 0.1, 0.3, 0.85, 0.15), []) // Most detail
   
   // Roadside pylons that FOLLOW the road curve
   const pylons = useMemo(() => {
@@ -160,6 +161,9 @@ export default function City({ motionDensity, activeAccent }) {
     const density = motionDensity?.current ?? 0
 
     const layerNames = ['FAR', 'MID', 'NEAR']
+    const phase = activePhase?.current || "HERO"
+    const isEventsHold = phase === "EVENTS_SIDE_PROFILE"
+    
     ;[farRef, midRef, nearRef].forEach((layer, idx) => {
       if (!layer.current) return
 
@@ -168,19 +172,26 @@ export default function City({ motionDensity, activeAccent }) {
         console.log(`${layerNames[idx]} layer: ${layer.current.children.length} buildings (segmented bands)`)
       }
 
-      // Reduce drift multiplier for calmer motion
-      const speed = [0, 0.04, 0.06][idx]
+      // Relative motion during EVENTS hold - MID layer drifts, others frozen
+      let speed
+      if (isEventsHold) {
+        speed = idx === 1 ? 0.02 : 0 // Only MID layer moves at 2%
+      } else {
+        speed = [0, 0.04, 0.06][idx] // Normal speeds
+      }
       layer.current.position.z = density * speed
 
       layer.current.children.forEach((child, i) => {
         if (!child.isMesh || !child.material || child.material.emissiveIntensity === undefined) return
 
-        // Layered depth: FAR silent, MID/NEAR subtle flicker
+        // Layered depth with spotlight effect
         if (idx === 0) {
+          // FAR layer - no emissive (silhouette)
           child.material.emissiveIntensity = 0
         } else {
           const flicker = Math.sin(t * 0.35 + i * 0.7) * 0.15 + 0.82
-          const layerBoost = idx === 1 ? 0.35 : 0.3
+          // MID layer gets boost during EVENTS, keep visibility
+          const layerBoost = idx === 1 ? (isEventsHold ? 0.45 : 0.35) : 0.3
           child.material.emissiveIntensity = flicker * layerBoost
         }
       })

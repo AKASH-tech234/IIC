@@ -59,6 +59,25 @@ export default function AppJourney() {
 
       const easeOutQuad = (value) => 1 - (1 - value) * (1 - value)
 
+      // Cinematic pacing system - adds holds and slowdowns at key moments
+      const applyCinematicPacing = (progress, holds = []) => {
+        for (const { start, end, strength } of holds) {
+          if (progress >= start && progress <= end) {
+            const local = (progress - start) / (end - start)
+            const eased = local * local * (3 - 2 * local) // Smoothstep
+            return start + eased * (end - start) * strength + start * (1 - strength)
+          }
+        }
+        return progress
+      }
+
+      // Define cinematic holds
+      const cinematicHolds = [
+        { start: 0.32, end: 0.42, strength: 0.4 }, // EVENTS entry - slow reveal
+        { start: 0.55, end: 0.62, strength: 0.6 }, // EVENTS exit - readable
+        { start: 0.85, end: 0.95, strength: 0.5 }  // FINAL CTA - smooth approach
+      ]
+
       ScrollTrigger.create({
         trigger: document.body,
         start: "top top",
@@ -81,9 +100,12 @@ export default function AppJourney() {
           lastScrollRef.current = scrollY
           lastTimeRef.current = now
 
-          const activePhase = phases.find((phase) => progress >= phase.start && progress < phase.end) || phases[phases.length - 1]
+          // Apply cinematic pacing before calculating phase progress
+          const pacedProgress = applyCinematicPacing(progress, cinematicHolds)
+          
+          const activePhase = phases.find((phase) => pacedProgress >= phase.start && pacedProgress < phase.end) || phases[phases.length - 1]
           const phaseRange = activePhase.end - activePhase.start
-          const phaseProgress = phaseRange > 0 ? (progress - activePhase.start) / phaseRange : 0
+          const phaseProgress = phaseRange > 0 ? (pacedProgress - activePhase.start) / phaseRange : 0
 
           if (phaseRef.current !== activePhase.id) {
             phaseRef.current = activePhase.id

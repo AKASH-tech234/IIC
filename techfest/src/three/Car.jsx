@@ -71,6 +71,7 @@ const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgr
     const lerpSpeed = isTextHold ? 0.03 : phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.05 : 0.12
 
     if (isEventsPhase) {
+      // EVENTS GALLERY HOLD - Lock position completely, no forward motion
       if (!lockedPoseRef.current) {
         lockedPoseRef.current = {
           position: basePosition.clone(),
@@ -78,12 +79,16 @@ const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgr
           tangent: tangent.clone()
         }
       }
-      carRef.current.position.lerp(lockedPoseRef.current.position, lerpSpeed)
-      carRef.current.up.lerp(lockedPoseRef.current.normal, lerpSpeed)
+      // Freeze position - no lerp, direct copy
+      carRef.current.position.copy(lockedPoseRef.current.position)
+      carRef.current.up.copy(lockedPoseRef.current.normal)
       
       const lookAtTarget = lockedPoseRef.current.position.clone().add(lockedPoseRef.current.tangent)
       carRef.current.lookAt(lookAtTarget)
     } else {
+      // Reset locked pose when leaving events
+      lockedPoseRef.current = null
+      
       carRef.current.position.lerp(basePosition, lerpSpeed)
       carRef.current.up.lerp(normal, lerpSpeed)
       
@@ -97,6 +102,7 @@ const Car = forwardRef(({ scrollProgress, motionDensity, activePhase, phaseProgr
     const vibrationOffset = normal.clone().multiplyScalar(vibration)
     carRef.current.position.add(vibrationOffset)
 
+    // Wheels stop during HERO and EVENTS phases
     const curveSlowdown = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.4 : 1
     const wheelRotation = isHeroPhase || isEventsPhase ? 0 : (progress - 0.05) * Math.PI * 14 * curveSlowdown
     if (frontLeftWheelRef.current) frontLeftWheelRef.current.rotation.x = wheelRotation

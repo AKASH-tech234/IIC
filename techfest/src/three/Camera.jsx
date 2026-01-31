@@ -25,6 +25,11 @@ export default function Camera({ activePhase, phaseProgress, carRef }) {
     const phase = activePhase.current || "HERO"
     const phaseProgressValue = phaseProgress.current || 0
     
+    // Cinematic FOV shift - pronounced zoom during EVENTS
+    const targetFOV = phase === "EVENTS_SIDE_PROFILE" ? 38 : 50
+    camera.fov += (targetFOV - camera.fov) * 0.08
+    camera.updateProjectionMatrix()
+    
     // HERO OVERRIDE - Cinematic intro framing
     if (phase === "HERO") {
       camera.position.lerp(new THREE.Vector3(0, 5.5, 12), 0.08)

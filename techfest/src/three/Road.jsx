@@ -27,9 +27,16 @@ export const roadFrames = {
 export default function Road({ motionDensity, activePhase, activeAccent }) {
   const lineMaterialRef = useRef()
   const roadMaterialRef = useRef()
+  const centerLineRef = useRef()
 
   useFrame(() => {
     const phase = activePhase.current || "HERO"
+
+    // Spotlight effect - road center line boost during EVENTS
+    if (centerLineRef.current) {
+      const targetIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.9 : 0.6
+      centerLineRef.current.emissiveIntensity += (targetIntensity - centerLineRef.current.emissiveIntensity) * 0.1
+    }
 
     if (lineMaterialRef.current && activeAccent.current) {
       const isEvent = phase === "EVENTS_SIDE_PROFILE"
@@ -41,7 +48,8 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
 
     if (roadMaterialRef.current) {
       roadMaterialRef.current.roughness = 0.9
-      roadMaterialRef.current.emissiveIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.14 : 0.1
+      const baseIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.14 : phase === "FORWARD_CONTENT" ? 0.07 : 0.1
+      roadMaterialRef.current.emissiveIntensity = baseIntensity
     }
   })
 
@@ -72,8 +80,8 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
         <meshStandardMaterial
           ref={roadMaterialRef}
           color="#111111"
-          metalness={0.1}
-          roughness={0.9}
+          metalness={0.35}
+          roughness={0.85}
           emissive="#00E5FF"
           emissiveIntensity={0.3}
         />
@@ -86,10 +94,13 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
           emissiveIntensity={0.7}
         />
       </mesh>
-      {/* Center line - white stripe */}
+      {/* Center line - white stripe with spotlight boost */}
       <mesh geometry={centerGeometry} position={[0, 0.08, 0]}>
-        <meshBasicMaterial
+        <meshStandardMaterial
+          ref={centerLineRef}
           color="#FFFFFF"
+          emissive="#FFFFFF"
+          emissiveIntensity={0.6}
           toneMapped={false}
         />
       </mesh>

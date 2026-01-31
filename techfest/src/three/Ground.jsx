@@ -1,10 +1,21 @@
 import * as THREE from "three"
-import { useMemo } from "react"
+import { useMemo, useRef } from "react"
+import { useFrame } from "@react-three/fiber"
 
 /**
  * Ground Plane - Mandatory depth reference with Tron elements
  */
-export default function Ground() {
+export default function Ground({ activePhase }) {
+  const transitStripRef = useRef()
+  
+  useFrame(() => {
+    if (!transitStripRef.current) return
+    const phase = activePhase?.current || "HERO"
+    
+    // Spotlight effect - ground strip boost during EVENTS
+    const targetIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.12 : phase === "FORWARD_CONTENT" ? 0.10 : 0.08
+    transitStripRef.current.emissiveIntensity += (targetIntensity - transitStripRef.current.emissiveIntensity) * 0.1
+  })
   // Light panels positions - extended to Z: -1200
   const panels = useMemo(() => {
     const arr = []
@@ -44,13 +55,14 @@ export default function Ground() {
         />
       </mesh>
 
-      {/* Tron Transit Ground Layer - road corridor strip */}
+      {/* Tron Transit Ground Layer - road corridor strip with spotlight */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, -600]}>
         <planeGeometry args={[140, 2400]} />
         <meshStandardMaterial
+          ref={transitStripRef}
           color="#0A1420"
-          roughness={0.9}
-          metalness={0.1}
+          roughness={0.88}
+          metalness={0.12}
           emissive="#0A1420"
           emissiveIntensity={0.08}
         />
