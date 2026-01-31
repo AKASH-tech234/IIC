@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { Carousel, Card } from "../../components/ui/apple-cards-carousel"
+import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
 
 /**
  * Journey Schedule Section
@@ -18,86 +19,94 @@ export default function JourneySchedule() {
   const sectionRef = useRef(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      // ===== PHASE 7: CINEMATIC AUTHORING - NO Y MOTION =====
-      // Only opacity + blur reveals, letter-spacing for text emphasis
+    let tl = null
+    let st = null
+    let ctx = null
+    
+    const timer = setTimeout(() => {
+      ctx = gsap.context(() => {
+      // ===== PHASE 10: CINEMATIC UI AUTHORING - Rhythmic Tempo =====
+      // Single master timeline with fast item intervals (tempo contrast with ABOUT)
       
-      gsap.fromTo(".schedule-heading",
-        { opacity: 0, letterSpacing: "0.2em", filter: "blur(4px)" },
-        {
-          opacity: 1,
-          letterSpacing: "0.05em",
-          filter: "blur(0px)",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 70%",
-            end: "top 30%",
-            scrub: 1
-          }
-        }
-      )
+      const beats = UI_BEATS.SCHEDULE
+      const markers = gsap.utils.toArray(".road-marker")
+      const contents = gsap.utils.toArray(".timeline-content")
+      const speakers = gsap.utils.toArray(".speaker-card")
+      
+      // Initial state
+      gsap.set(".schedule-heading", { opacity: 0, letterSpacing: "0.2em", filter: "blur(4px)" })
+      gsap.set([...markers, ...contents, ...speakers], { opacity: 0, filter: "blur(4px)" })
 
-      // Road markers - opacity + blur only
-      gsap.fromTo(".road-marker",
-        { opacity: 0, filter: "blur(4px)" },
-        {
-          opacity: 1,
-          filter: "blur(0px)",
-          stagger: 0.2,
-          scrollTrigger: {
-            trigger: ".timeline-container",
-            start: "top 70%",
-            end: "top 20%",
-            scrub: 1
-          }
-        }
-      )
+      // Master Timeline - Rhythmic beats
+      tl = gsap.timeline({ paused: true })
+      
+      // Beat 0.0s: Heading holds longer (claims frame)
+      tl.to(".schedule-heading", {
+        opacity: 1,
+        letterSpacing: "0.05em",
+        filter: "blur(0px)", // No blur on final state
+        duration: 0.6,
+        ease: "power2.out"
+      }, beats.timing.heading)
 
-      // Timeline content - opacity + blur only
-      gsap.fromTo(".timeline-content",
-        { opacity: 0, filter: "blur(4px)" },
-        {
+      // Beat 0.20s: Items appear every 0.12s (fast tempo, rhythmic)
+      let currentTime = 0.20
+      
+      // Road markers - fast tempo
+      markers.forEach((marker, index) => {
+        tl.to(marker, {
           opacity: 1,
           filter: "blur(0px)",
-          stagger: 0.2,
-          scrollTrigger: {
-            trigger: ".timeline-container",
-            start: "top 60%",
-            end: "top 15%",
-            scrub: 1
-          }
-        }
-      )
+          duration: 0.4,
+          ease: "power2.out"
+        }, currentTime + (index * beats.timing.itemInterval))
+      })
 
-      // Speaker cards - opacity + blur only
-      gsap.fromTo(".speaker-card",
-        { opacity: 0, filter: "blur(4px)" },
-        {
+      // Timeline content - slightly delayed
+      contents.forEach((content, index) => {
+        tl.to(content, {
           opacity: 1,
           filter: "blur(0px)",
-          stagger: 0.15,
-          scrollTrigger: {
-            trigger: ".timeline-container",
-            start: "top 55%",
-            end: "top 20%",
-            scrub: 1
-          }
-        }
-      )
+          duration: 0.4,
+          ease: "power2.out"
+        }, currentTime + 0.05 + (index * beats.timing.itemInterval))
+      })
 
-      // Update accent color
-      ScrollTrigger.create({
+      // Speaker cards - same rhythm
+      speakers.forEach((speaker, index) => {
+        tl.to(speaker, {
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 0.4,
+          ease: "power2.out"
+        }, currentTime + 0.1 + (index * beats.timing.itemInterval))
+      })
+
+      // ScrollTrigger with exit grammar
+      st = ScrollTrigger.create({
         trigger: sectionRef.current,
-        start: "top center",
-        end: "bottom center",
+        start: "top 60%",
         onEnter: () => {
+          resetTimelineForEntry(tl)
+          tl.play()
+          // Update accent color on enter
           document.documentElement.style.setProperty("--accent-color", "#8B5CF6") // Purple
+        },
+        onLeaveBack: () => {
+          applyExitBehavior(tl) // Exit 30% faster
         }
       })
 
-    }, sectionRef)
+      }, sectionRef)
+    }, 100)
 
-    return () => ctx.revert()
+    // PHASE 10: Lifecycle safety - kill timeline and ScrollTrigger on unmount
+    return () => {
+      clearTimeout(timer)
+      if (tl) tl.kill()
+      if (st) st.kill()
+      if (ctx) ctx.revert()
+    }
   }, [])
 
   const schedule = [

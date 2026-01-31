@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
 
 /**
  * Journey Final CTA Section
@@ -18,12 +19,68 @@ export default function JourneyFinalCTA() {
   const sectionRef = useRef(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Slow down car on arrival + update accent
-      ScrollTrigger.create({
+    let tl = null
+    let st = null
+    let ctx = null
+    
+    const timer = setTimeout(() => {
+      ctx = gsap.context(() => {
+      // ===== PHASE 10: CINEMATIC UI AUTHORING - End Frame =====
+      // Master timeline with calm arrival beats (no scrub, authored timing)
+      
+      const beats = UI_BEATS.FINAL
+      
+      // Initial state
+      gsap.set(".final-cta-badge", { opacity: 0, scale: 1.05 })
+      gsap.set(".final-cta-heading", { opacity: 0, filter: "blur(6px)" })
+      gsap.set(".final-cta-text", { opacity: 0 })
+      gsap.set(".final-cta-button", { opacity: 0 })
+
+      // Master Timeline - End frame beats
+      tl = gsap.timeline({ paused: true })
+      
+      // Badge - Scale DOWN (settling feel)
+      tl.to(".final-cta-badge", {
+        opacity: 1,
+        scale: 1.0, // Settle down, not pop up (1.05 → 1.0)
+        duration: 0.8,
+        ease: "expo.out" // Slow, calm easing
+      }, beats.timing.headline - 0.1) // Slightly before headline
+
+      // Beat 0.0s: Headline fade (claims frame)
+      tl.to(".final-cta-heading", {
+        opacity: 1,
+        filter: "blur(0px)", // No blur on final state
+        duration: 0.8,
+        ease: "power1.inOut"
+      }, beats.timing.headline)
+
+      // Text appears with headline
+      tl.to(".final-cta-text", {
+        opacity: 1,
+        duration: 0.7,
+        ease: "power1.inOut"
+      }, beats.timing.headline + 0.15)
+
+      // Beat 0.30s: CTA fade (calm, no movement toward viewer)
+      tl.to(".final-cta-button", {
+        opacity: 1,
+        duration: 0.6,
+        ease: "power1.inOut"
+      }, beats.timing.cta)
+
+      // ScrollTrigger with exit grammar
+      st = ScrollTrigger.create({
         trigger: sectionRef.current,
-        start: "top center",
+        start: "top 60%",
         onEnter: () => {
+          resetTimelineForEntry(tl)
+          tl.play()
+          
+          // Update to lime accent
+          document.documentElement.style.setProperty("--accent-color", "#22C55E") // Lime
+          
+          // Slow down car on arrival
           const car = document.querySelector("#car")
           if (car) {
             gsap.to(car, {
@@ -32,81 +89,22 @@ export default function JourneyFinalCTA() {
               ease: "power2.out"
             })
           }
-          
-          // Update to lime accent
-          document.documentElement.style.setProperty("--accent-color", "#22C55E") // Lime
+        },
+        onLeaveBack: () => {
+          applyExitBehavior(tl) // Exit 30% faster
         }
       })
 
-      // ===== PHASE 7: CINEMATIC AUTHORING - CALM ARRIVAL =====
-      // NO Y motion, NO bounce, NO excitement
-      // Only calm brightness, stable settling
+      }, sectionRef)
+    }, 100)
 
-      // Badge - Scale DOWN (settling feel, not bounce)
-      gsap.fromTo(".final-cta-badge",
-        { opacity: 0, scale: 1.05 },
-        {
-          opacity: 1,
-          scale: 1.0, // Settle down, not pop up
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 70%",
-            end: "top 40%",
-            scrub: 1
-          },
-          ease: "expo.out" // Slow, calm easing
-        }
-      )
-
-      // Heading - Fade only, no movement
-      gsap.fromTo(".final-cta-heading",
-        { opacity: 0, filter: "blur(6px)" },
-        {
-          opacity: 1,
-          filter: "blur(0px)",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 65%",
-            end: "top 35%",
-            scrub: 1
-          },
-          ease: "power1.inOut"
-        }
-      )
-
-      // Text - Fade only
-      gsap.fromTo(".final-cta-text",
-        { opacity: 0, filter: "blur(4px)" },
-        {
-          opacity: 1,
-          filter: "blur(0px)",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 60%",
-            end: "top 30%",
-            scrub: 1
-          },
-          ease: "power1.inOut"
-        }
-      )
-
-      // Button - Fade only, calm
-      gsap.fromTo(".final-cta-button",
-        { opacity: 0 },
-        {
-          opacity: 1,
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 55%",
-            end: "top 25%",
-            scrub: 1
-          },
-          ease: "power1.inOut"
-        }
-      )
-    }, sectionRef)
-
-    return () => ctx.revert()
+    // PHASE 10: Lifecycle safety - kill timeline and ScrollTrigger on unmount
+    return () => {
+      clearTimeout(timer)
+      if (tl) tl.kill()
+      if (st) st.kill()
+      if (ctx) ctx.revert()
+    }
   }, [])
 
   return (

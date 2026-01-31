@@ -125,15 +125,35 @@ const Car = forwardRef(({
     const lookAtTarget = basePosition.clone().add(tangent)
     carRef.current.lookAt(lookAtTarget)
 
+    // ===== PHASE 10: Fix static float - vibration only when moving =====
+    // Check velocity threshold to prevent see-saw when static
+    const velocity = Math.abs(progress - (carRef.current.userData?.lastProgress || 0))
+    carRef.current.userData = carRef.current.userData || {}
+    carRef.current.userData.lastProgress = progress
+    
+    // Only vibrate if velocity above threshold (car is actually moving)
+    const velocityThreshold = 0.0001
+    const isMoving = velocity > velocityThreshold
+    
     // Subtle vibration along the normal (not world Y)
     const vibrationIntensity = isEventsPhase ? 0.003 : isHeroPhase ? 0.01 : 0.02
-    const vibration = Math.sin(Date.now() * 0.002) * vibrationIntensity
+    const vibration = isMoving ? Math.sin(Date.now() * 0.002) * vibrationIntensity : 0
     const vibrationOffset = normal.clone().multiplyScalar(vibration)
     carRef.current.position.add(vibrationOffset)
 
+    // ===== PHASE 10: Wheel rotation - clamp when static =====
     // Wheels stop during HERO and EVENTS phases
     const curveSlowdown = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.4 : 1
-    const wheelRotation = isHeroPhase || isEventsPhase ? 0 : (progress - 0.05) * Math.PI * 14 * curveSlowdown
+    let wheelRotation = isHeroPhase || isEventsPhase ? 0 : (progress - 0.05) * Math.PI * 14 * curveSlowdown
+    
+    // Clamp wheel rotation when static to prevent drift
+    if (!isMoving && !isHeroPhase && !isEventsPhase) {
+      // Keep last rotation when static
+      wheelRotation = carRef.current.userData.lastWheelRotation || wheelRotation
+    } else {
+      carRef.current.userData.lastWheelRotation = wheelRotation
+    }
+    
     if (frontLeftWheelRef.current) frontLeftWheelRef.current.rotation.x = wheelRotation
     if (frontRightWheelRef.current) frontRightWheelRef.current.rotation.x = wheelRotation
     if (rearLeftWheelRef.current) rearLeftWheelRef.current.rotation.x = wheelRotation

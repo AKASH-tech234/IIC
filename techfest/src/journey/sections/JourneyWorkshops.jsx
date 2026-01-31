@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
 import { PinContainer } from "../../components/ui/3d-pin"
 
 /**
@@ -18,7 +19,10 @@ export default function JourneyWorkshops() {
   const sectionRef = useRef(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
+    let ctx = null
+    
+    const timer = setTimeout(() => {
+      ctx = gsap.context(() => {
       // Speed up effect for car
       ScrollTrigger.create({
         trigger: sectionRef.current,
@@ -85,40 +89,63 @@ export default function JourneyWorkshops() {
         }
       })
 
-      // ===== PHASE 7: CINEMATIC AUTHORING - NO Y MOTION =====
-      // Lateral X motion allowed, Y motion removed
+      // ===== PHASE 10: CINEMATIC UI AUTHORING - Fast Tempo =====
+      // Master timeline with lateral motion (X allowed)
       
-      gsap.fromTo(".workshops-heading",
-        { opacity: 0, x: 60, filter: "blur(4px)" },
-        {
-          opacity: 1,
-          x: 0,
-          filter: "blur(0px)",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 70%",
-            end: "top 30%",
-            scrub: 1
-          }
-        }
-      )
+      const beats = UI_BEATS.WORKSHOPS
+      let tl = null
+      let st = null
+      
+      // Initial state
+      gsap.set(".workshops-heading", { opacity: 0, x: 60, filter: "blur(4px)" })
+      gsap.set(".workshops-content", { opacity: 0, filter: "blur(4px)" })
 
-      gsap.fromTo(".workshops-content",
-        { opacity: 0, filter: "blur(4px)" },
-        {
-          opacity: 1,
-          filter: "blur(0px)",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 60%",
-            end: "top 25%",
-            scrub: 1
-          }
-        }
-      )
-    }, sectionRef)
+      // Master Timeline - Fast tempo
+      tl = gsap.timeline({ paused: true })
+      
+      // Beat 0.0s: Heading with lateral motion
+      tl.to(".workshops-heading", {
+        opacity: 1,
+        x: 0,
+        filter: "blur(0px)", // No blur on final state
+        duration: 0.6,
+        ease: "power2.out"
+      }, beats.timing.heading)
 
-    return () => ctx.revert()
+      // Beat 0.15s: Content (fast follow)
+      tl.to(".workshops-content", {
+        opacity: 1,
+        filter: "blur(0px)",
+        duration: 0.5,
+        ease: "power2.out"
+      }, beats.timing.content)
+
+      // ScrollTrigger with exit grammar
+      st = ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top 60%",
+        onEnter: () => {
+          resetTimelineForEntry(tl)
+          tl.play()
+        },
+        onLeaveBack: () => {
+          applyExitBehavior(tl)
+        }
+      })
+
+      // PHASE 10: Lifecycle safety - nested return
+      ctx.add(() => {
+        if (tl) tl.kill()
+        if (st) st.kill()
+      })
+
+      }, sectionRef)
+    }, 100)
+
+    return () => {
+      clearTimeout(timer)
+      if (ctx) ctx.revert()
+    }
   }, [])
 
   return (

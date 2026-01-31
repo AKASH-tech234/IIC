@@ -1,43 +1,96 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
 
 export default function JourneyAbout() {
   const sectionRef = useRef(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const cards = gsap.utils.toArray(".timeline-card")
+    let tl = null
+    let st = null
+    let ctx = null
+    
+    const timer = setTimeout(() => {
+      ctx = gsap.context(() => {
+        const cards = gsap.utils.toArray(".timeline-card")
+        
+        if (cards.length === 0) return
 
-      // ===== PHASE 7: CINEMATIC AUTHORING - NO Y MOTION =====
-      // Master timeline with sequential reveals
+      // ===== PHASE 10: CINEMATIC UI AUTHORING - Editorial Beats =====
+      // Master timeline with explicit beat offsets (no stagger utilities)
+      
+      const beats = UI_BEATS.ABOUT
       
       // Initial state
       gsap.set(cards, { opacity: 0, filter: "blur(4px)" })
 
-      // Master Timeline - Sequential card reveals
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 60%",
-          end: "bottom 70%",
-          toggleActions: "play reverse play reverse"
-        }
-      })
+      // Master Timeline - Editorial beats with timeline offsets
+      tl = gsap.timeline({ paused: true })
 
-      // Cards reveal sequentially with opacity + blur only
-      cards.forEach((card, index) => {
-        tl.to(card, {
+      // Beat 0.0s: Headline (dominant element claims frame)
+      if (cards[0]) {
+        tl.to(cards[0], {
+          opacity: 1,
+          filter: "blur(0px)", // No blur on final state
+          duration: 0.6,
+          ease: "power2.out"
+        }, beats.timing.headline)
+      }
+
+      // Beat 0.25s: First point
+      if (cards[1]) {
+        tl.to(cards[1], {
           opacity: 1,
           filter: "blur(0px)",
           duration: 0.6,
           ease: "power2.out"
-        }, index * 0.2) // Stagger by 0.2s
+        }, beats.timing.point1)
+      }
+
+      // Beat 0.45s: Second point
+      if (cards[2]) {
+        tl.to(cards[2], {
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 0.6,
+          ease: "power2.out"
+        }, beats.timing.point2)
+      }
+
+      // Beat 0.65s: Third point
+      if (cards[3]) {
+        tl.to(cards[3], {
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 0.6,
+          ease: "power2.out"
+        }, beats.timing.point3)
+      }
+
+      // ScrollTrigger with exit grammar
+      st = ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top 60%",
+        onEnter: () => {
+          resetTimelineForEntry(tl)
+          tl.play()
+        },
+        onLeaveBack: () => {
+          applyExitBehavior(tl) // Exit 30% faster
+        }
       })
 
-    }, sectionRef)
+      }, sectionRef)
+    }, 100)
 
-    return () => ctx.revert()
+    // PHASE 10: Lifecycle safety - kill timeline and ScrollTrigger on unmount
+    return () => {
+      clearTimeout(timer)
+      if (tl) tl.kill()
+      if (st) st.kill()
+      if (ctx) ctx.revert()
+    }
   }, [])
 
   const timeline = [

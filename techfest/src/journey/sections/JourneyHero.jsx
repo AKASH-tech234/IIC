@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
+import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
 
 /**
  * Journey Hero Section
@@ -30,24 +31,38 @@ export default function JourneyHero() {
   const containerRef = useRef(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Check for reduced motion preference
-      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    let tl = null
+    let ctx = null
+    
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      ctx = gsap.context(() => {
+        // Check for reduced motion preference
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
-      if (prefersReducedMotion) {
-        // Simple fade-in for reduced motion
-        gsap.set([".hero-title-letter", ".hero-tagline", ".hero-description", ".hero-cta-button"], { opacity: 1 })
-        return
-      }
+        if (prefersReducedMotion) {
+          // Simple fade-in for reduced motion
+          gsap.set([".hero-title-letter", ".hero-tagline", ".hero-description", ".hero-cta-button"], { opacity: 1 })
+          return
+        }
 
-      // ===== PHASE 7: CINEMATIC AUTHORING - NO Y MOTION =====
-      // Master Timeline - Sequential reveals with letter-spacing compression
-      
-      const titleLetters = gsap.utils.toArray(".hero-title-letter")
-      const tl = gsap.timeline()
+        // ===== PHASE 10: CINEMATIC UI AUTHORING - GSAP-First Timeline =====
+        // Master Timeline with exit grammar and lifecycle safety
+        
+        const beats = UI_BEATS.HERO
+        const titleLetters = gsap.utils.toArray(".hero-title-letter")
+        
+        // Safety check
+        if (titleLetters.length === 0) {
+          console.warn("Hero: Title letters not found yet")
+          return
+        }
+        
+        tl = gsap.timeline({ paused: true })
 
-      // 1. TITLE: Letter-spacing compression (CINEMATIC)
-      tl.fromTo(titleLetters,
+        // 1. TITLE: Letter-spacing compression (CINEMATIC)
+        // Beat: 0.0s - Title claims the frame
+        tl.fromTo(titleLetters,
         { 
           opacity: 0,
           letterSpacing: "0.3em",
@@ -56,14 +71,16 @@ export default function JourneyHero() {
         { 
           opacity: 1,
           letterSpacing: "0.05em", // Compress from wide to tight
-          filter: "blur(0px)",
+          filter: "blur(0px)", // No blur on final state
           duration: 0.8,
           stagger: 0.04,
           ease: "power2.out"
-        }
+        },
+        beats.timing.title
       )
 
       // 2. TAGLINE: Mask wipe left to right (CINEMATIC)
+      // Beat: 0.40s - Wait for title to be fully legible
       tl.fromTo(".hero-tagline",
         { 
           opacity: 0, 
@@ -73,29 +90,29 @@ export default function JourneyHero() {
         { 
           opacity: 1,
           clipPath: "inset(0 0% 0 0)", // Reveal from left
-          filter: "blur(0px)",
+          filter: "blur(0px)", // No blur on final state
           duration: 0.8,
           ease: "power1.out"
         },
-        "+=0.3" // Wait 0.3s after title
+        beats.timing.tagline
       )
 
-      // 3. DESCRIPTION: Simple fade + blur clear
+      // 3. DESCRIPTION: Simple fade only
+      // Beat: Appears with tagline (no separate beat)
       tl.fromTo(".hero-description",
         { 
-          opacity: 0, 
-          filter: "blur(4px)" 
+          opacity: 0
         },
         { 
           opacity: 1,
-          filter: "blur(0px)", 
           duration: 0.7,
           ease: "power2.out"
         },
-        "+=0.15" // Shorter wait
+        beats.timing.tagline + 0.15
       )
 
       // 4. CTA BUTTONS: Fade in LAST
+      // Beat: 0.70s - Wait for camera to settle
       tl.fromTo(".hero-cta-button",
         { opacity: 0 },
         { 
@@ -104,12 +121,21 @@ export default function JourneyHero() {
           stagger: 0.15,
           ease: "power2.out"
         },
-        "+=0.2"
+        beats.timing.cta
       )
 
-    }, containerRef)
+        // Play timeline immediately on load (HERO is opening shot)
+        if (tl) tl.play()
 
-    return () => ctx.revert()
+      }, containerRef)
+    }, 100) // Small delay for DOM ready
+
+    // PHASE 10: Lifecycle safety - kill timeline on unmount
+    return () => {
+      clearTimeout(timer)
+      if (tl) tl.kill()
+      if (ctx) ctx.revert()
+    }
   }, [])
 
   return (

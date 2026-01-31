@@ -1,58 +1,85 @@
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { UI_BEATS, applyExitBehavior, resetTimelineForEntry } from "../UIDirector"
 
 export default function JourneyEvents() {
   const sectionRef = useRef(null)
   const linesRef = useRef([])
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const cards = gsap.utils.toArray(".events-arc-card")
+    let tl = null
+    let st = null
+    let ctx = null
+    
+    const timer = setTimeout(() => {
+      ctx = gsap.context(() => {
+        const cards = gsap.utils.toArray(".events-arc-card")
+        
+        if (cards.length === 0) return
 
-      // ===== PHASE 7: TRUE GALLERY MODE - NO Y MOTION =====
-      // All cards visible together, scale + opacity hierarchy ONLY
+      // ===== PHASE 10: CINEMATIC UI AUTHORING - Staged Gallery Focus =====
+      // All cards visible together with editorial rhythm
+      
+      const beats = UI_BEATS.EVENTS
       
       // Initial state: all cards hidden, no Y offset
       gsap.set(cards, { opacity: 0, scale: 0.9, filter: "blur(4px)" })
       gsap.set(linesRef.current, { strokeDashoffset: 200 })
 
-      // Master Timeline - Cards enter TOGETHER
-      const tl = gsap.timeline({ paused: true })
+      // Master Timeline - Staged focus with beats
+      tl = gsap.timeline({ paused: true })
 
-      // Cards reveal together with slight stagger
+      // Beat 0.0s: All cards appear together (supporting opacity)
       tl.to(cards, {
-        opacity: 1,
-        scale: 1.0,
-        filter: "blur(0px)",
+        opacity: beats.visualHierarchy.supporting.opacity, // 0.85 - all cards supporting
+        scale: beats.visualHierarchy.supporting.scale,     // 0.96 - subtle scale
+        filter: "blur(0px)", // No blur on final state
         duration: 0.8,
         stagger: 0.08, // Very tight stagger - feel simultaneous
         ease: "power2.out"
-      })
+      }, beats.timing.allCards)
 
-      // Lines draw in sync
+      // Beat 0.20s: Active card (first) scales to dominant
+      tl.to(cards[0], {
+        scale: beats.visualHierarchy.active.scale,   // 1.0
+        opacity: beats.visualHierarchy.active.opacity, // 1.0
+        duration: 0.4,
+        ease: "power2.out"
+      }, beats.timing.activeCard)
+
+      // Lines draw in sync with card reveals
       tl.to(linesRef.current, {
         strokeDashoffset: 0,
         duration: 0.6,
         ease: "power1.inOut"
-      }, "-=0.4") // Overlap with card reveal
+      }, beats.timing.allCards + 0.4)
 
-      // ScrollTrigger - Pin section, play timeline on enter
-      ScrollTrigger.create({
+      // ScrollTrigger - Pin section with exit grammar
+      st = ScrollTrigger.create({
         trigger: sectionRef.current,
         start: "top 20%",
         end: "bottom 30%",
-        pin: true,
-        onEnter: () => tl.play(),
-        onLeaveBack: () => tl.reverse()
+        pin: beats.pin, // true from UIDirector
+        onEnter: () => {
+          resetTimelineForEntry(tl)
+          tl.play()
+        },
+        onLeaveBack: () => {
+          applyExitBehavior(tl) // Exit 30% faster
+        }
       })
-
-      // Visual Hierarchy on scroll within pinned section (optional future enhancement)
-      // Currently all cards maintain equal prominence (gallery mode)
       
-    }, sectionRef)
+      }, sectionRef)
+    }, 100)
 
-    return () => ctx.revert()
+    // PHASE 10: Lifecycle safety - kill timeline and ScrollTrigger on unmount
+    return () => {
+      clearTimeout(timer)
+      if (tl) tl.kill()
+      if (st) st.kill()
+      if (ctx) ctx.revert()
+    }
   }, [])
 
   const tracks = [
