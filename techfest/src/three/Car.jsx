@@ -1,7 +1,8 @@
-import { useMemo, useRef } from "react"
+import { useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
-import { buildRoadCurve } from "./curveUtils"
+import { masterRoadCurve } from "./curveUtils"
+import { roadFrames, ROAD_RADIUS } from "./Road"
 
 /**
  * 3D Sports Car Component - Scroll-Driven Animation
@@ -26,9 +27,6 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
   const headlightRefs = useRef([])
   const underglowRef = useRef()
 
-  const straightCurve = useMemo(() => buildRoadCurve("STRAIGHT"), [])
-  const turnCurve = useMemo(() => buildRoadCurve("TURN"), [])
-
   const lastPhaseRef = useRef(null)
   const lockedPoseRef = useRef(null)
   const lastCardIndexRef = useRef(activeCardIndex?.current ?? 0)
@@ -51,13 +49,29 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
     const isTurningPhase = phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD"
     const isTextHold = textPhase?.current === "HOLD"
 
-    const curve = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? turnCurve : straightCurve
-    const curveProgress = phaseProgressValue
-    const curvePoint = curve.getPoint(curveProgress)
-    const curveTangent = curve.getTangent(curveProgress).normalize()
-
-    const basePosition = curvePoint.clone().add(new THREE.Vector3(0, 0.3, 0))
-    const targetYaw = Math.atan2(curveTangent.x, curveTangent.z)
+    // SINGLE SOURCE OF TRUTH - sample master curve
+    const t = THREE.MathUtils.clamp(phaseProgressValue, 0, 0.98)
+    const curvePoint = masterRoadCurve.getPointAt(t)
+    
+    // Get Frenet frame with INTERPOLATION for smooth motion
+    const f = t * (roadFrames.normals.length - 1)
+    const i0 = Math.floor(f)
+    const i1 = Math.min(i0 + 1, roadFrames.normals.length - 1)
+    const lerpT = f - i0
+    
+    const normal = roadFrames.normals[i0].clone().lerp(roadFrames.normals[i1], lerpT).normalize()
+    const tangent = roadFrames.tangents[i0].clone().lerp(roadFrames.tangents[i1], lerpT).normalize()
+    
+    // Lift car ABOVE tube surface using normal (NOT world Y)
+    const CAR_CLEARANCE = 0.35
+    const basePosition = curvePoint.clone().add(
+      normal.clone().multiplyScalar(ROAD_RADIUS + CAR_CLEARANCE)
+    )
+    
+    // DEBUG: First frame log
+    if (Math.random() < 0.005) {
+      console.log('CAR DEBUG - t:', t.toFixed(3), 'frameIndex:', frameIndex, 'curvePoint:', curvePoint, 'normal:', normal, 'basePosition:', basePosition)
+    }
 
     const lerpSpeed = isTextHold ? 0.03 : phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.05 : 0.12
 
@@ -65,22 +79,28 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
       if (!lockedPoseRef.current) {
         lockedPoseRef.current = {
           position: basePosition.clone(),
-          yaw: targetYaw
+          normal: normal.clone(),
+          tangent: tangent.clone()
         }
       }
       carRef.current.position.lerp(lockedPoseRef.current.position, lerpSpeed)
-      carRef.current.rotation.y += (lockedPoseRef.current.yaw - carRef.current.rotation.y) * lerpSpeed
+      carRef.current.up.lerp(lockedPoseRef.current.normal, lerpSpeed)
+      
+      const lookAtTarget = lockedPoseRef.current.position.clone().add(lockedPoseRef.current.tangent)
+      carRef.current.lookAt(lookAtTarget)
     } else {
       carRef.current.position.lerp(basePosition, lerpSpeed)
-      carRef.current.rotation.y += (targetYaw - carRef.current.rotation.y) * lerpSpeed
+      carRef.current.up.lerp(normal, lerpSpeed)
+      
+      const lookAtTarget = basePosition.clone().add(tangent)
+      carRef.current.lookAt(lookAtTarget)
     }
 
+    // Subtle vibration along the normal (not world Y)
     const vibrationIntensity = isEventsPhase ? 0.003 : isHeroPhase ? 0.01 : 0.02
     const vibration = Math.sin(Date.now() * 0.002) * vibrationIntensity
-    carRef.current.position.y += vibration
-
-    const tilt = isHeroPhase ? 0 : Math.sin(progress * 5) * (isEventsPhase ? 0.01 : 0.03)
-    carRef.current.rotation.x = tilt
+    const vibrationOffset = normal.clone().multiplyScalar(vibration)
+    carRef.current.position.add(vibrationOffset)
 
     const curveSlowdown = phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.4 : 1
     const wheelRotation = isHeroPhase || isEventsPhase ? 0 : (progress - 0.05) * Math.PI * 14 * curveSlowdown
@@ -121,10 +141,15 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
       carRef.current.position.y -= 0.04
     }
 
+    // DEBUG: Log car position vs road end
+    if (Math.random() < 0.01) { // Log occasionally to avoid spam
+      const roadEndZ = masterRoadCurve.points[masterRoadCurve.points.length - 1].z
+      console.log('CAR Z:', carRef.current.position.z.toFixed(1), 'ROAD END Z:', roadEndZ.toFixed(1), 'CAR POS:', carRef.current.position.x.toFixed(1), carRef.current.position.y.toFixed(1), carRef.current.position.z.toFixed(1))
+    }
   })
 
   return (
-    <group ref={carRef} position={[0, 0.3, 0]}>
+    <group ref={carRef} position={[0, 0, 0]}>
       {/* Main Body - Sports Car Shape */}
       <mesh position={[0, 0.15, 0]} castShadow>
         <boxGeometry args={[1.4, 0.35, 2.8]} />

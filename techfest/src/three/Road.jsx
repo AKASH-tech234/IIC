@@ -1,42 +1,35 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
-import { buildRoadCurve } from "./curveUtils"
+import { masterRoadCurve } from "./curveUtils"
 
-const ROAD_RADIUS = 2.8
+export const ROAD_RADIUS = 2.8
 const LINE_RADIUS = 0.08
-const CENTER_RADIUS = 0.05
-const TUBE_SEGMENTS = 200
+const CENTER_RADIUS = 0.08
+const TUBE_SEGMENTS = 500
+
+// Compute Frenet frames for car positioning
+// NOTE: TubeGeometry uses inverted normals, we need to flip them
+const rawFrames = masterRoadCurve.computeFrenetFrames(TUBE_SEGMENTS, false)
+export const roadFrames = {
+  tangents: rawFrames.tangents,
+  normals: rawFrames.normals.map(n => n.clone().multiplyScalar(-1)), // FLIP normals
+  binormals: rawFrames.binormals
+}
 
 /**
- * Road Component
- *
- * TubeGeometry-based curved road.
- * - Geometry rebuilds only on phase transitions.
- * - No world translation (movement handled via curve parameter for car/camera).
+ * Road Component - SINGLE SOURCE OF TRUTH
+ * 
+ * Built on masterRoadCurve - NEVER rebuilds
+ * Car and camera sample this same curve
+ * Road geometry is static, movement is via curve progress
  */
 export default function Road({ motionDensity, activePhase, activeAccent }) {
   const lineMaterialRef = useRef()
-  const centerMaterialRef = useRef()
   const roadMaterialRef = useRef()
-  const lastPhaseRef = useRef(activePhase.current)
-  const [curveProfile, setCurveProfile] = useState("HERO_STRAIGHT")
 
   useFrame(() => {
     const phase = activePhase.current || "HERO"
-    const density = motionDensity.current || 0
-
-    let nextProfile = "STRAIGHT"
-    if (phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE") {
-      nextProfile = "TURN"
-    } else if (phase === "ROTATE_FORWARD" || phase === "FORWARD_CONTENT") {
-      nextProfile = "POST_TURN"
-    }
-
-    if (lastPhaseRef.current !== phase) {
-      lastPhaseRef.current = phase
-      setCurveProfile(nextProfile)
-    }
 
     if (lineMaterialRef.current && activeAccent.current) {
       const isEvent = phase === "EVENTS_SIDE_PROFILE"
@@ -46,21 +39,25 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
       lineMaterialRef.current.emissiveIntensity = emissiveIntensity
     }
 
-    if (centerMaterialRef.current) {
-      centerMaterialRef.current.emissiveIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.9 : 0.4
-    }
-
     if (roadMaterialRef.current) {
       roadMaterialRef.current.roughness = 0.9
       roadMaterialRef.current.emissiveIntensity = phase === "EVENTS_SIDE_PROFILE" ? 0.14 : 0.1
     }
   })
 
-  const curve = useMemo(() => buildRoadCurve(curveProfile), [curveProfile])
-  const roadGeometry = useMemo(() => new THREE.TubeGeometry(curve, TUBE_SEGMENTS, ROAD_RADIUS, 12, false), [curve])
-  const lineGeometry = useMemo(() => new THREE.TubeGeometry(curve, TUBE_SEGMENTS, LINE_RADIUS, 8, false), [curve])
-  const centerGeometry = useMemo(() => new THREE.TubeGeometry(curve, TUBE_SEGMENTS, CENTER_RADIUS, 8, false), [curve])
-  const edgeGeometry = useMemo(() => new THREE.TubeGeometry(curve, TUBE_SEGMENTS, 0.12, 8, false), [curve])
+  // Build geometry ONCE on master curve
+  const roadGeometry = useMemo(() => {
+    const geom = new THREE.TubeGeometry(masterRoadCurve, TUBE_SEGMENTS, ROAD_RADIUS, 12, false)
+    console.log('Road geometry created - curve length:', masterRoadCurve.getLength().toFixed(1), 'end Z:', masterRoadCurve.points[masterRoadCurve.points.length - 1].z.toFixed(1))
+    return geom
+  }, [])
+  const lineGeometry = useMemo(() => new THREE.TubeGeometry(masterRoadCurve, TUBE_SEGMENTS, LINE_RADIUS, 8, false), [])
+  const centerGeometry = useMemo(() => {
+    const geom = new THREE.TubeGeometry(masterRoadCurve, TUBE_SEGMENTS, CENTER_RADIUS, 8, false)
+    console.log('Center line geometry created - radius:', CENTER_RADIUS, 'segments:', TUBE_SEGMENTS)
+    return geom
+  }, [])
+  const edgeGeometry = useMemo(() => new THREE.TubeGeometry(masterRoadCurve, TUBE_SEGMENTS, 0.12, 8, false), [])
 
   useEffect(() => () => roadGeometry.dispose(), [roadGeometry])
   useEffect(() => () => lineGeometry.dispose(), [lineGeometry])
@@ -68,18 +65,18 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
   useEffect(() => () => edgeGeometry.dispose(), [edgeGeometry])
 
   return (
-    <group position={[0, -0.02, 0]}>
-      <mesh geometry={roadGeometry} rotation={[-Math.PI / 2, 0, 0]}>
+    <group position={[0, 0, 0]}>
+      <mesh geometry={roadGeometry}>
         <meshStandardMaterial
           ref={roadMaterialRef}
-          color="#05070D"
+          color="#111111"
           metalness={0.1}
           roughness={0.9}
           emissive="#00E5FF"
-          emissiveIntensity={0.12}
+          emissiveIntensity={0.3}
         />
       </mesh>
-      <mesh geometry={lineGeometry} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh geometry={lineGeometry}>
         <meshStandardMaterial
           ref={lineMaterialRef}
           color="#00E5FF"
@@ -87,15 +84,14 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
           emissiveIntensity={0.7}
         />
       </mesh>
-      <mesh geometry={centerGeometry} rotation={[-Math.PI / 2, 0, 0]}>
-        <meshStandardMaterial
-          ref={centerMaterialRef}
-          color="#EAFBFF"
-          emissive="#EAFBFF"
-          emissiveIntensity={0.4}
+      {/* Center line - white stripe */}
+      <mesh geometry={centerGeometry} position={[0, 0.08, 0]}>
+        <meshBasicMaterial
+          color="#FFFFFF"
+          toneMapped={false}
         />
       </mesh>
-      <mesh geometry={edgeGeometry} rotation={[-Math.PI / 2, 0, 0]} position={[-2.6, 0, 0]}>
+      <mesh geometry={edgeGeometry} position={[-2.6, 0, 0]}>
         <meshStandardMaterial
           color="#1A2A3A"
           emissive="#1A2A3A"
@@ -104,7 +100,7 @@ export default function Road({ motionDensity, activePhase, activeAccent }) {
           opacity={0.08}
         />
       </mesh>
-      <mesh geometry={edgeGeometry} rotation={[-Math.PI / 2, 0, 0]} position={[2.6, 0, 0]}>
+      <mesh geometry={edgeGeometry} position={[2.6, 0, 0]}>
         <meshStandardMaterial
           color="#1A2A3A"
           emissive="#1A2A3A"

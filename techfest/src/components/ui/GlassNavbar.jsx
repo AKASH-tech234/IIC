@@ -31,6 +31,9 @@ export default function GlassNavbar() {
     { name: "Contact", href: "#footer" }
   ]
 
+  const ctaClasses =
+    "px-6 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 hover:scale-105"
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -74,8 +77,8 @@ export default function GlassNavbar() {
 
           {/* CTA Button */}
           <a
-            href="#wip"
-            className="px-6 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 hover:scale-105"
+            href="/register"
+            className={ctaClasses}
             style={{
               background:
                 "linear-gradient(to right, rgba(34, 211, 238, 0.8), rgba(59, 130, 246, 0.8))",
@@ -129,7 +132,7 @@ export default function GlassNavbar() {
             ))}
 
             <a
-              href="#wip"
+              href="/register"
               onClick={() => setIsMobileMenuOpen(false)}
               className="mt-2 px-6 py-3 rounded-lg font-semibold text-center"
               style={{

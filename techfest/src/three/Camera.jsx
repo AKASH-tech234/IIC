@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useMemo, useRef } from "react"
 import { useThree } from "@react-three/fiber"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
-import { buildRoadCurve } from "./curveUtils"
+import { masterRoadCurve } from "./curveUtils"
 
 /**
  * Dynamic Chase Camera
@@ -16,17 +16,21 @@ export default function Camera({ activePhase, phaseProgress }) {
   const lastPhaseRef = useRef(null)
   const lockedPoseRef = useRef(null)
 
-  const straightCurve = useMemo(() => buildRoadCurve("STRAIGHT"), [])
-  const turnCurve = useMemo(() => buildRoadCurve("TURN"), [])
-
   const heroPosition = useMemo(() => new THREE.Vector3(0, 2.8, 6), [])
-  const heroLookAt = useMemo(() => new THREE.Vector3(0, 1.2, 0), [])
+  const heroLookAt = useMemo(() => new THREE.Vector3(0, 0.8, -10), [])
   const exitPosition = useMemo(() => new THREE.Vector3(0, 2.5, 5.5), [])
-  const exitLookAt = useMemo(() => new THREE.Vector3(0, 1.1, 0), [])
+  const exitLookAt = useMemo(() => new THREE.Vector3(0, 0.8, -8), [])
 
   useFrame(() => {
     const phase = activePhase.current || "HERO"
     const phaseProgressValue = phaseProgress.current || 0
+    
+    // HERO OVERRIDE - Cinematic intro framing
+    if (phase === "HERO") {
+      camera.position.lerp(new THREE.Vector3(0, 5.5, 12), 0.08)
+      camera.lookAt(0, 2.5, -20)
+      return
+    }
 
     if (phase !== lastPhaseRef.current) {
       lastPhaseRef.current = phase
@@ -45,10 +49,11 @@ export default function Camera({ activePhase, phaseProgress }) {
       return
     }
 
-    const curveProgress = phaseProgressValue
-    const curve = phase === "EVENTS_SIDE_PROFILE" || phase === "ROTATE_TO_SIDE" ? turnCurve : straightCurve
-
-    const point = curve.getPoint(curveProgress)
+    // Sample master curve - BEHIND car for follow cam
+    const FOLLOW_OFFSET = 0.045 // Camera trails car by ~30-40 world units
+    const carT = THREE.MathUtils.clamp(phaseProgressValue, 0, 0.98)
+    const camT = Math.max(carT - FOLLOW_OFFSET, 0)
+    const point = masterRoadCurve.getPointAt(camT)
 
     const turnBlend = phase === "ROTATE_TO_SIDE" ? phaseProgressValue : phase === "ROTATE_FORWARD" ? 1 - phaseProgressValue : phase === "EVENTS_SIDE_PROFILE" ? 1 : 0
     const zoomOut = turnBlend * turnBlend * (3 - 2 * turnBlend)
@@ -59,7 +64,7 @@ export default function Camera({ activePhase, phaseProgress }) {
     const desiredPosition = phase === "ROTATE_TO_SIDE" || phase === "ROTATE_FORWARD"
       ? point.clone().add(new THREE.Vector3(0, zoomOffset.y, zoomOffset.z))
       : point.clone().add(baseOffset)
-    const lookAtPoint = curve.getPoint(Math.min(1, curveProgress + 0.02))
+    const lookAtPoint = masterRoadCurve.getPointAt(Math.min(0.98, carT))
 
     if (phase === "EVENTS_SIDE_PROFILE") {
       if (!lockedPoseRef.current) {
