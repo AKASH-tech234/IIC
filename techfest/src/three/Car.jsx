@@ -67,11 +67,6 @@ export default function Car({ scrollProgress, motionDensity, activePhase, phaseP
     const basePosition = curvePoint.clone().add(
       normal.clone().multiplyScalar(ROAD_RADIUS + CAR_CLEARANCE)
     )
-    
-    // DEBUG: First frame log
-    if (Math.random() < 0.005) {
-      console.log('CAR DEBUG - t:', t.toFixed(3), 'frameIndex:', frameIndex, 'curvePoint:', curvePoint, 'normal:', normal, 'basePosition:', basePosition)
-    }
 
     const lerpSpeed = isTextHold ? 0.03 : phase === "ROTATE_TO_SIDE" || phase === "EVENTS_SIDE_PROFILE" ? 0.05 : 0.12
 

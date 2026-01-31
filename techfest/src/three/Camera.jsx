@@ -31,6 +31,9 @@ export default function Camera({ activePhase, phaseProgress }) {
       camera.lookAt(0, 2.5, -20)
       return
     }
+    
+    // During journey - ensure camera stays BEHIND and BELOW car
+    const clampedCameraY = Math.min(camera.position.y, 4.5) // Prevent camera going above car
 
     if (phase !== lastPhaseRef.current) {
       lastPhaseRef.current = phase
@@ -80,6 +83,7 @@ export default function Camera({ activePhase, phaseProgress }) {
     }
 
     camera.position.lerp(desiredPosition, 0.1)
+    camera.position.y = Math.min(camera.position.y, 4.5) // Clamp Y to stay below car
     camera.lookAt(lookAtPoint)
   })
 
