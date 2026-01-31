@@ -239,19 +239,21 @@ export default function City({ motionDensity, activeAccent, activePhase, current
       layer.current.children.forEach((child, i) => {
         if (!child.isMesh || !child.material || child.material.emissiveIntensity === undefined) return
 
+        // ===== PHASE 9: CONTRAST TUNING - Far city darkest silhouettes =====
         // AMPLIFIED spotlight effect
         if (idx === 0) {
-          // FAR layer - slight visible dim glow during EVENTS for depth
-          const farGlow = isEventsHold ? 0.08 : 0
+          // FAR layer - reduced baseline for darker silhouettes (was 0.08)
+          const farGlow = isEventsHold ? 0.05 : 0.015 // Reduced from 0.08/0 to 0.05/0.015
           child.material.emissiveIntensity = farGlow
         } else {
           const flicker = Math.sin(t * 0.35 + i * 0.7) * 0.15 + 0.82
           // AMPLIFIED: MID +40%, NEAR +35% during EVENTS
+          // PHASE 9: Ensure when road glows, reduce city overlap
           let layerBoost
           if (idx === 1) {
-            layerBoost = isEventsHold ? 0.5 : 0.35 // MID: +40%
+            layerBoost = isEventsHold ? 0.5 : 0.30 // MID: reduced baseline from 0.35 to 0.30
           } else {
-            layerBoost = isEventsHold ? 0.4 : 0.3 // NEAR: +35%
+            layerBoost = isEventsHold ? 0.4 : 0.25 // NEAR: reduced baseline from 0.3 to 0.25
           }
           child.material.emissiveIntensity = flicker * layerBoost
         }

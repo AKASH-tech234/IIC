@@ -40,66 +40,71 @@ export default function JourneyHero() {
         return
       }
 
-      // ===== 1. TITLE ANIMATION: Letter-by-letter reveal =====
-      const titleLetters = gsap.utils.toArray(".hero-title-letter")
+      // ===== PHASE 7: CINEMATIC AUTHORING - NO Y MOTION =====
+      // Master Timeline - Sequential reveals with letter-spacing compression
       
-      gsap.fromTo(titleLetters,
+      const titleLetters = gsap.utils.toArray(".hero-title-letter")
+      const tl = gsap.timeline()
+
+      // 1. TITLE: Letter-spacing compression (CINEMATIC)
+      tl.fromTo(titleLetters,
         { 
           opacity: 0,
-          y: 12,
-          filter: "blur(4px)"
+          letterSpacing: "0.3em",
+          filter: "blur(8px)"
         },
         { 
-          opacity: 1, 
-          y: 0,
+          opacity: 1,
+          letterSpacing: "0.05em", // Compress from wide to tight
           filter: "blur(0px)",
-          duration: 0.7,
-          stagger: 0.03,
+          duration: 0.8,
+          stagger: 0.04,
           ease: "power2.out"
         }
       )
 
-      // ===== 2. TAGLINE ANIMATION: Fade in with upward movement =====
-      // Delay: After title completes (~0.6s + (letters * 0.05s))
-      const titleDelay = 0.6 + (titleLetters.length * 0.05)
-      
-      gsap.fromTo(".hero-tagline",
-        { opacity: 0, y: 10, filter: "blur(4px)" },
+      // 2. TAGLINE: Mask wipe left to right (CINEMATIC)
+      tl.fromTo(".hero-tagline",
         { 
-          opacity: 1, 
-          y: 0,
+          opacity: 0, 
+          clipPath: "inset(0 100% 0 0)",
+          filter: "blur(6px)" 
+        },
+        { 
+          opacity: 1,
+          clipPath: "inset(0 0% 0 0)", // Reveal from left
           filter: "blur(0px)",
-          duration: 0.7,
-          delay: titleDelay,
-          ease: "power2.out"
-        }
+          duration: 0.8,
+          ease: "power1.out"
+        },
+        "+=0.3" // Wait 0.3s after title
       )
 
-      // ===== 3. DESCRIPTION ANIMATION: Fade with blur removal =====
-      // Delay: +0.2s after tagline starts
-      gsap.fromTo(".hero-description",
-        { opacity: 0, y: 10, filter: "blur(4px)" },
+      // 3. DESCRIPTION: Simple fade + blur clear
+      tl.fromTo(".hero-description",
         { 
-          opacity: 1, 
-          y: 0,
+          opacity: 0, 
+          filter: "blur(4px)" 
+        },
+        { 
+          opacity: 1,
           filter: "blur(0px)", 
           duration: 0.7,
-          delay: titleDelay + 0.2,
           ease: "power2.out"
-        }
+        },
+        "+=0.15" // Shorter wait
       )
 
-      // ===== 4. CTA BUTTONS: Fade in =====
-      gsap.fromTo(".hero-cta-button",
-        { opacity: 0, y: 10 },
+      // 4. CTA BUTTONS: Fade in LAST
+      tl.fromTo(".hero-cta-button",
+        { opacity: 0 },
         { 
-          opacity: 1, 
-          y: 0,
-          duration: 0.7, 
-          stagger: 0.1,
-          delay: titleDelay + 0.4,
+          opacity: 1,
+          duration: 0.6, 
+          stagger: 0.15,
           ease: "power2.out"
-        }
+        },
+        "+=0.2"
       )
 
     }, containerRef)

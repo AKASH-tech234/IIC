@@ -3,6 +3,11 @@ import ReactDOM from "react-dom/client"
 import { Auth0Provider } from "@auth0/auth0-react"
 import App from "./App"
 import "./index.css"
+import "./styles/typography.css"
+import { applyCSSVariables } from "./styles/identity.tokens"
+
+// PHASE 8: Apply identity token CSS variables on startup
+applyCSSVariables()
 
 const domain = import.meta.env.VITE_AUTH0_DOMAIN
 const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID

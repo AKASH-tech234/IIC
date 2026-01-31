@@ -26,20 +26,30 @@
    ============================================ */
 
 :root {
-  /* Layout Constraints */
-  --header-height: 72px;       /* Fixed header height for layout calculations */
+  /* ===== PHASE 8: IDENTITY TOKEN SYSTEM ===== */
+  /* These will be overridden by applyCSSVariables() on load */
+  /* Base Colors */
+  --color-bg: #05070D;
+  --color-sky: #0A1022;
+  --color-text: #EAF2FF;
+  --color-text-muted: #8B92A8;
+  --color-surface: #0D1117;
   
-  /* Background Colors - Tron Void (Near-Black Base) */
-  --bg-base: #020205;          /* True near-black void */
-  --bg-deep-navy: #04030a;     /* Secondary void */
-  --bg-city-shadow: #020205;   /* Darkness anchor */
+  /* Accent Colors - Brand Identity */
+  --color-accent-primary: #00E5FF;
+  --color-accent-secondary: #7C7CFF;
+  --color-accent-tertiary: #00F5E5;
+  --color-accent-schedule: #8B5CF6;
+  --color-accent-workshops: #3B82F6;
   
-  /* Tron Accent Color (Single Source of Truth) */
-  --accent-color: #00E5FF;     /* Tron cyan-blue - precision + energy */
-  
-  /* Secondary Accents (Minimal Use) */
-  --accent-purple: #8B5CF6;    /* Secondary accent */
-  --accent-green: #10B981;     /* Tertiary accent */
+  /* Legacy Support (will be phased out) */
+  --header-height: 72px;
+  --bg-base: #020205;
+  --bg-deep-navy: #04030a;
+  --bg-city-shadow: #020205;
+  --accent-color: var(--color-accent-primary);
+  --accent-purple: var(--color-accent-secondary);
+  --accent-green: #10B981;
   
   /* Glass Theme Colors */
   --glass-light: rgba(255, 255, 255, 0.05);
@@ -47,7 +57,7 @@
   --glass-blur: blur(20px);
   
   /* Typography - Tron Palette (Pure, High Contrast) */
-  --text-primary: #FFFFFF;     /* Pure white for headings */
+  --text-primary: var(--color-text);
   --text-secondary: rgba(255, 255, 255, 0.85);  /* High contrast body */
   --text-tertiary: rgba(255, 255, 255, 0.75);   /* Muted text */
   --text-accent: #00E5FF;      /* Tron accent text */

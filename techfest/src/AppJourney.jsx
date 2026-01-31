@@ -14,6 +14,7 @@ import JourneySchedule from "./journey/sections/JourneySchedule"
 import JourneyWorkshops from "./journey/sections/JourneyWorkshops"
 import JourneyFinalCTA from "./journey/sections/JourneyFinalCTA"
 import JourneyFooter from "./journey/sections/JourneyFooter"
+import DebugVisualMode from "./journey/utils/DebugVisualMode"
 gsap.registerPlugin(ScrollTrigger)
 
 /**
@@ -396,6 +397,10 @@ export default function AppJourney() {
         <JourneyFooter />
 
       </div>
+
+      {/* PHASE 9: Debug Visual Mode - TEMPORARY (remove after validation) */}
+      {/* Usage: Add ?debug=visual to URL */}
+      <DebugVisualMode activePhase={phaseRef} />
     </main>
   )
 }

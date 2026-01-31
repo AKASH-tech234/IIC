@@ -85,11 +85,15 @@ export default function JourneyWorkshops() {
         }
       })
 
+      // ===== PHASE 7: CINEMATIC AUTHORING - NO Y MOTION =====
+      // Lateral X motion allowed, Y motion removed
+      
       gsap.fromTo(".workshops-heading",
-        { opacity: 0, x: 60 },
+        { opacity: 0, x: 60, filter: "blur(4px)" },
         {
           opacity: 1,
           x: 0,
+          filter: "blur(0px)",
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top 70%",
@@ -100,10 +104,10 @@ export default function JourneyWorkshops() {
       )
 
       gsap.fromTo(".workshops-content",
-        { opacity: 0, y: 40 },
+        { opacity: 0, filter: "blur(4px)" },
         {
           opacity: 1,
-          y: 0,
+          filter: "blur(0px)",
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top 60%",
@@ -158,7 +162,7 @@ export default function JourneyWorkshops() {
 
         {/* Heading with speed emphasis */}
         <h2 
-          className="workshops-heading text-5xl sm:text-6xl md:text-7xl font-bold mb-8 leading-tight"
+          className="workshops-heading text-5xl sm:text-6xl md:text-7xl mb-8 section-title optical-margin-heading"
           style={{ color: "var(--text-primary)" }}
         >
           Build Along
@@ -191,7 +195,7 @@ export default function JourneyWorkshops() {
           </div>
 
           <p 
-            className="text-xl leading-relaxed border-l-4 pl-6"
+            className="text-xl border-l-4 pl-6 body-supporting optical-margin-body"
             style={{ 
               color: "var(--text-secondary)",
               borderColor: "var(--accent-color)"
@@ -202,7 +206,7 @@ export default function JourneyWorkshops() {
           </p>
           
           <p 
-            className="text-lg leading-relaxed pl-6"
+            className="text-lg pl-6 body-supporting optical-margin-body"
             style={{ color: "var(--text-tertiary)" }}
           >
             From ideation to implementation, every step of the journey is designed to push boundaries 

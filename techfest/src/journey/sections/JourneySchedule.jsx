@@ -19,11 +19,14 @@ export default function JourneySchedule() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // ===== PHASE 7: CINEMATIC AUTHORING - NO Y MOTION =====
+      // Only opacity + blur reveals, letter-spacing for text emphasis
+      
       gsap.fromTo(".schedule-heading",
-        { opacity: 0, y: 10, filter: "blur(4px)" },
+        { opacity: 0, letterSpacing: "0.2em", filter: "blur(4px)" },
         {
           opacity: 1,
-          y: 0,
+          letterSpacing: "0.05em",
           filter: "blur(0px)",
           scrollTrigger: {
             trigger: sectionRef.current,
@@ -34,12 +37,11 @@ export default function JourneySchedule() {
         }
       )
 
-      // Road markers pass beneath (move up)
+      // Road markers - opacity + blur only
       gsap.fromTo(".road-marker",
-        { opacity: 0, y: 12, filter: "blur(4px)" },
+        { opacity: 0, filter: "blur(4px)" },
         {
           opacity: 1,
-          y: 0,
           filter: "blur(0px)",
           stagger: 0.2,
           scrollTrigger: {
@@ -51,12 +53,11 @@ export default function JourneySchedule() {
         }
       )
 
-      // Timeline text fades in after marker passes
+      // Timeline content - opacity + blur only
       gsap.fromTo(".timeline-content",
-        { opacity: 0, y: 10, filter: "blur(4px)" },
+        { opacity: 0, filter: "blur(4px)" },
         {
           opacity: 1,
-          y: 0,
           filter: "blur(0px)",
           stagger: 0.2,
           scrollTrigger: {
@@ -68,11 +69,11 @@ export default function JourneySchedule() {
         }
       )
 
+      // Speaker cards - opacity + blur only
       gsap.fromTo(".speaker-card",
-        { opacity: 0, y: 12, filter: "blur(4px)" },
+        { opacity: 0, filter: "blur(4px)" },
         {
           opacity: 1,
-          y: 0,
           filter: "blur(0px)",
           stagger: 0.15,
           scrollTrigger: {
@@ -205,7 +206,7 @@ export default function JourneySchedule() {
 
         {/* Heading */}
         <h2 
-          className="schedule-heading text-5xl sm:text-6xl md:text-7xl font-bold mb-12 leading-tight text-center section-title"
+          className="schedule-heading text-5xl sm:text-6xl md:text-7xl text-center section-title optical-margin-heading"
           style={{ color: "var(--text-primary)" }}
         >
           Milestones

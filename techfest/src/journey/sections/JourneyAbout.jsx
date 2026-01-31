@@ -9,17 +9,32 @@ export default function JourneyAbout() {
     const ctx = gsap.context(() => {
       const cards = gsap.utils.toArray(".timeline-card")
 
-      cards.forEach((card) => {
-        ScrollTrigger.create({
-          trigger: card,
-          start: "top 70%",
-          end: "bottom 40%",
-          onEnter: () => gsap.to(card, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power2.out" }),
-          onLeave: () => gsap.to(card, { opacity: 0, y: 10, filter: "blur(4px)", duration: 0.6, ease: "power2.out" }),
-          onEnterBack: () => gsap.to(card, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power2.out" }),
-          onLeaveBack: () => gsap.to(card, { opacity: 0, y: 10, filter: "blur(4px)", duration: 0.6, ease: "power2.out" })
-        })
+      // ===== PHASE 7: CINEMATIC AUTHORING - NO Y MOTION =====
+      // Master timeline with sequential reveals
+      
+      // Initial state
+      gsap.set(cards, { opacity: 0, filter: "blur(4px)" })
+
+      // Master Timeline - Sequential card reveals
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 60%",
+          end: "bottom 70%",
+          toggleActions: "play reverse play reverse"
+        }
       })
+
+      // Cards reveal sequentially with opacity + blur only
+      cards.forEach((card, index) => {
+        tl.to(card, {
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 0.6,
+          ease: "power2.out"
+        }, index * 0.2) // Stagger by 0.2s
+      })
+
     }, sectionRef)
 
     return () => ctx.revert()
@@ -90,7 +105,7 @@ export default function JourneyAbout() {
                     <h3 className="text-xl uppercase" style={{ color: item.accent, fontFamily: "var(--font-display)" }}>
                       {item.title}
                     </h3>
-                    <p className="mt-4 text-sm text-slate-200 leading-relaxed">
+                    <p className="mt-4 text-sm text-slate-200 body-supporting optical-margin-body">
                       {item.description}
                     </p>
                   </div>
@@ -99,7 +114,7 @@ export default function JourneyAbout() {
                     <h3 className="text-2xl uppercase" style={{ color: item.accent, fontFamily: "var(--font-display)" }}>
                       {item.title}
                     </h3>
-                    <p className="mt-4 text-base text-slate-200 leading-relaxed max-w-sm">
+                    <p className="mt-4 text-base text-slate-200 max-w-sm body-supporting optical-margin-body">
                       {item.description}
                     </p>
                   </div>

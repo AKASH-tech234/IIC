@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 import { roadSegments } from "./curveUtils"
+import { BRAND_COLORS } from "../styles/identity.tokens"
 
 export const ROAD_RADIUS = 2.8
 const LINE_RADIUS = 0.08
@@ -164,37 +165,38 @@ export default function Road({
       {/* Render each segment sequentially */}
       {roadSegments.map((segment, i) => (
         <group key={segment.id}>
+          {/* PHASE 8: Road materials from identity tokens */}
           <mesh geometry={geometries.roadGeos[i]}>
             <meshStandardMaterial
               ref={i === 0 ? roadMaterialRef : null}
-              color="#111111"
+              color={BRAND_COLORS.semantic.roadSurface}
               metalness={0.35}
               roughness={0.85}
-              emissive="#00E5FF"
+              emissive={BRAND_COLORS.semantic.road}
               emissiveIntensity={0.3}
             />
           </mesh>
           <mesh geometry={geometries.lineGeos[i]}>
             <meshStandardMaterial
               ref={i === 0 ? lineMaterialRef : null}
-              color="#00E5FF"
-              emissive="#00E5FF"
+              color={BRAND_COLORS.semantic.road}
+              emissive={BRAND_COLORS.semantic.road}
               emissiveIntensity={0.7}
             />
           </mesh>
           <mesh geometry={geometries.centerGeos[i]} position={[0, 0.08, 0]}>
             <meshStandardMaterial
               ref={i === 0 ? centerLineRef : null}
-              color="#FFFFFF"
-              emissive="#FFFFFF"
+              color={BRAND_COLORS.base.text}
+              emissive={BRAND_COLORS.base.text}
               emissiveIntensity={0.6}
               toneMapped={false}
             />
           </mesh>
           <mesh geometry={geometries.edgeGeos[i]} position={[-2.6, 0, 0]}>
             <meshStandardMaterial
-              color="#1A2A3A"
-              emissive="#1A2A3A"
+              color={BRAND_COLORS.semantic.city}
+              emissive={BRAND_COLORS.semantic.city}
               emissiveIntensity={0.08}
               transparent
               opacity={0.08}
@@ -202,8 +204,8 @@ export default function Road({
           </mesh>
           <mesh geometry={geometries.edgeGeos[i]} position={[2.6, 0, 0]}>
             <meshStandardMaterial
-              color="#1A2A3A"
-              emissive="#1A2A3A"
+              color={BRAND_COLORS.semantic.city}
+              emissive={BRAND_COLORS.semantic.city}
               emissiveIntensity={0.08}
               transparent
               opacity={0.08}

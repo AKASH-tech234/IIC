@@ -10,36 +10,46 @@ export default function JourneyEvents() {
     const ctx = gsap.context(() => {
       const cards = gsap.utils.toArray(".events-arc-card")
 
-      gsap.set(cards, { opacity: 0, y: 10, filter: "blur(4px)" })
+      // ===== PHASE 7: TRUE GALLERY MODE - NO Y MOTION =====
+      // All cards visible together, scale + opacity hierarchy ONLY
+      
+      // Initial state: all cards hidden, no Y offset
+      gsap.set(cards, { opacity: 0, scale: 0.9, filter: "blur(4px)" })
       gsap.set(linesRef.current, { strokeDashoffset: 200 })
 
+      // Master Timeline - Cards enter TOGETHER
+      const tl = gsap.timeline({ paused: true })
+
+      // Cards reveal together with slight stagger
+      tl.to(cards, {
+        opacity: 1,
+        scale: 1.0,
+        filter: "blur(0px)",
+        duration: 0.8,
+        stagger: 0.08, // Very tight stagger - feel simultaneous
+        ease: "power2.out"
+      })
+
+      // Lines draw in sync
+      tl.to(linesRef.current, {
+        strokeDashoffset: 0,
+        duration: 0.6,
+        ease: "power1.inOut"
+      }, "-=0.4") // Overlap with card reveal
+
+      // ScrollTrigger - Pin section, play timeline on enter
       ScrollTrigger.create({
         trigger: sectionRef.current,
-        start: "top 55%",
-        end: "bottom 50%",
-        scrub: 1,
-        onUpdate: (self) => {
-          const progress = self.progress
-          const reveal = gsap.utils.clamp(0, 1, progress * 1.2)
-
-          cards.forEach((card, index) => {
-            gsap.to(card, {
-              opacity: reveal,
-              y: 0,
-              filter: "blur(0px)",
-              duration: 0.7,
-              delay: index * 0.1,
-              ease: "power2.out"
-            })
-          })
-
-          linesRef.current.forEach((line) => {
-            if (line) {
-              line.style.strokeDashoffset = `${200 - 200 * reveal}`
-            }
-          })
-        }
+        start: "top 20%",
+        end: "bottom 30%",
+        pin: true,
+        onEnter: () => tl.play(),
+        onLeaveBack: () => tl.reverse()
       })
+
+      // Visual Hierarchy on scroll within pinned section (optional future enhancement)
+      // Currently all cards maintain equal prominence (gallery mode)
+      
     }, sectionRef)
 
     return () => ctx.revert()
@@ -86,9 +96,6 @@ export default function JourneyEvents() {
                 <div
                   key={track.title}
                   className="events-arc-card"
-                  style={{
-                    transform: `translateY(${index % 2 === 0 ? -40 : 40}px)`
-                  }}
                 >
                   <div
                     className="px-6 py-4 rounded-xl"

@@ -38,59 +38,70 @@ export default function JourneyFinalCTA() {
         }
       })
 
+      // ===== PHASE 7: CINEMATIC AUTHORING - CALM ARRIVAL =====
+      // NO Y motion, NO bounce, NO excitement
+      // Only calm brightness, stable settling
+
+      // Badge - Scale DOWN (settling feel, not bounce)
       gsap.fromTo(".final-cta-badge",
-        { opacity: 0, scale: 0.8 },
+        { opacity: 0, scale: 1.05 },
         {
           opacity: 1,
-          scale: 1,
+          scale: 1.0, // Settle down, not pop up
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top 70%",
             end: "top 40%",
             scrub: 1
-          }
+          },
+          ease: "expo.out" // Slow, calm easing
         }
       )
 
+      // Heading - Fade only, no movement
       gsap.fromTo(".final-cta-heading",
-        { opacity: 0, y: 60 },
+        { opacity: 0, filter: "blur(6px)" },
         {
           opacity: 1,
-          y: 0,
+          filter: "blur(0px)",
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top 65%",
             end: "top 35%",
             scrub: 1
-          }
+          },
+          ease: "power1.inOut"
         }
       )
 
+      // Text - Fade only
       gsap.fromTo(".final-cta-text",
-        { opacity: 0, y: 40 },
+        { opacity: 0, filter: "blur(4px)" },
         {
           opacity: 1,
-          y: 0,
+          filter: "blur(0px)",
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top 60%",
             end: "top 30%",
             scrub: 1
-          }
+          },
+          ease: "power1.inOut"
         }
       )
 
+      // Button - Fade only, calm
       gsap.fromTo(".final-cta-button",
-        { opacity: 0, y: 30 },
+        { opacity: 0 },
         {
           opacity: 1,
-          y: 0,
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top 55%",
             end: "top 25%",
             scrub: 1
-          }
+          },
+          ease: "power1.inOut"
         }
       )
     }, sectionRef)
@@ -117,7 +128,7 @@ export default function JourneyFinalCTA() {
         </div>
 
         {/* Heading */}
-        <h2 className="final-cta-heading text-6xl sm:text-7xl md:text-8xl font-black text-white mb-8 leading-tight">
+        <h2 className="final-cta-heading text-6xl sm:text-7xl md:text-8xl text-white mb-8 optical-margin-heading">
           Reach the
           <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
             Future
@@ -125,7 +136,7 @@ export default function JourneyFinalCTA() {
         </h2>
 
         {/* Text */}
-        <p className="final-cta-text text-xl sm:text-2xl text-gray-300 max-w-2xl mx-auto mb-12 leading-relaxed">
+        <p className="final-cta-text text-xl sm:text-2xl text-gray-300 max-w-2xl mx-auto mb-12 body-supporting optical-margin-body">
           Join MNNIT TechSummit 2026 and be part of a journey driven by innovation, collaboration, and impact.
         </p>
 

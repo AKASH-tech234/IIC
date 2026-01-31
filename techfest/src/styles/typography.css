@@ -1,0 +1,224 @@
+/**
+ * Typography Lock - Brand-Grade Type System
+ * 
+ * PHASE 8: Color & Identity Lock
+ * 
+ * RULES (NON-NEGOTIABLE):
+ * - Headings: letter-spacing animation ALLOWED
+ * - Body text: NO animation except opacity
+ * - Font weights locked per section type
+ * - Readability never degrades during motion
+ */
+
+/* ===== HIERARCHY LEVELS ===== */
+
+/* PHASE 9: Locked line-height bands and reduced font-weight variance */
+.heading-dominant {
+  letter-spacing: 0.02em;
+  font-weight: 800; /* Heavy - locked to 800 */
+  line-height: 1.08; /* Locked band: 1.05-1.1 */
+  color: var(--color-text);
+  opacity: 1;
+}
+
+.heading-supporting {
+  letter-spacing: 0.05em;
+  font-weight: 600; /* Medium - locked to 600 */
+  line-height: 1.2; /* Locked band: exactly 1.2 */
+  color: var(--color-text);
+  opacity: 0.85;
+}
+
+.body-dominant {
+  font-weight: 400; /* Light - locked to 400 */
+  line-height: 1.55; /* Locked band: 1.5-1.6 */
+  color: var(--color-text);
+  opacity: 1;
+  /* NO ANIMATION ALLOWED except opacity */
+}
+
+.body-supporting {
+  font-weight: 400; /* Light - locked to 400 */
+  line-height: 1.55; /* Locked band: 1.5-1.6 */
+  color: var(--color-text-muted);
+  opacity: 0.75;
+  /* NO ANIMATION ALLOWED except opacity */
+}
+
+.body-muted {
+  font-weight: 400; /* Light - locked to 400 */
+  line-height: 1.5; /* Locked band: 1.5-1.6 */
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  /* NO ANIMATION ALLOWED except opacity */
+}
+
+/* ===== SECTION-SPECIFIC TYPE ===== */
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 800; /* Heavy - LOCKED */
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.05; /* LOCKED band: 1.05-1.1 */
+}
+
+.hero-tagline {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 600; /* Medium - LOCKED (was 500) */
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  line-height: 1.2; /* LOCKED band */
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800; /* Heavy - LOCKED (was 700) */
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.08; /* LOCKED band: 1.05-1.1 */
+}
+
+.section-subtitle {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-weight: 600; /* Medium - LOCKED (was 500) */
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1.2; /* LOCKED band */
+}
+
+.section-body {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  font-weight: 400; /* Light - LOCKED */
+  line-height: 1.55; /* LOCKED band: 1.5-1.6 (was 1.7) */
+  /* NO letter-spacing animation */
+}
+
+/* ===== EVENT CARDS (Gallery Mode) ===== */
+
+.events-card-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600; /* Medium - LOCKED */
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.2; /* LOCKED band */
+}
+
+.events-card-label {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600; /* Medium - LOCKED (was 500) */
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  line-height: 1.2; /* LOCKED band */
+  opacity: 0.7;
+}
+
+/* ===== FINAL CTA (Calm Arrival) ===== */
+
+.final-cta-heading {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 8vw, 6rem);
+  font-weight: 800; /* Heavy - LOCKED (was 900) */
+  letter-spacing: 0.02em;
+  line-height: 1.05; /* LOCKED band: 1.05-1.1 (was 0.95) */
+  /* NO animation except opacity + blur */
+}
+
+.final-cta-text {
+  font-family: var(--font-body);
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 400; /* Light - LOCKED */
+  line-height: 1.55; /* LOCKED band: 1.5-1.6 */
+  opacity: 0.9;
+  /* NO animation except opacity */
+}
+
+/* ===== ANIMATION CONSTRAINTS ===== */
+
+/* ALLOWED on headings */
+.heading-animate-allowed {
+  transition: letter-spacing 0.6s ease, opacity 0.6s ease;
+}
+
+/* FORBIDDEN on body text */
+.body-no-animate {
+  transition: opacity 0.6s ease;
+  /* NO letter-spacing, NO transform, NO scale */
+}
+
+/* ===== READABILITY LOCKS ===== */
+
+/* Minimum readable sizes */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .section-body {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .heading-dominant,
+  .heading-supporting,
+  .body-dominant {
+    opacity: 1 !important;
+  }
+  
+  .body-supporting {
+    opacity: 0.9 !important;
+  }
+}
+
+/* ===== NO GRADIENTS IN BODY TEXT ===== */
+.text-gradient-forbidden {
+  /* This class should NEVER be applied to body text */
+  /* Only use on display headings where visual impact > readability */
+  background: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== OPTICAL MARGINS (PHASE 9) ===== */
+/* Headings slightly tighter than body for visual balance */
+.optical-margin-heading {
+  margin-top: -0.1em;
+  margin-bottom: -0.05em;
+}
+
+.optical-margin-body {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Prevent orphan spacing */
+.optical-tight {
+  letter-spacing: -0.01em;
+}
+
+.optical-loose {
+  letter-spacing: 0.03em;
+}
+
+/* ===== ACCESSIBILITY OVERRIDES ===== */
+@media (prefers-reduced-motion: reduce) {
+  .heading-animate-allowed,
+  .body-no-animate {
+    transition: none !important;
+  }
+}

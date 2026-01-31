@@ -8,6 +8,8 @@ import Road from "./Road"
 import City from "./City"
 import Sky from "./Sky"
 import Ground from "./Ground"
+import { BRAND_COLORS, getAccentColor } from "../styles/identity.tokens"
+import { getFogDensity, needsContrastBoost } from "../journey/SceneDirector"
 
 /**
  * Scene Content - All 3D objects
@@ -15,14 +17,18 @@ import Ground from "./Ground"
  */
 /**
  * Get segment-based visual configuration
+ * PHASE 8: Now reads from BRAND_COLORS identity tokens
  */
 function getSegmentVisualConfig(segmentId) {
+  // Base fog color from identity tokens
+  const baseFog = BRAND_COLORS.semantic.fog
+  
   const configs = {
-    HERO: { fogColor: "#0A1022", fogBlend: 0.03, groundIntensity: 0.08, horizonIntensity: 0 },
-    TURN_1: { fogColor: "#0B1228", fogBlend: 0.04, groundIntensity: 0.09, horizonIntensity: 0.05 },
-    EVENTS: { fogColor: "#0C1430", fogBlend: 0.15, groundIntensity: 0.18, horizonIntensity: 0.65 },
-    TURN_2: { fogColor: "#0A0F20", fogBlend: 0.05, groundIntensity: 0.10, horizonIntensity: 0.08 },
-    FINAL: { fogColor: "#0D1835", fogBlend: 0.06, groundIntensity: 0.12, horizonIntensity: 0.15 }
+    HERO: { fogColor: baseFog, fogBlend: 0.03, groundIntensity: 0.08, horizonIntensity: 0 },
+    TURN_1: { fogColor: baseFog, fogBlend: 0.04, groundIntensity: 0.09, horizonIntensity: 0.05 },
+    EVENTS: { fogColor: baseFog, fogBlend: 0.15, groundIntensity: 0.18, horizonIntensity: 0.65 },
+    TURN_2: { fogColor: baseFog, fogBlend: 0.05, groundIntensity: 0.10, horizonIntensity: 0.08 },
+    FINAL: { fogColor: baseFog, fogBlend: 0.06, groundIntensity: 0.12, horizonIntensity: 0.15 }
   }
   return configs[segmentId] || configs.HERO
 }
@@ -54,7 +60,7 @@ function SceneContent({
 
   const fogRef = useRef()
 
-  const horizonColor = useRef("#04202A")
+  const horizonColor = useRef(BRAND_COLORS.semantic.fog)
   
   // Phase 5: Horizon glow pulse tracking
   const horizonPulseStartTimeRef = useRef(0)
@@ -71,7 +77,9 @@ function SceneContent({
       segmentId = currentSegmentRef.current.id
     }
     
-    const accent = activeAccent.current || "#070617"
+    // PHASE 8: Get accent from identity tokens
+    const phaseId = activePhase.current || "HERO"
+    const accent = activeAccent.current || getAccentColor(phaseId)
     const progress = scrollProgress.current || 0
     const now = clock.elapsedTime
     
@@ -94,7 +102,8 @@ function SceneContent({
     baseFogColor.lerp(accentColor, fogBlend)
     fogRef.current.color = baseFogColor
 
-    const horizonBase = new THREE.Color("#00E5FF")
+    // PHASE 8: Horizon colors from identity tokens
+    const horizonBase = new THREE.Color(BRAND_COLORS.accents.primary)
     const horizonAccent = new THREE.Color(accent)
     
     // MOMENT OF ARRIVAL - Horizon glow ramps up on first scroll
@@ -140,26 +149,28 @@ function SceneContent({
         carRef={carRef}
         currentSegment={currentSegmentRef}
         finalCTAActive={finalCTAActive}
+        scrollVelocity={scrollVelocity}
       />
       <Lights />
       {/* AMPLIFIED: Reduce ambient during EVENTS for spotlight effect */}
       <ambientLight intensity={isEventsPhase ? 0.35 : 0.6} />
+      {/* PHASE 8: Light colors from identity tokens */}
       <directionalLight 
         position={[50, 80, 20]} 
-        color="#88ccff" 
+        color={BRAND_COLORS.accents.primary} 
         intensity={1.2}
         castShadow={false}
       />
       <directionalLight 
         position={[-40, 30, -100]} 
-        color="#3355ff" 
+        color={BRAND_COLORS.accents.secondary} 
         intensity={0.6}
         castShadow={false}
       />
       {/* AMPLIFIED: Boost edge light during EVENTS for drama */}
       <directionalLight 
         position={[0, 20, -400]} 
-        color="#5588BB" 
+        color={BRAND_COLORS.accents.primary} 
         intensity={isEventsPhase ? 0.6 : 0.3}
         castShadow={false}
       />
@@ -169,7 +180,8 @@ function SceneContent({
         sectionPulse={sectionPulse}
       />
       <Sky horizonColor={horizonColor.current} />
-      <fog ref={fogRef} attach="fog" args={["#0A1022", 60, 400]} />
+      {/* PHASE 8: Fog color from identity tokens */}
+      <fog ref={fogRef} attach="fog" args={[BRAND_COLORS.semantic.fog, 60, 400]} />
       <Car 
         ref={carRef}
         scrollProgress={scrollProgress}

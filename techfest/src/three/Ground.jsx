@@ -1,6 +1,7 @@
 import * as THREE from "three"
 import { useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
+import { BRAND_COLORS } from "../styles/identity.tokens"
 
 /**
  * Ground Plane - Mandatory depth reference with Tron elements
@@ -31,17 +32,18 @@ export default function Ground({
       // Note: Don't reset sectionPulse here, let Road.jsx consume it
     }
     
+    // ===== PHASE 9: CONTRAST TUNING - Ground > Road hierarchy =====
     // MOMENT OF ARRIVAL - Ground strip activates on first scroll
     let targetIntensity
     if (progress < 0.05) {
       // Ramp up from 0 to base during first 5% scroll
-      targetIntensity = (progress / 0.05) * 0.08
+      targetIntensity = (progress / 0.05) * 0.12 // Increased from 0.08 to 0.12
     } else if (phase === "EVENTS_SIDE_PROFILE") {
-      targetIntensity = 0.18
+      targetIntensity = 0.20 // Increased from 0.18 to 0.20
     } else if (phase === "FORWARD_CONTENT") {
-      targetIntensity = 0.10
+      targetIntensity = 0.14 // Increased from 0.10 to 0.14
     } else {
-      targetIntensity = 0.08
+      targetIntensity = 0.12 // Increased from 0.08 to 0.12 (ground brighter than road)
     }
     
     // ===== PHASE 5: GROUND STRIP RIPPLE (120ms outward expansion) =====
@@ -86,11 +88,12 @@ export default function Ground({
 
   return (
     <group>
+      {/* PHASE 8: Ground materials from identity tokens */}
       {/* Main ground plane - extended to cover entire road */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, -600]}>
         <planeGeometry args={[2000, 2400]} />
         <meshStandardMaterial
-          color="#02030A"
+          color={BRAND_COLORS.semantic.ground}
           roughness={0.95}
           metalness={0.05}
         />
@@ -101,11 +104,11 @@ export default function Ground({
         <planeGeometry args={[140, 2400]} />
         <meshStandardMaterial
           ref={transitStripRef}
-          color="#0A1420"
+          color={BRAND_COLORS.semantic.groundStrip}
           roughness={0.88}
           metalness={0.12}
-          emissive="#0A1420"
-          emissiveIntensity={0.08}
+          emissive={BRAND_COLORS.semantic.groundStrip}
+          emissiveIntensity={0.10} /* PHASE 9: Increased from 0.08 to 0.10 */
         />
       </mesh>
 
@@ -114,9 +117,9 @@ export default function Ground({
         <mesh key={`panel-${i}`} rotation={[-Math.PI / 2, 0, 0]} position={[panel.x, -0.04, panel.z]}>
           <planeGeometry args={[panel.width, panel.height]} />
           <meshBasicMaterial
-            color="#0B2A3A"
+            color={BRAND_COLORS.semantic.city}
             transparent
-            opacity={0.35}
+            opacity={0.25} /* PHASE 9: Reduced from 0.35 to 0.25 (less light panel distraction) */
           />
         </mesh>
       ))}
@@ -126,7 +129,7 @@ export default function Ground({
         <mesh key={`pylon-${i}`} position={[pylon.x, pylon.height / 2 - 0.05, pylon.z]}>
           <boxGeometry args={[0.4, pylon.height, 0.4]} />
           <meshStandardMaterial
-            color="#08131E"
+            color={BRAND_COLORS.semantic.city}
             roughness={0.9}
             metalness={0.1}
           />
@@ -142,7 +145,7 @@ export default function Ground({
         >
           <planeGeometry args={[0.3, 100]} />
           <meshBasicMaterial
-            color="#0A1420"
+            color={BRAND_COLORS.semantic.groundStrip}
             transparent
             opacity={0.25}
           />

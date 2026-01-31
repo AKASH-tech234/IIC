@@ -15,7 +15,8 @@ export default function Camera({
   carRef, 
   currentSegment,
   // Phase 5: UI ↔ World coupling signals
-  finalCTAActive
+  finalCTAActive,
+  scrollVelocity
 }) {
   const { camera } = useThree()
   const lastPhaseRef = useRef(null)
@@ -24,6 +25,9 @@ export default function Camera({
   // Phase 5: FINAL CTA arrival tracking
   const finalCTAStartTimeRef = useRef(0)
   const baseTiltRef = useRef(0)
+  
+  // Phase 9: Stability tracking
+  const lastScrollTimeRef = useRef(0)
 
   useFrame(({ clock }) => {
     // CRITICAL: Camera MUST read carRef EVERY FRAME
@@ -44,6 +48,26 @@ export default function Camera({
       baseTiltRef.current = 0
     }
 
+    // ===== PHASE 9: CAMERA STABILITY - Clamp breathing during scroll spikes =====
+    const velocity = scrollVelocity?.current || 0
+    const velocityThreshold = 0.05 // Threshold for "fast scroll"
+    const isFastScroll = Math.abs(velocity) > velocityThreshold
+    
+    // ===== PHASE 7: CAMERA MICRO BREATHING =====
+    // Subtle FOV + Z offset breathing - felt, not seen
+    // DISABLED during EVENTS (frozen gallery)
+    // PHASE 9: Reduced during fast scroll
+    
+    const isEventsPhase = phase === "EVENTS_SIDE_PROFILE"
+    
+    // Breathing effect - slow sine wave (4 second period)
+    const breathingCycle = Math.sin(now * 0.5) // Period ~12.5 seconds
+    
+    // PHASE 9: Clamp breathing during scroll velocity spikes (reduce by 50%)
+    const breathingDamping = isFastScroll ? 0.5 : 1.0
+    const fovBreathing = isEventsPhase ? 0 : breathingCycle * 0.5 * breathingDamping // ±0.5 FOV (reduced during fast scroll)
+    const zBreathing = isEventsPhase ? 0 : breathingCycle * 0.06 * breathingDamping // ±0.06 Z offset (reduced from 0.12 to 0.06, further dampened)
+    
     // SEGMENT-AWARE FOV MICRO-BEATS
     let targetFOV = 50
     if (segmentId === "TURN_1" && localT < 0.3) {
@@ -56,7 +80,8 @@ export default function Camera({
       targetFOV = 50 // Stable approach
     }
     
-    camera.fov += (targetFOV - camera.fov) * 0.08
+    // Apply breathing to target FOV
+    camera.fov += ((targetFOV + fovBreathing) - camera.fov) * 0.08
     camera.updateProjectionMatrix()
 
     // Track phase changes
@@ -68,10 +93,11 @@ export default function Camera({
     // FIXED LOCAL OFFSET - adjusts per phase for visibility
     let localOffset
     if (phase === "EVENTS_SIDE_PROFILE") {
-      // Side-top view during EVENTS for car visibility during color changes
-      localOffset = new THREE.Vector3(6, 4, 2)
+      // PHASE 9: Side-top view with downward bias for grounded feel (was 4, now 3.8)
+      localOffset = new THREE.Vector3(6, 3.8, 2) // Downward bias: camera feels more grounded
     } else {
-      localOffset = new THREE.Vector3(0, 2.2, 6) // Always behind car
+      // Apply Z breathing to offset (micro push/pull feel)
+      localOffset = new THREE.Vector3(0, 2.2, 6 + zBreathing) // Always behind car + breathing
     }
 
     // Camera target = car position + offset (NEVER independent)
@@ -92,6 +118,9 @@ export default function Camera({
       const tiltProgress = Math.min(1, timeSinceFinalCTA / tiltDuration)
       tiltAngle = tiltProgress * 0.5 * (Math.PI / 180) // Convert degrees to radians
     }
+
+    // PHASE 9: Smooth lerp clamping - ensure factor never exceeds 0.12 (prevent jitter)
+    lerpFactor = Math.min(lerpFactor, 0.12)
 
     // Smooth follow - ALWAYS lerp, supports reverse scrolling
     camera.position.lerp(cameraTarget, lerpFactor)
